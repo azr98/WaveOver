@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-waveover-dev-162159-authRole",
+      "UnauthRoleArn": "arn:aws:iam::816538111910:role/amplify-waveover-dev-162159-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::816538111910:role/amplify-waveover-dev-162159-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-waveover-dev-162159-deployment",
+      "UnauthRoleName": "amplify-waveover-dev-162159-unauthRole",
+      "StackName": "amplify-waveover-dev-162159",
+      "StackId": "arn:aws:cloudformation:eu-west-1:816538111910:stack/amplify-waveover-dev-162159/98de2250-8177-11ee-9e0b-0adb13b6ebad",
+      "AmplifyAppId": "d3txwng2vgpvte"
+    }
+  }
+}
