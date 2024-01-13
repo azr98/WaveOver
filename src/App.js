@@ -6,6 +6,7 @@ import Verification from './components/Auth/Verification';
 import Dashboard from './components/Dashboard/Dashboard';
 // Other imports as necessary
 
+
 function App() {
   return (
     <Router>
