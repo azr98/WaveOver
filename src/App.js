@@ -4,8 +4,7 @@ import SignUp from './components/Auth/SignUp';
 import Login from './components/Auth/Login';
 import Verification from './components/Auth/Verification';
 import Dashboard from './components/Dashboard/Dashboard';
-import Timer from './components/Timer/Timer';
-import EmailForm from './components/EmailForm/EmailForm';
+// Other imports as necessary
 
 function App() {
   return (
@@ -15,11 +14,11 @@ function App() {
         <Route path="/login" component={Login} />
         <Route path="/verify" component={Verification} />
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/timer" component={Timer} />
-        <Route path="/email-form" component={EmailForm} />
+        {/* Other routes as needed */}
       </Switch>
     </Router>
   );
 }
 
 export default App;
+
