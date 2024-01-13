@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Auth } from 'aws-amplify';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Verification() {
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
-  const history = useHistory();
+  const history = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
