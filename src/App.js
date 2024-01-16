@@ -11,10 +11,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/signup" component={SignUp} />
-        <Route path="/login" component={Login} />
-        <Route path="/verify" component={Verification} />
-        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/signup" component={<SignUp />} />
+        <Route path="/login" component={<Login />} />
+        <Route path="/verify" component={<Verification />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         {/* Other routes as needed */}
         </Routes>
     </Router>
@@ -22,5 +22,6 @@ function App() {
 }
 
 export default App;
+
 
 
