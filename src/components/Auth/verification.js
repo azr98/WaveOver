@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import { confirmSignUp } from '@aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function Verification() {
@@ -11,7 +11,7 @@ function Verification() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await Auth.confirmSignUp(email, code);
+      await confirmSignUp(email, code);
       // Redirect to login page or dashboard after successful verification
       history.push('/login');
     } catch (error) {

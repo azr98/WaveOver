@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import { signUp } from '@aws-amplify/auth';
 
 function SignUp() {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ function SignUp() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await Auth.signUp({ username: email, password });
+      await signUp({ username: email, password });
       // Redirect to verification page or indicate the need to verify email
     } catch (error) {
       setError(error.message);

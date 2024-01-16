@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import { signIn } from '@aws-amplify/auth';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
@@ -11,7 +11,7 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await Auth.signIn(email, password);
+      await signIn(email, password);
       // Redirect to the dashboard or other page after successful login
       history.push('/dashboard');
     } catch (error) {
