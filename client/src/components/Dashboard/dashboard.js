@@ -6,12 +6,32 @@ function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');
   const [issue, setIssue] = useState('');
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Implement logic to handle user and spouse details
-    // Start the "WaveOver" process
-  };
 
+    const formData = {
+        user_email: userName,
+        spouse_email: spouseName,
+        issue_headline: issue
+    };
+
+    try {
+        const response = await fetch('http://localhost:5000/submit_form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const responseData = await response.json();
+        console.log(responseData);
+        // Handle success (e.g., navigate to another page or show a success message)
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        // Handle errors (e.g., show error message to the user)
+    }
+};
   return (
     <div>
       <h1>Dashboard</h1>
