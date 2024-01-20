@@ -21,8 +21,8 @@ def store_form_data(table_data):
            Item={
                 'user_email':table_data['user_email'],
                 'spouse_email': table_data['spouse_email'],
-                'issue_headline': table_data[issue_headline],
-                'start_time': table_data[start_time.strftime("%Y-%m-%d %H:%M:%S")]  # Format datetime as a string
+                'issue_headline': table_data['issue_headline'],
+                'start_time': table_data['start_time']  
             }
         )
         return response
@@ -38,10 +38,11 @@ def index():
 @cross_origin()
 def submit_form():
     data = request.json
+    start_time = datetime.datetime.now()
     response = {
         'user_email': data['user_email'],
         'spouse_email': data['spouse_email'],
-        'start_time': datetime.datetime.now(),
+        'start_time': start_time.strftime('%Y-%m-%d %H:%M:%S') ,
         'issue_headline': data['issue_headline']
     }
     # user_email = data['user_email']
