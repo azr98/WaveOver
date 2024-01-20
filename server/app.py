@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify
 import boto3
 from botocore.exceptions import ClientError
 import datetime
+from flask_cors import CORS
 from celery_tasks import send_email_reminder
 app = Flask(__name__)
-
+CORS(app)
 
 
 if __name__ == '__main__':
