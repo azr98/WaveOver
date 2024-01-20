@@ -4,7 +4,7 @@ function Dashboard() {
   const [userName, setUserName] = useState('');
   const [spouseName, setSpouseName] = useState('');
   const [spouseEmail, setSpouseEmail] = useState('');
-  const [issue, setIssue] = useState('');
+  const [issueHeadline, setIssue] = useState('');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -12,7 +12,7 @@ function Dashboard() {
     const formData = {
         user_email: userName,
         spouse_email: spouseName,
-        issue_headline: issue
+        issue_headline: issueHeadline
     };
 
     try {
@@ -59,7 +59,7 @@ function Dashboard() {
         />
         <input
           type="text"
-          value={issue}
+          value={issueHeadline}
           onChange={(e) => setIssue(e.target.value)}
           placeholder="Issue Headline"
           required
