@@ -38,11 +38,13 @@ def submit_form():
     spouse_email = data['spouse_email']
     start_time = datetime.datetime.now()
     issue_headline = data['issue_headline']
-    # Store data in DynamoDB
+    # Storing data in DynamoDB
     store_form_data(user_email, spouse_email, issue_headline, start_time)
     # Schedule email reminders based on start_time
     #TODO connect this to front end dashboard button and test dynamo put upload
     return jsonify({'status': 'Success', 'message': 'Form submitted and emails scheduled'}), 200
+
+
 
 @app.route('/timer-completion', methods=['POST'])
 def timer_completion():
