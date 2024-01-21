@@ -22,7 +22,7 @@ function Dashboard() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(formData),
-        });
+        },{mode:'cors'});
 
         const responseData = await response.json();
         console.log(responseData);

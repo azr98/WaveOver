@@ -3,21 +3,27 @@ import boto3
 from botocore.exceptions import ClientError
 import datetime
 from flask_cors import CORS , cross_origin
-
+import logging
 from celery_tasks import send_email_reminder
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=['http://localhost:3000']) 
 
+#Logging setup
+file_handler = logging.FileHandler('flask_app_log.log')
+file_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.DEBUG)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+db_client = boto3.client('dynamodb')
 
 @cross_origin()
 def store_form_data(table_data):
-    dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
-    table = dynamodb.Table('WaveOver')
     try:
-        response = table.put_item(
+        response = db_client.put_item(
+           TableName='WaveOver',
            Item={
                 'user_email':table_data['user_email'],
                 'spouse_email': table_data['spouse_email'],
@@ -29,6 +35,10 @@ def store_form_data(table_data):
     except ClientError as e:
         print(e.response['Error']['Message'])
         return None
+
+if __name__ == '__main__':    
+    app.run(debug=True)
+  
 
 @app.route('/')
 def index():
@@ -53,6 +63,7 @@ def submit_form():
     store_form_data(response)
     # Schedule email reminders based on start_time
     #TODO connect this to front end dashboard button and test dynamo put upload
+  
     return jsonify({'status': 'Success', 'message': 'Form submitted and emails scheduled'}), 200
 
 
