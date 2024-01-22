@@ -1,0 +1,1 @@
+This web app gives couples a 3 day timer to write down what they want to say to each other after an argument and each is sent what they other wrote after the 3 day timer ends. This webapp fully uses AWS for its infrastructure
