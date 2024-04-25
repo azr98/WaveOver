@@ -30,6 +30,17 @@ def schedule_email(when, recipient_email, email_data, template):
         }
     )
 
+def send_final_email(user_id, spouse_email, user_response, spouse_response):
+    email_body = f"Time is up! Here's what you both wanted to say:\n\nUser: {user_response}\nSpouse: {spouse_response}"
+    ses.send_email(
+        Source='your-email@example.com',
+        Destination={'ToAddresses': [spouse_email]},
+        Message={
+            'Subject': {'Data': 'Argument Period Ended'},
+            'Body': {'Html': {'Data': email_body}}
+        }
+    )
+
 # Registration endpoint
 @app.route('/register', methods=['POST'])
 def register_user():
@@ -68,21 +79,31 @@ def login_user():
     
 @app.route('/submit_argument', methods=['POST'])
 def submit_argument():
-    user_data = request.get_json()
-    current_time = datetime.datetime.now()
-    deadline = current_time + datetime.timedelta(days=3)
+    data = request.get_json()
+    submission_time = datetime.datetime.now()
+    deadline = submission_time + datetime.timedelta(seconds=25)  # Change to days=3 for production
+
+    # Store argument in DynamoDB
     arguments_table.put_item(
         Item={
-            'user_id': user_data['user_id'],
-            'argument_title': user_data['title'],
-            'submission_time': current_time.isoformat(),
-            'deadline': deadline.isoformat(),
-            'response': None
+            'user_id': data['user_id'],
+            'spouse_email': data['spouse_email'],
+            'argument_topic': data['argument_topic'],
+            'user_response': data['user_response'],
+            'spouse_response': '',  # Initially empty
+            'deadline': deadline.isoformat()
         }
     )
-    # Schedule reminder emails
-    scheduler.add_job(schedule_email, 'date', run_date=current_time + datetime.timedelta(days=2, hours=22), args=[user_data['email'], {'subject': 'Final Reminder', 'title': user_data['title']}, 'Your final reminder email template here'])
-    return jsonify(message="Argument submitted and reminders scheduled"), 201
+
+    # Schedule email to be sent after deadline
+    scheduler.add_job(
+        func=send_final_email,
+        trigger='date',
+        run_date=deadline,
+        args=[data['user_id'], data['spouse_email'], data['user_response'], data['spouse_response']]
+    )
+
+    return jsonify({'message': 'Argument submitted and reminder scheduled'}), 201
 
 # Start the scheduler
 scheduler.start()

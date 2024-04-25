@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
+import Dashboard from './components/dashboard.js';  // Assuming it's a local component
 import axios from 'axios';
-import { Routes, Route, Router } from 'react-router-dom';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter>  {/* Wrap your app with BrowserRouter */}
       <div className="App">
         <Routes>
-          <Route path="/login" component={LoginPage} />
-          <Route path="/register" component={RegistrationPage} />
-          {/*<Route path="/argument" component={ArgumentPage} />
-          <Route path="/response" component={ResponsePage} />*/}
+          <Route path="/login" element={<LoginPage />} /> {/* Use element prop for JSX */}
+          <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          {/*<Route path="/argument" component={ArgumentPage} />*/}  {/* Uncomment if needed */}
+          {/*<Route path="/response" component={ResponsePage} />*/}  {/* Uncomment if needed */}
         </Routes>
       </div>
-    </Router>
+    </BrowserRouter>
   );
 }
 
