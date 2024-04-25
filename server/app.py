@@ -108,6 +108,25 @@ def submit_argument():
 # Start the scheduler
 scheduler.start()
 
+@app.route('/start_responses', methods=['POST'])
+def start_responses():
+    data = request.get_json()
+    # Get the current time and set the deadline
+    start_time = datetime.datetime.now()
+    deadline = start_time + datetime.timedelta(seconds=25)  # For testing, change to days=3 for production
+
+    # Update the deadline and status in the database
+    arguments_table.update_item(
+        Key={'user_id': data['user_id']},
+        UpdateExpression='SET deadline = :val1, status = :val2',
+        ExpressionAttributeValues={
+            ':val1': deadline.isoformat(),
+            ':val2': 'active'
+        }
+    )
+
+    return jsonify({'message': 'Both users can now write their responses.', 'deadline': deadline.isoformat()}), 200
+
 @app.route('/shutdown', methods=['GET'])
 def shutdown():
     scheduler.shutdown()
