@@ -19,7 +19,7 @@ function Dashboard() {
 
   return (
     <div>
-      <h1>Start an Argument</h1>
+      <h1>Start a discussion</h1>
       {!initiated ? (
         <>
           <input type="email" value={spouseEmail} onChange={(e) => setSpouseEmail(e.target.value)} placeholder="Spouse's Email" />
