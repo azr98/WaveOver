@@ -4,7 +4,6 @@ import axios from 'axios';
 function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');
   const [argumentTopic, setArgumentTopic] = useState('');
-  const [userResponse, setUserResponse] = useState('');
   const [initiated, setInitiated] = useState(false);
 
   const handleInitiate = async () => {
@@ -19,7 +18,7 @@ function Dashboard() {
 
   return (
     <div>
-      <h1>Start an Argument</h1>
+      <h1>Start a discussion</h1>
       {!initiated ? (
         <>
           <input type="email" value={spouseEmail} onChange={(e) => setSpouseEmail(e.target.value)} placeholder="Spouse's Email" />
