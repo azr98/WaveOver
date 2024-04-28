@@ -4,7 +4,6 @@ import axios from 'axios';
 function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');
   const [argumentTopic, setArgumentTopic] = useState('');
-  const [userResponse, setUserResponse] = useState('');
   const [initiated, setInitiated] = useState(false);
 
   const handleInitiate = async () => {
