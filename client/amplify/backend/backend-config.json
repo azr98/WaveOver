@@ -1,0 +1,45 @@
+{
+  "auth": {
+    "waveoverdeva4841472": {
+      "customAuth": false,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "serviceType": "imported"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_auth_waveoverdeva4841472_nativeClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "waveoverdeva4841472"
+        }
+      ]
+    },
+    "AMPLIFY_auth_waveoverdeva4841472_userPoolId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "waveoverdeva4841472"
+        }
+      ]
+    },
+    "AMPLIFY_auth_waveoverdeva4841472_userPoolName": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "waveoverdeva4841472"
+        }
+      ]
+    },
+    "AMPLIFY_auth_waveoverdeva4841472_webClientId": {
+      "usedBy": [
+        {
+          "category": "auth",
+          "resourceName": "waveoverdeva4841472"
+        }
+      ]
+    }
+  }
+}

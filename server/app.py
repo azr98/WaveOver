@@ -15,10 +15,12 @@ app = Flask(__name__)
 CORS(app)
 
 # AWS SDK clients
-# cognito = boto3.client('cognito-idp', region_name='eu-west-1')
+cognito = boto3.client('cognito-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
 dynamodb = boto3.resource('dynamodb')
 arguments_table = table = dynamodb.Table('waveover-dev')
+client = boto3.client('cognito-idp', region_name='eu-west-1')
+
 
 def schedule_email(when, recipient_email, email_data, template):
     # Logic to send email at a scheduled time
@@ -61,23 +63,21 @@ def send_final_email(user_id, spouse_email, user_response, spouse_response):
     )
 
 # Registration endpoint
-@app.route('/register', methods=['POST'])
-def register_user():
+@app.route('/signup', methods=['POST'])
+def register_user(email, password, name):
     try:
-        data = request.get_json()
-        response = cognito.sign_up(
-            ClientId='your_cognito_client_id',
-            Username=data['email'],
-            Password=data['password'],
+        response = client.sign_up(
+            ClientId='your_cognito_app_client_id',
+            Username=email,
+            Password=password,
             UserAttributes=[
-                {'Name': 'email', 'Value': data['email']},
-                {'Name': 'custom:firstName', 'Value': data['firstName']},
-                {'Name': 'custom:spouseEmail', 'Value': data['spouseEmail']}
+                {'Name': 'email', 'Value': email},
+                {'Name': 'custom:displayName', 'Value': name}
             ]
         )
-        return jsonify({'message': 'Please check your email to confirm your account.'}), 201
-    except ClientError as e:
-        return jsonify({'error': str(e)}), 400
+        return response
+    except client.exceptions.ClientError as error:
+        return str(error)
 
 # Login endpoint
 @app.route('/login', methods=['POST'])
@@ -85,7 +85,7 @@ def login_user():
     try:
         data = request.get_json()
         response = cognito.initiate_auth(
-            ClientId='your_cognito_client_id',
+            ClientId='4rnflukdkhjrsguh2rp3gkuk91',
             AuthFlow='USER_PASSWORD_AUTH',
             AuthParameters={
                 'USERNAME': data['email'],

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import Dashboard from './components/dashboard.js';  // Assuming it's a local component
+import Dashboard from './components/dashboard.js';
+import Signup from './components/signUp.js';
 import axios from 'axios';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
@@ -9,7 +10,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<LoginPage />} /> {/* Use element prop for JSX */}
-          <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           {/*<Route path="/argument" component={ArgumentPage} />*/}  {/* Uncomment if needed */}
           {/*<Route path="/response" component={ResponsePage} />*/}  {/* Uncomment if needed */}
@@ -23,12 +24,5 @@ function LoginPage() {
   // Login form logic
   return <div>Login Page</div>;
 }
-
-function RegistrationPage() {
-  // Registration form logic
-  return <div>Registration Page</div>;
-}
-
-// Define other components similarly
 
 export default App;

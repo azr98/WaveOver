@@ -1,0 +1,29 @@
+{
+  "authSelections": "userPoolOnly",
+  "resourceName": "waveoverdeva4841472",
+  "serviceType": "imported",
+  "region": "eu-west-1",
+  "aliasAttributes": [
+    "email"
+  ],
+  "authProvidersUserPool": [],
+  "requiredAttributes": [
+    "email",
+    "name"
+  ],
+  "passwordPolicyMinLength": 10,
+  "passwordPolicyCharacters": [
+    "Requires Lowercase",
+    "Requires Uppercase",
+    "Requires Numbers",
+    "Requires Symbols"
+  ],
+  "mfaConfiguration": "OPTIONAL",
+  "autoVerifiedAttributes": [
+    "email"
+  ],
+  "mfaTypes": [
+    "SMS Text Message",
+    "TOTP"
+  ]
+}
