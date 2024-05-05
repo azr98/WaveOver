@@ -1,11 +1,17 @@
 # Dependencies
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect, url_for , make_response
 from flask_cors import CORS
 import boto3
 from botocore.exceptions import ClientError
 import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 import subprocess
+from dotenv import load_dotenv
+import os
+from flask import Response
+import logging
+import sys
+
 
 
 # Scheduler to handle timed tasks
@@ -13,14 +19,49 @@ scheduler = BackgroundScheduler()
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+# Create a console handler
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)  # Set handler level
+
+# Add the handler to the logger
+app.logger.addHandler(handler)
+
+#other optionf"Auth object: {initial_auth_object}"
+#logging.basicConfig(level=logging.DEBUG)
+
+# Set the logger level to DEBUG
+app.logger.setLevel(logging.DEBUG) 
+
+@app.before_request
+def handle_cors():
+    headers = {
+    'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
+    }
+
+    if request.method == 'OPTIONS':
+        return jsonify(headers), 200
+
+    # Create a response object
+    response = make_response("")
+
+    # Check for Flask version (assuming 2.0 or later for simplicity)
+    if hasattr(response.headers, 'add'):  # Check if 'add' method exists
+        response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
+        response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
+
+    return response  # Return the modified response object
 
 # AWS SDK clients
 cognito = boto3.client('cognito-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
 dynamodb = boto3.resource('dynamodb')
 arguments_table = table = dynamodb.Table('waveover-dev')
-client = boto3.client('cognito-idp', region_name='eu-west-1')
 
+load_dotenv()
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 
 def schedule_email(when, recipient_email, email_data, template):
     # Logic to send email at a scheduled time
@@ -63,21 +104,26 @@ def send_final_email(user_id, spouse_email, user_response, spouse_response):
     )
 
 # Registration endpoint
-@app.route('/signup', methods=['POST'])
-def register_user(email, password, name):
-    try:
-        response = client.sign_up(
-            ClientId='your_cognito_app_client_id',
-            Username=email,
-            Password=password,
-            UserAttributes=[
-                {'Name': 'email', 'Value': email},
-                {'Name': 'custom:displayName', 'Value': name}
-            ]
-        )
-        return response
-    except client.exceptions.ClientError as error:
-        return str(error)
+@app.route('/googlesignup', methods=['POST'])
+def google_signup():
+# No data is expected from the frontend in this POST request
+    initial_auth_object = cognito.admin_initiate_auth(
+        UserPoolId = COGNITO_USER_POOL_ID,
+        ClientId= GOOGLE_CLIENT_ID,
+        AuthFlow='USER_SRP_AUTH',
+        AuthParameters={
+            'REFRESH_TOKEN': 'EXTERNAL',  # Use EXTERNAL for Google federated signup
+            'USER_POOL_ID': COGNITO_USER_POOL_ID,
+            'CLIENT_ID': GOOGLE_CLIENT_ID,
+        },
+       # AuthType='EXTERNAL'  # Specify EXTERNAL for Google federated signup
+    )
+
+    print(f"Auth URL is {initial_auth_object}", flush=True)  # Print the authorization URL for debugging
+    app.logger.debug(f"Auth object: {initial_auth_object}")  # Log to debug level
+    app.logger.info(f"Auth object: {initial_auth_object}")
+
+    return jsonify(initial_auth_object, status=200, mimetype='application/json')
 
 # Login endpoint
 @app.route('/login', methods=['POST'])
