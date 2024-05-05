@@ -19,10 +19,11 @@ scheduler = BackgroundScheduler()
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+# Logging setup
 # Create a console handler
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)  # Set handler level
-
 # Add the handler to the logger
 app.logger.addHandler(handler)
 
@@ -31,6 +32,17 @@ app.logger.addHandler(handler)
 
 # Set the logger level to DEBUG
 app.logger.setLevel(logging.DEBUG) 
+
+# AWS SDK Boto3 clients
+cognito = boto3.client('cognito-idp', region_name='eu-west-1')
+ses = boto3.client('ses', region_name='eu-west-1')
+dynamodb = boto3.resource('dynamodb')
+arguments_table = table = dynamodb.Table('waveover-dev')
+
+# Load environment vars and secrets
+load_dotenv()
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 
 @app.before_request
 def handle_cors():
@@ -52,16 +64,6 @@ def handle_cors():
         response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
 
     return response  # Return the modified response object
-
-# AWS SDK clients
-cognito = boto3.client('cognito-idp', region_name='eu-west-1')
-ses = boto3.client('ses', region_name='eu-west-1')
-dynamodb = boto3.resource('dynamodb')
-arguments_table = table = dynamodb.Table('waveover-dev')
-
-load_dotenv()
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
 
 def schedule_email(when, recipient_email, email_data, template):
     # Logic to send email at a scheduled time
