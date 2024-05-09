@@ -43,6 +43,7 @@ arguments_table = table = dynamodb.Table('waveover-dev')
 load_dotenv()
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
+COGNITO_CLIENT_ID = os.getenv('COGNITO_CLIENT_ID')
 
 @app.before_request
 def handle_cors():
@@ -104,6 +105,26 @@ def send_final_email(user_id, spouse_email, user_response, spouse_response):
             'Body': {'Html': {'Data': email_body}}
         }
     )
+
+@app.route('/manualsignup', methods=['POST'])
+def manual_signup():
+    data = request.get_json()
+    initial_auth_object = cognito.sign_up(
+            ClientId = COGNITO_CLIENT_ID,    
+            Username= 'Azhar',
+            Password = data['password'],   
+            UserAttributes=[
+            {
+                'Name': 'name',
+                'Value': data['real_name']
+            },
+            {
+                'Name' : 'email',
+                'Value' : data['email']
+            }
+        ] 
+        )
+    return jsonify(initial_auth_object, status=200, mimetype='application/json')
 
 # Registration endpoint
 @app.route('/googlesignup', methods=['POST'])

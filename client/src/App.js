@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import Dashboard from './components/dashboard.js';
-import Signup from './components/signUp.js';
+import Signup from './components/auth/signUp.js';
 import axios from 'axios';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import { Amplify } from 'aws-amplify';
-import config from './amplifyconfiguration.json';
-Amplify.configure(config);
+
 
 function App() {
   return (
