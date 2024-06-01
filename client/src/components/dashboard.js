@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import cognito_config from '../amplifyconfiguration.json'
+import { Amplify } from 'aws-amplify';
+import '@aws-amplify/ui-react/styles.css';
+import { withAuthenticator, useAuthenticator, Authenticator} from '@aws-amplify/ui-react';
+Amplify.configure(cognito_config);
 
-function Dashboard() {
+function Dashboard({user}) {
   const [spouseEmail, setSpouseEmail] = useState('');
   const [argumentTopic, setArgumentTopic] = useState('');
   const [initiated, setInitiated] = useState(false);
@@ -32,4 +37,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default withAuthenticator(Dashboard);

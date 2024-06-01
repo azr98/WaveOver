@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Amplify } from 'aws-amplify';
 
-function ResponsePage({ userId, isUser }) {
+import { withAuthenticator, useAuthenticator, Authenticator} from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+import cognito_config from '../amplifyconfiguration.json'
+
+Amplify.configure(cognito_config);
+
+
+function ResponsePage({ user }) {
   const [response, setResponse] = useState('');
   const [timeLeft, setTimeLeft] = useState(25);  // For testing, use real time for production
   const [submitDisabled, setSubmitDisabled] = useState(false);
@@ -16,11 +24,11 @@ function ResponsePage({ userId, isUser }) {
   }, [timeLeft]);
 
   const handleSubmitResponse = async () => {
-    await axios.post('http://localhost:5000/submit_response', {
-      user_id: userId,
-      response: response,
-      is_user: isUser
-    });
+    // await axios.post('http://localhost:5000/submit_response', {
+    //   user_id: userId,
+    //   response: response,
+    //   is_user: isUser
+    // });
     setSubmitDisabled(true);  // Prevent further edits after submission
   };
 
@@ -33,4 +41,4 @@ function ResponsePage({ userId, isUser }) {
   );
 }
 
-export default ResponsePage;
+export default withAuthenticator(ResponsePage);
