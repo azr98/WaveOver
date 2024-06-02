@@ -41,4 +41,8 @@ function ResponsePage({ user }) {
   );
 }
 
-export default withAuthenticator(ResponsePage);
+export default withAuthenticator(ResponsePage, {
+  socialProviders: [
+    'google'
+  ]
+});

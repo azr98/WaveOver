@@ -37,4 +37,8 @@ function Dashboard({user}) {
   );
 }
 
-export default withAuthenticator(Dashboard);
+export default withAuthenticator(Dashboard, {
+  socialProviders: [
+    'google'
+  ]
+});
