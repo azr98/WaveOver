@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import Dashboard from './components/dashboard.js';
 import ResponsePage from './components/responsePage.js';
-import cognito_config from './amplifyconfiguration.json'
 import LandingPage from './components/landingPage.js';
-import AuthContainer from './components/auth/authContainer.js';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 import { withAuthenticator, useAuthenticator, Authenticator} from '@aws-amplify/ui-react';
-
-Amplify.configure(cognito_config);
-
 
 
 

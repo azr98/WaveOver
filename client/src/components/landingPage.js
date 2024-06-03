@@ -1,6 +1,5 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
-import authContainer from './auth/authContainer';
 
 
 function LandingPage() {
