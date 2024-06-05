@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import cognito_config from '../amplifyconfiguration.json'
 import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
-import { withAuthenticator, useAuthenticator, Authenticator} from '@aws-amplify/ui-react';
+import { withAuthenticator} from '@aws-amplify/ui-react';
 Amplify.configure(cognito_config);
 
 function Dashboard({user}) {
@@ -12,14 +12,16 @@ function Dashboard({user}) {
   const [initiated, setInitiated] = useState(false);
 
   const handleInitiate = async () => {
+
     const data = {
-      user_id: 'user1',  // This should be dynamically set based on logged-in user
+      user_id: 'user',  // This should be dynamically set based on logged-in user
       spouse_email: spouseEmail,
       argument_topic: argumentTopic,
     };
     await axios.post('http://localhost:5000/submit_argument', data);
     setInitiated(true);
   };
+
 
   return (
     <div>

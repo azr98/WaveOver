@@ -16,34 +16,30 @@ import sys
 
 # Scheduler to handle timed tasks
 scheduler = BackgroundScheduler()
+logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Logging setup
-# Create a console handler
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)  # Set handler level
-# Add the handler to the logger
-app.logger.addHandler(handler)
-
-#other optionf"Auth object: {initial_auth_object}"
-#logging.basicConfig(level=logging.DEBUG)
-
-# Set the logger level to DEBUG
-app.logger.setLevel(logging.DEBUG) 
+# Configure Flask logging
+# app.logger.setLevel(logging.INFO)  # Set log level to INFO
+# handler = logging.FileHandler('app.log')  # Log to a file
+# app.logger.addHandler(handler)
 
 # AWS SDK Boto3 clients
 cognito = boto3.client('cognito-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
 dynamodb = boto3.resource('dynamodb')
-arguments_table = table = dynamodb.Table('waveover-dev')
+arguments_table = dynamodb.Table('waveover-dev')
 
-# Load environment vars and secrets
-load_dotenv()
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-COGNITO_USER_POOL_ID = os.getenv('COGNITO_USER_POOL_ID')
-COGNITO_CLIENT_ID = os.getenv('COGNITO_CLIENT_ID')
+tables = dynamodb.tables.all()
+# Testing connection
+if tables:
+    print("Connected to DynamoDB!")
+    for table in tables:
+        print(f"The list of tables is {table.table_name}")
+else:
+    print("No DynamoDB tables found.")
 
 @app.before_request
 def handle_cors():
@@ -94,7 +90,6 @@ def send_initial_email(user_id, spouse_email,argument_topic):
     )
 
 
-
 def send_final_email(user_id, spouse_email, user_response, spouse_response):
     email_body = f"Time is up! Here's what you both wanted to say:\n\nUser: {user_response}\nSpouse: {spouse_response}"
     ses.send_email(
@@ -106,79 +101,15 @@ def send_final_email(user_id, spouse_email, user_response, spouse_response):
         }
     )
 
-@app.route('/manualsignup', methods=['POST'])
-def manual_signup():
-    data = request.get_json()
-    initial_auth_object = cognito.sign_up(
-            ClientId = COGNITO_CLIENT_ID,    
-            Username= 'Azhar',
-            Password = data['password'],   
-            UserAttributes=[
-            {
-                'Name': 'name',
-                'Value': data['real_name']
-            },
-            {
-                'Name' : 'email',
-                'Value' : data['email']
-            }
-        ] 
-        )
-    return jsonify(initial_auth_object, status=200, mimetype='application/json')
-
-# Registration endpoint
-@app.route('/googlesignup', methods=['POST'])
-def google_signup():
-# No data is expected from the frontend in this POST request
-    initial_auth_object = cognito.admin_initiate_auth(
-        UserPoolId = COGNITO_USER_POOL_ID,
-        ClientId= GOOGLE_CLIENT_ID,
-        AuthFlow='USER_SRP_AUTH',
-        AuthParameters={
-            'REFRESH_TOKEN': 'EXTERNAL',  # Use EXTERNAL for Google federated signup
-            'USER_POOL_ID': COGNITO_USER_POOL_ID,
-            'CLIENT_ID': GOOGLE_CLIENT_ID,
-        },
-       # AuthType='EXTERNAL'  # Specify EXTERNAL for Google federated signup
-    )
-
-    print(f"Auth URL is {initial_auth_object}", flush=True)  # Print the authorization URL for debugging
-    app.logger.debug(f"Auth object: {initial_auth_object}")  # Log to debug level
-    app.logger.info(f"Auth object: {initial_auth_object}")
-
-    return jsonify(initial_auth_object, status=200, mimetype='application/json')
-
-# Login endpoint
-@app.route('/login', methods=['POST'])
-def login_user():
-    try:
-        data = request.get_json()
-        response = cognito.initiate_auth(
-            ClientId='4rnflukdkhjrsguh2rp3gkuk91',
-            AuthFlow='USER_PASSWORD_AUTH',
-            AuthParameters={
-                'USERNAME': data['email'],
-                'PASSWORD': data['password']
-            }
-        )
-        return jsonify({'token': response['AuthenticationResult']['IdToken']}), 200
-    except ClientError as e:
-        return jsonify({'error': str(e)}), 400
     
 @app.route('/submit_argument', methods=['POST'])
 def submit_argument():
     data = request.get_json()
+    print(data, flush=True)
+    app.logger.info('submit arg req', data)
+    logging.info('submit arg req', data)
     submission_time = datetime.datetime.now()
     deadline = submission_time + datetime.timedelta(seconds=25)  # Change to days=3 for production
-
-    # Testing DynamoDB connection
-    tables = dynamodb.tables.all()
-    if tables:
-        print("Successfully connected to DynamoDB!")
-        for table in tables:
-            print(f"The list of tables is {table.table_name}")
-    else:
-        print("No DynamoDB tables found.")
 
     # Store initial argument entry in DynamoDB
     arguments_table.put_item(
