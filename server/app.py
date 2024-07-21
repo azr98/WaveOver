@@ -41,26 +41,26 @@ if tables:
 else:
     print("No DynamoDB tables found.")
 
-@app.before_request
-def handle_cors():
-    headers = {
-    'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
-    }
+# @app.before_request
+# def handle_cors():
+#     headers = {
+#     'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
+#     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+#     'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
+#     }
 
-    if request.method == 'OPTIONS':
-        return jsonify(headers), 200
+#     if request.method == 'OPTIONS':
+#         return jsonify(headers), 200
 
-    # Create a response object
-    response = make_response("")
+#     # Create a response object
+#     response = make_response("")
 
-    # Check for Flask version (assuming 2.0 or later for simplicity)
-    if hasattr(response.headers, 'add'):  # Check if 'add' method exists
-        response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
-        response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
+#     # Check for Flask version (assuming 2.0 or later for simplicity)
+#     if hasattr(response.headers, 'add'):  # Check if 'add' method exists
+#         response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
+#         response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
 
-    return response  # Return the modified response object
+#     return response  # Return the modified response object
 
 def schedule_email(when, recipient_email, email_data, template):
     # Logic to send email at a scheduled time
@@ -105,7 +105,7 @@ def send_final_email(user_id, spouse_email, user_response, spouse_response):
 @app.route('/submit_argument', methods=['POST'])
 def submit_argument():
     data = request.get_json()
-    print(data, flush=True)
+    print(f"submit_argument route has been hit. Data is {data}" ,file=sys.stderr)
     app.logger.info('submit arg req', data)
     logging.info('submit arg req', data)
     submission_time = datetime.datetime.now()
@@ -122,6 +122,18 @@ def submit_argument():
             'user_response' : ''
         }
     )
+
+    # response = dynamodb_client.put_item(
+#         TableName = 'waveover-dev',
+#         Item={
+#             'user_id': {'S' : 'boto3_client_put'} ,
+#             'spouse_email': {'S' : 'email'} ,
+#             'argument_topic': {'S' : 'topic'} ,
+#             'user_submission_time' : {'S' : 'Submit time'} ,
+#             'deadline': {'S' : 'deadline'} ,
+#             'user_response' : {'S' : 'response'} ,
+#         }
+#     )
      
     send_initial_email(data['user_id'], data['spouse_email'], data['argument_topic'])
 

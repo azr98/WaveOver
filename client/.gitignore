@@ -6,6 +6,11 @@
 .pnp.js
 .env
 
+#Logging and practice
+repl.py
+logs.log
+app.log
+
 # testing
 /coverage
 
