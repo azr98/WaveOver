@@ -19,16 +19,15 @@ function Dashboard() {
   useEffect(() => {
     const fetchUserEmail = async () => {
       try {
-        const currentUser = await getCurrentUser();
-        if (currentUser) {
-          const userAttributes = await fetchUserAttributes();
+        const userAttributes = await fetchUserAttributes();
           if (userAttributes.email) {
+            console.log("Pulled email" , userAttributes.email)
             setUserEmail(userAttributes.email);
-            console.log("User email:", userEmail);
+            console.log("userEmail var:", userEmail);
           } else {
-            console.log("Error: User email not found in attributes");
-          }
-        } 
+              console.log("Error: User email not found in attributes");
+            }
+         
       } catch (err) {
         console.error("Error fetching user data:", err);
       }
@@ -37,16 +36,23 @@ function Dashboard() {
     fetchUserEmail();
   }, []);
 
+  useEffect(() => {
+    console.log("userEmail state updated:", userEmail);
+  }, [userEmail]);
+
   const handleInitiate = async () => {
 
-    const data = {
-      user_id: userEmail,  // This should be dynamically set based on logged-in user
-      spouse_email: spouseEmail,
-      argument_topic: argumentTopic,
-    };
+
     try {
-      if (data.userEmail){
-      const response = await axios.post('http://localhost:5000/submit_argument', data);
+      if (userEmail){
+
+      const argumentSubmitData = {
+        user_id: userEmail,  // This is dynamically set based on logged-in user
+        spouse_email: spouseEmail,
+        argument_topic: argumentTopic,
+      };
+
+      const response = await axios.post('http://localhost:5000/submit_argument', argumentSubmitData);
       console.log('API call successful:', response.data);
       setInitiated(true);
       }
