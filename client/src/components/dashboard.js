@@ -42,7 +42,6 @@ function Dashboard() {
 
   const handleInitiate = async () => {
 
-
     try {
       if (userEmail){
 
@@ -53,6 +52,12 @@ function Dashboard() {
       };
 
       const response = await axios.post('http://localhost:5000/submit_argument', argumentSubmitData);
+      // const response = await axios.post('https://w9m5djztk6.execute-api.eu-west-1.amazonaws.com/Dev', argumentSubmitData, {
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   }
+      // });
+
       console.log('API call successful:', response.data);
       setInitiated(true);
       }
