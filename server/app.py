@@ -11,6 +11,7 @@ import os
 from flask import Response
 import logging
 import sys
+from boto3.dynamodb.conditions import Attr
 
 
 
@@ -29,15 +30,15 @@ CORS(app)
 # AWS SDK Boto3 clients
 cognito = boto3.client('cognito-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
-dynamodb = boto3.resource('dynamodb')
-arguments_table = dynamodb.Table('WaveOver_Dev')
+dynamodb = boto3.client('dynamodb')
+argument_table = 'WaveOver_Dev'
 
-tables = dynamodb.tables.all()
+tables = dynamodb.list_tables()
 # Testing connection
 if tables:
-    print("Connected to DynamoDB!")
-    for table in tables:
-        print(f"The list of tables is {table.table_name}")
+    print("Connected to DynamoDB! \n The list of tables is:")
+    for table in tables['TableNames']:
+        print(f"{table} Table")
 else:
     print("No DynamoDB tables found.")
 
@@ -70,31 +71,27 @@ def submit_argument():
     app.logger.info('submit arg req', data)
     logging.info('submit arg req', data)
     submission_time = datetime.datetime.now()
-    reminders = {'48_hour' : submission_time + datetime.timedelta(seconds=48),
-                 '24_hour' : submission_time + datetime.timedelta(seconds=24),
-                 '12_hour' : submission_time + datetime.timedelta(seconds=12),
-                 '4_hour' : submission_time + datetime.timedelta(seconds=4)
-                 }
-    deadline = submission_time + datetime.timedelta(seconds=25)  # Change to days=3 for production
 
     # Store initial argument entry in DynamoDB
-    arguments_table.put_item(
-        Item={
-            'user_email': data['user_id'],
-            'spouse_email': data['spouse_email'],
-            'submission_time' : submission_time.isoformat(),
-            'argument_topic': data['argument_topic'],
-            'user_response' : '',
-            'spouse_response' : '',
-            # For EventBridge to read for emails
-            '48_hour_reminder_time' : reminders['48_hour'].isoformat(),
-            '24_hour_reminder_time' : reminders['24_hour'].isoformat(),
-            '12_hour_reminder_time' : reminders['12_hour'].isoformat(),
-            '4_hour_reminder_time' : reminders['4_hour'].isoformat(),
-            'argument_deadline' : deadline.isoformat(),
-            'argument_finished?' : False
-        }
-    )
+    item={
+    'user_email': {'S': data['user_id']},
+    'spouse_email': {'S': data['spouse_email']},
+    'submission_time': {'S': submission_time.isoformat()},
+    'argument_topic': {'S': data['argument_topic']},
+    'user_response': {'S': ''},
+    'spouse_response': {'S': ''},
+    '48_hour_reminder_time': {'S': ''},
+    '24_hour_reminder_time': {'S': ''},
+    '12_hour_reminder_time': {'S': ''},
+    '4_hour_reminder_time': {'S': ''},
+    'argument_deadline': {'S': ''},
+    'argument_finished?': {'BOOL': False}
+}
+    
+    
+    dynamodb.put_item(TableName=argument_table, Item=item)
+
+    
 
     # response = dynamodb_client.put_item(
 #         TableName = 'waveover-dev',
@@ -111,31 +108,77 @@ def submit_argument():
 
     return jsonify({'message': 'Initial argument entry submitted'}), 201
 
+@app.route('/get_active_arguments', methods=['GET'])
+def get_active_arguments():
+    user_email = request.args.get('user_email')
+    print(f"get_active_arguments route has been hit. User email is {user_email}", file=sys.stderr)
+    # Define the expression attribute values to only get argument_finishes == False entries
+    expression_attribute_values = {
+        ':false_value': {'BOOL': False},
+         ':user_email': {'S': user_email}
+        }
+
+    # Define the attributes to retrieve
+    # Need to map from projection_expression to express_attribute_names because .scan() does not accept attributes beginning with a number. This is the boto3 reccomended fix
+    expression_attribute_names = {
+            '#user_email': 'user_email',
+            '#spouse_email': 'spouse_email',
+            '#argument_topic': 'argument_topic',
+            '#48_hour_reminder_time': '48_hour_reminder_time',
+            '#24_hour_reminder_time': '24_hour_reminder_time',
+            '#12_hour_reminder_time': '12_hour_reminder_time',
+            '#4_hour_reminder_time': '4_hour_reminder_time',
+            '#argument_deadline': 'argument_deadline',
+            '#submission_time' : 'submission_time',
+            '#argument_finished' : 'argument_finished?'
+        }
+
+        # Define the projection expression using the placeholder names
+    filter_expression = (
+        '#argument_finished = :false_value AND (#user_email = :user_email OR #spouse_email = :user_email)'
+    )
+
+
+    projection_expression = '#user_email, #spouse_email, #argument_topic, #48_hour_reminder_time, #24_hour_reminder_time, #12_hour_reminder_time, #4_hour_reminder_time, #argument_deadline, #submission_time, #argument_finished'
+
+        # Perform the scan operation
+    response = dynamodb.scan(
+        TableName=table,
+        FilterExpression=filter_expression,
+        ExpressionAttributeValues=expression_attribute_values,
+        ProjectionExpression=projection_expression,
+        ExpressionAttributeNames=expression_attribute_names
+    )
+
+    print(f'Response from scan for argument list is {response}')
+
+
+    return jsonify(response['Items']), 200
 
 
 @app.route('/submit_response', methods=['POST'])
 def submit_response():
-    data = request.get_json()
-    user_id = data['user_id']
-    response = data['response']
+    # data = request.get_json()
+    # user_id = data['user_id']
+    # response = data['response']
 
-    # Update the response in the database
-    now = datetime.datetime.now()
-    item = arguments_table.get_item(Key={'user_id': user_id})
-    if not item:
-        return jsonify({'message': 'Argument not found.'}), 404
+    # # Update the response in the database
+    # now = datetime.datetime.now()
+    # # item = arguments_table.get_item(Key={'user_id': user_id})
+    # # if not item:
+    # #     return jsonify({'message': 'Argument not found.'}), 404
 
-    if 'spouse_response' in item['Item'] and item['Item']['spouse_response']:
-        # Finalize and schedule email if both responses are in
+    # if 'spouse_response' in item['Item'] and item['Item']['spouse_response']:
+    #     # Finalize and schedule email if both responses are in
         
-        return jsonify({'message': 'Both responses received, final email will be sent.'}), 200
+    #     return jsonify({'message': 'Both responses received, final email will be sent.'}), 200
 
-    update_expression = 'SET user_response = :resp' if data['is_user'] else 'SET spouse_response = :resp'
-    arguments_table.update_item(
-        Key={'user_id': user_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeValues={':resp': response}
-    )
+    # # update_expression = 'SET user_response = :resp' if data['is_user'] else 'SET spouse_response = :resp'
+    # # arguments_table.update_item(
+    # #     Key={'user_id': user_id},
+    # #     UpdateExpression=update_expression,
+    # #     ExpressionAttributeValues={':resp': response}
+    # # )
     return jsonify({'message': 'Response submitted successfully.'}), 200
 
 
