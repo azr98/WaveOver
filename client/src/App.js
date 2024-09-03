@@ -1,29 +1,26 @@
 import React, { useState } from 'react';
 import Dashboard from './components/dashboard.js';
-import ResponsePage from './components/responsePage.js';
 import LandingPage from './components/landingPage.js';
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import { Amplify } from 'aws-amplify';
+import ArgumentPage from './components/argumentPage.js';
 import '@aws-amplify/ui-react/styles.css';
 import { withAuthenticator, useAuthenticator, Authenticator} from '@aws-amplify/ui-react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 
 
 function App() {
-
   return (
     <BrowserRouter>
-    <div className="App">
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="*" element={<LandingPage />} /> {/* Defaults to landing page is route does not exist */}
-         {/* Every product MVP route needs withAuthenticator inside the route */}
-        <Route path="/dashboard" element={<Dashboard />} />  
-        <Route path="/response" element={<ResponsePage />} /> 
-      </Routes>
-
-    </div>
-  </BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="*" element={<LandingPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/response" element={<ArgumentPage />} />
+          <Route path="/argument/:argumentId" element={<ArgumentPage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 

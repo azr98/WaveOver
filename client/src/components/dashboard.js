@@ -6,6 +6,8 @@ import { Amplify } from 'aws-amplify';
 import { getCurrentUser , fetchUserAttributes } from '@aws-amplify/auth';
 import '@aws-amplify/ui-react/styles.css';
 import { withAuthenticator} from '@aws-amplify/ui-react';
+import { useNavigate } from 'react-router-dom';
+
 Amplify.configure(cognito_config);
 
 function Dashboard() {
@@ -13,9 +15,11 @@ function Dashboard() {
   const [argumentTopic, setArgumentTopic] = useState('');
   const [initiated, setInitiated] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [argumentsList, setArgumentsList] = useState([]);
+  const [argumentsList, setArgumentsList] = useState(['No active arguments']);
+  const [selectedArgument, setSelectedArgument] = useState(null);
+  const navigate = useNavigate();
 
-  // Function to fetch user email
+  // Function to fetch logged in user email
   const fetchUserEmail = async () => {
     try {
       const userAttributes = await fetchUserAttributes();
@@ -33,91 +37,96 @@ function Dashboard() {
     }
   };
 
-  // Function to fetch arguments based on user email
+  // Function to fetch arguments based on logged in user email
   const fetchArguments = async (cognitoUserEmail) => {
     try {
       const response = await axios.get('http://localhost:5000/get_active_arguments', {
         params: { user_email: cognitoUserEmail }
       });
-      setArgumentsList(response.data);  // Update state with arguments list
-      console.log("Arguments fetched with:", response.data);
+      console.log("response of get req", response);
+      
+      const items = response.data;
+      if (!items || items.length === 0) {
+        console.log("No active arguments found for user");
+        setArgumentsList(['No active arguments']);
+        return;
+      }
+      
+      // Parse the DynamoDB response. Set response based on who is logged in
+      const parsedArguments = items.map(arg => {
+        let cognito_user_response = ''; // Initialize the variable
+    
+        if (userEmail === arg.user_email.S) {
+            cognito_user_response = arg.user_response.S;
+        } else if (userEmail === arg.spouse_email.S) {
+            cognito_user_response = arg.spouse_response.S;
+        }
+    
+        return {
+            argument_topic: arg.argument_topic.S,
+            user_email: arg.user_email.S,
+            spouse_email: arg.spouse_email.S,
+            last_email_sent: arg.last_email_sent.S,
+            argument_deadline: arg.argument_deadline.S,
+            submission_time: arg.submission_time.S,
+            cognito_user_response: cognito_user_response // Set the correct response
+        };
+    });
+      
+      setArgumentsList(parsedArguments);
+      console.log("setArgumentsList updated with:", parsedArguments);
     } catch (error) {
       console.error('Error fetching arguments:', error);
+      setArgumentsList(['No active arguments']);
     }
   };
-
-  // Combined logic for fetching user email and arguments
-  useEffect(() => {
-    const getUserEmailAndFetchArguments = async () => {
-      try {
-        const email = await fetchUserEmail();
-        if (email.includes('@')) {  // Check if email is valid
-          await fetchArguments(email);  // Fetch arguments with valid email
-        } else {
-          console.log("Invalid email format");
-        }
-      } catch (err) {
-        console.error("Error in fetching process:", err);
+  const getUserEmailAndFetchArguments = async () => {
+    try {
+      const email = await fetchUserEmail();
+      if (email.includes('@')) {  // Check if email is valid
+        await fetchArguments(email);  // Fetch arguments with valid email
+        console.log("argumentsList set for", email);
+        return
+      } else {
+        console.log("Invalid email format");
       }
-    };
-
-    getUserEmailAndFetchArguments();
-  }, []);  // Empty dependency array to run once on mount
-
-  // Fetch arguments whenever userEmail changes and is valid
-  useEffect(() => {
-    if (userEmail.includes('@')) {
-      fetchArguments(userEmail);
+    } catch (err) {
+      console.error("Error in fetching process:", err);
     }
-  }, [userEmail]);  // Dependency array to run when userEmail changes
+  };
+  // Chain fetching user email and arguments list async
+  useEffect(() => {
+    getUserEmailAndFetchArguments();
+    console.log("getUserEmailAndFetchArguments argumentsList", argumentsList);
+  }, []);  // Empty dependency array to run once on mount
 
 
   const handleInitiate = async () => {
-
     try {
-      if (userEmail){
+      if (userEmail) {
+        const argumentSubmitData = {
+          user_id: userEmail,  // This is dynamically set based on logged-in user
+          spouse_email: spouseEmail,
+          argument_topic: argumentTopic,
+        };
 
-      const argumentSubmitData = {
-        user_id: userEmail,  // This is dynamically set based on logged-in user
-        spouse_email: spouseEmail,
-        argument_topic: argumentTopic,
-      };
+        const response = await axios.post('http://localhost:5000/submit_argument', argumentSubmitData);
+        console.log('API call successful:', response.data);
+        setInitiated(true);
 
-      const response = await axios.post('http://localhost:5000/submit_argument', argumentSubmitData);
-      // const response = await axios.post('https://w9m5djztk6.execute-api.eu-west-1.amazonaws.com/Dev', argumentSubmitData, {
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   }
-      // });
-
-      console.log('API call successful:', response.data);
-      setInitiated(true);
-      }
-
-      else {
+        // Call getUserEmailAndFetchArguments to reload arguments
+        await getUserEmailAndFetchArguments();
+      } else {
         document.write("Wait for WavOver to fetch your user email");
       }
-      // You can add more success handling here if needed
     } catch (error) {
-      if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      } else if (error.request) {
-        // The request was made but no response was received
-        console.log(error.request);
-      } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-    
+      console.error('Error initiating argument:', error);
     }
-    
   };
 
+  const handleArgumentClick = (argument) => {
+    navigate(`/argument/${argument.argument_topic}`, { state: { argument } });
+  };
 
   return (
     <div>
@@ -133,21 +142,20 @@ function Dashboard() {
       )}
           <div>
       <h1>Current arguments</h1>
-      {argumentsList.length === 0 ? (
+      {argumentsList == 'No active arguments' ? (
         <p>No active arguments</p>
       ) : (
         <ul>
           {argumentsList.map((arg) => (
             <li key={arg.argument_topic}>
-              <Link to={`/argument/${arg.argument_topic}`}>
-                {arg.user_email === userEmail ? arg.spouse_email : arg.user_email} - {arg.argument_topic} - {new Date(arg.deadline).toLocaleString()}
+              <Link to="#" onClick={() => handleArgumentClick(arg)}>
+                Contact : {arg.user_email === userEmail ? arg.spouse_email : arg.user_email} | Topic: {arg.argument_topic} | Deadline: {arg.argument_deadline ? new Date(arg.argument_deadline).toLocaleString() : 'Will be set an hour after the contact signs up'} | Status: {arg.last_email_sent}
               </Link>
             </li>
           ))}
         </ul>
       )}
     </div>
-
     </div>
   );
 }
