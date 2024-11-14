@@ -25,8 +25,7 @@ function Dashboard() {
       const userAttributes = await fetchUserAttributes();
       if (userAttributes.email) {
         console.log("Pulled email", userAttributes.email);
-        setUserEmail(userAttributes.email);  // Update state with user email
-        return userAttributes.email;
+        return userAttributes.email;  // Return the email instead of setting state
       } else {
         console.log("Error: User email not found in attributes");
         throw new Error("User email not found");
@@ -43,8 +42,7 @@ function Dashboard() {
       const response = await axios.get('http://localhost:5000/get_active_arguments', {
         params: { user_email: cognitoUserEmail }
       });
-      console.log("response of get req", response);
-      
+      console.log("fetchArguments response", response.data);
       const items = response.data;
       if (!items || items.length === 0) {
         console.log("No active arguments found for user");
@@ -54,24 +52,24 @@ function Dashboard() {
       
       // Parse the DynamoDB response. Set response based on who is logged in
       const parsedArguments = items.map(arg => {
-        let cognito_user_response = ''; // Initialize the variable
-    
-        if (userEmail === arg.user_email.S) {
-            cognito_user_response = arg.user_response.S;
-        } else if (userEmail === arg.spouse_email.S) {
-            cognito_user_response = arg.spouse_response.S;
-        }
-    
-        return {
-            argument_topic: arg.argument_topic.S,
-            user_email: arg.user_email.S,
-            spouse_email: arg.spouse_email.S,
-            last_email_sent: arg.last_email_sent.S,
-            argument_deadline: arg.argument_deadline.S,
-            submission_time: arg.submission_time.S,
-            cognito_user_response: cognito_user_response // Set the correct response
+        let argumentObject = {
+          argument_topic: arg.argument_topic.S,
+          user_email: arg.user_email.S,
+          spouse_email: arg.spouse_email.S,
+          last_email_sent: arg.last_email_sent.S,
+          argument_deadline: arg.argument_deadline.S,
+          submission_time: arg.submission_time.S 
         };
-    });
+
+        console.log("userEmail in dashboard", cognitoUserEmail);
+        if (cognitoUserEmail === arg.user_email.S) {
+          argumentObject.user_response = arg.user_response.S
+        } else {
+          argumentObject.spouse_response = arg.spouse_response.S
+        }
+        
+        return argumentObject;
+      });
       
       setArgumentsList(parsedArguments);
       console.log("setArgumentsList updated with:", parsedArguments);
@@ -80,12 +78,14 @@ function Dashboard() {
       setArgumentsList(['No active arguments']);
     }
   };
+
   const getUserEmailAndFetchArguments = async () => {
     try {
       const email = await fetchUserEmail();
-      if (email.includes('@')) {  // Check if email is valid
-        await fetchArguments(email);  // Fetch arguments with valid email
-        console.log("argumentsList set for", email);
+      setUserEmail(email);  // Set the userEmail state here
+      console.log("userEmail in dashboard fetchUserEmail", email);
+      if (email.includes('@')) {
+        await fetchArguments(email);
         return
       } else {
         console.log("Invalid email format");
@@ -94,10 +94,11 @@ function Dashboard() {
       console.error("Error in fetching process:", err);
     }
   };
+
   // Chain fetching user email and arguments list async
   useEffect(() => {
     getUserEmailAndFetchArguments();
-    console.log("getUserEmailAndFetchArguments argumentsList", argumentsList);
+    // console.log("getUserEmailAndFetchArguments argumentsList", argumentsList);
   }, []);  // Empty dependency array to run once on mount
 
 
@@ -105,9 +106,9 @@ function Dashboard() {
     try {
       if (userEmail) {
         const argumentSubmitData = {
-          user_id: userEmail,  // This is dynamically set based on logged-in user
+          user_email: userEmail,  // This is dynamically set based on logged-in user
           spouse_email: spouseEmail,
-          argument_topic: argumentTopic,
+          argument_topic: argumentTopic
         };
 
         const response = await axios.post('http://localhost:5000/submit_argument', argumentSubmitData);
@@ -125,7 +126,8 @@ function Dashboard() {
   };
 
   const handleArgumentClick = (argument) => {
-    navigate(`/argument/${argument.argument_topic}`, { state: { argument } });
+    console.log("handleArgumentClick argument", argument);
+    navigate(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`, { state: { argument, userEmail } });
   };
 
   return (
@@ -148,7 +150,13 @@ function Dashboard() {
         <ul>
           {argumentsList.map((arg) => (
             <li key={arg.argument_topic}>
-              <Link to="#" onClick={() => handleArgumentClick(arg)}>
+              <Link 
+                to={`/argument/${encodeURIComponent(arg.argument_topic)}/${encodeURIComponent(arg.submission_time)}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleArgumentClick(arg);
+                }}
+              >
                 Contact : {arg.user_email === userEmail ? arg.spouse_email : arg.user_email} | Topic: {arg.argument_topic} | Deadline: {arg.argument_deadline ? new Date(arg.argument_deadline).toLocaleString() : 'Will be set an hour after the contact signs up'} | Status: {arg.last_email_sent}
               </Link>
             </li>

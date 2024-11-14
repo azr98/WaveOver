@@ -17,7 +17,7 @@ function App() {
           <Route path="*" element={<LandingPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/response" element={<ArgumentPage />} />
-          <Route path="/argument/:argumentId" element={<ArgumentPage />} />
+          <Route path="/argument/:argumentTopic/:submissionTime" element={<ArgumentPage />} />
         </Routes>
       </div>
     </BrowserRouter>
