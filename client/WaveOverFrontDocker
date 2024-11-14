@@ -1,0 +1,20 @@
+# Use Node.js 10.9.0 as the base image for the Docker container
+FROM node:10.9.0
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json files to install dependencies
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the frontend application files into the container
+COPY . .
+
+# Expose the port the React app runs on (default is 3000)
+EXPOSE 3000
+
+# Set the default command to start the React application
+CMD ["npm", "start"]
