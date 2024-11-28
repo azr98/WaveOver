@@ -1,5 +1,5 @@
-# Use Node.js 10.9.0 as the base image for the Docker container
-FROM node:10.9.0
+# Use Node.js 16 as the base image, which includes npm 8.x
+FROM node:16
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -18,3 +18,4 @@ EXPOSE 3000
 
 # Set the default command to start the React application
 CMD ["npm", "start"]
+
