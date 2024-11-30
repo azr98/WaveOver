@@ -13,7 +13,7 @@ function LandingPage() {
   return (
     <div>landingPage
        <button onClick={handleSignupClick}>Sign Up</button>
-       <p>Github actions test with docker</p>
+       <p>Github actions test </p>
     </div>
     
   )
