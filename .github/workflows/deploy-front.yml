@@ -9,6 +9,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_DEFAULT_REGION: eu-west-1
+
     steps:
       # Step 1: Check out the repository
       - name: Checkout code
@@ -16,7 +19,8 @@ jobs:
 
       # Step 2: Log in to Amazon ECR
       - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v1  
+
 
       # Step 3: Build and Tag the Docker Image
       - name: Build Docker image
@@ -34,8 +38,8 @@ jobs:
 
       - name: Start EC2 Instance
         run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }} --region eu-west-1
-          aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region eu-west-1
+          aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_REGION }}
+          aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_REGION }}
 
       # Step 5: Deploy to EC2
       - name: Deploy to EC2
