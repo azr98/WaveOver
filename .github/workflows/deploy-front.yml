@@ -33,7 +33,7 @@ jobs:
         with:
           mask-password: true
 
-      # Step 3: Build and Tag the Docker Image
+      # Step 3: Build and Tag Docker Image
       - name: Build Docker image
         run: |
           IMAGE_TAG=$(echo $GITHUB_REF_NAME | tr / -)-$(date +%Y%m%d%H%M%S)
