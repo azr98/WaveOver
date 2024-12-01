@@ -11,6 +11,10 @@ jobs:
 
     env:
       AWS_DEFAULT_REGION: eu-west-1
+    permissions:
+      id-token: write
+      contents: read
+
 
     steps:
       # Step 1: Check out the repository
