@@ -49,8 +49,8 @@ jobs:
 
       - name: Start EC2 Instance
         run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_REGION }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_REGION }}
+          aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
+          aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
 
       # Step 5: Deploy to EC2
       - name: Deploy to EC2
