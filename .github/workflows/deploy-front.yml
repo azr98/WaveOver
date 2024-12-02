@@ -18,35 +18,33 @@ jobs:
     steps:
       # Step 1: Check out the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step 2: Debug OIDC Token
-      - name: Debug OIDC Token
-        id: fetch-oidc-token
-        run: |
-          echo "Requesting OIDC Token..."
-          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-               $ACTIONS_ID_TOKEN_REQUEST_URL > oidc-token-response.json
-          echo "OIDC Token Response:"
-          cat oidc-token-response.json
-        env:
-          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ steps.configure-aws-credentials.outputs.token-request-url }}
-          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Decode and Debug OIDC Token
+      #   run: |
+      #     echo "Fetching OIDC Token..."
+      #     TOKEN=$(curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" $ACTIONS_ID_TOKEN_REQUEST_URL | jq -r '.value')
+      #     echo "OIDC Token: $TOKEN"
+      #     echo "$TOKEN" | base64 -d | jq '.'
+      #   env:
+      #     ACTIONS_ID_TOKEN_REQUEST_URL: {{ steps.configure-aws-credentials.outputs.token-request-url }}
+      #     ACTIONS_ID_TOKEN_REQUEST_TOKEN: {{ secrets.GITHUB_TOKEN }}
+      
+      # # Step 3: Assume Role with OIDC Token
+      # - name: Assume Role with OIDC Token
+      #   run: |
+      #     echo "Attempting to assume role with OIDC token..."
+      #     TOKEN=$(curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" $ACTIONS_ID_TOKEN_REQUEST_URL | jq -r '.value')
+      #     echo "OIDC Token: $TOKEN"
+      #     aws sts assume-role-with-web-identity \
+      #       --role-arn arn:aws:iam::058264329805:role/GitHubActionsRole-Dev \
+      #       --role-session-name debug-session \
+      #       --web-identity-token "$TOKEN" \
+      #       --query "Credentials"
+      #   env:
+      #     ACTIONS_ID_TOKEN_REQUEST_URL: {{ steps.configure-aws-credentials.outputs.token-request-url }}
+      #     ACTIONS_ID_TOKEN_REQUEST_TOKEN: {{ secrets.GITHUB_TOKEN }}
 
-      # Step 3: Assume Role with OIDC Token
-      - name: Assume Role with OIDC Token
-        run: |
-          echo "Attempting to assume role with OIDC token..."
-          TOKEN=$(jq -r '.token' oidc-token-response.json)
-          if [ -z "$TOKEN" ]; then
-            echo "OIDC token is empty. Aborting."
-            exit 1
-          fi
-          aws sts assume-role-with-web-identity \
-            --role-arn arn:aws:iam::058264329805:role/GitHubActionsRole-Dev \
-            --role-session-name debug-session \
-            --web-identity-token "$TOKEN" \
-            --query "Credentials"
 
       # Step 4: Configure AWS credentials
       - name: Configure AWS credentials
