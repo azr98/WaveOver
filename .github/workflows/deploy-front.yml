@@ -15,25 +15,35 @@ jobs:
       id-token: write
       contents: read
 
-
     steps:
       # Step 1: Check out the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Debug: Print OIDC Token
+      - name: Print OIDC Token
+        run: |
+          curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+               -H "Content-Type: application/json" \
+               -X POST \
+               https://token.actions.githubusercontent.com/.well-known/openid-configuration
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+
+      # Step 2: Configure AWS credentials
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::058264329805:role/GitHubActionsRole-Dev
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
-      # Step 2: Log in to Amazon ECR
+      # Step 3: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
         with:
           mask-password: true
 
-      # Step 3: Build and Tag Docker Image
+      # Step 4: Build and Tag Docker Image
       - name: Build Docker image
         run: |
           IMAGE_TAG=$(echo $GITHUB_REF_NAME | tr / -)-$(date +%Y%m%d%H%M%S)
@@ -41,28 +51,30 @@ jobs:
           docker build -t 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$IMAGE_TAG .
           docker tag 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$IMAGE_TAG 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
 
-      # Step 4: Push the Docker Image to Amazon ECR
+      # Step 5: Push the Docker Image to Amazon ECR
       - name: Push Docker image to ECR
         run: |
           docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$IMAGE_TAG
           docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
 
+      # Step 6: Start EC2 Instance
       - name: Start EC2 Instance
         run: |
           aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
           aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
 
-      # Step 5: Deploy to EC2
+      # Step 7: Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.DEV_HOST_IP}}
+          host: ${{ secrets.DEV_HOST_IP }}
           username: ubuntu
-          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY}}
+          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
             docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
             docker stop waveover-container || true
             docker rm waveover-container || true
             docker run -d --name waveover-container -p 3000:3000 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
+
 
