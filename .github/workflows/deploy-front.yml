@@ -19,6 +19,14 @@ jobs:
       # Step 1: Check out the repository
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      # Step 2: Debug Directory Structure
+      - name: Debug Directory Structure
+        run: |
+          echo "Listing root directory:"
+          ls -l
+          echo "Listing client directory:"
+          ls -l client
 
       # - name: Decode and Debug OIDC Token
       #   run: |
