@@ -64,7 +64,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.DEV_HOST_IP }}
-          username: ubuntu
+          username: ec2-user
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
