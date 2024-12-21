@@ -1,21 +1,14 @@
-# Use Node.js 16 as the base image, which includes npm 8.x
-FROM node:16
-
-# Set the working directory inside the container
+# Step 1: Build the React app
+FROM node:16 as build
 WORKDIR /app
-
-# Copy package.json and package-lock.json files to install dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
+COPY . ./
+RUN npm run build
 
-# Copy the rest of the frontend application files into the container
-COPY . .
-
-# Expose the port the React app runs on (default is 3000)
-EXPOSE 3000
-
-# Set the default command to start the React application
-CMD ["npm", "start"]
+# Step 2: Serve the app with Nginx
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 

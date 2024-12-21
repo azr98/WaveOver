@@ -60,6 +60,7 @@ jobs:
           aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
 
       # Step 9: Deploy to EC2
+      # Step 9: Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -71,7 +72,8 @@ jobs:
             docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
             docker stop waveover-container || true
             docker rm waveover-container || true
-            docker run -d --name waveover-container -p 3000:3000 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
+            docker run -d --name waveover-container -p 80:80 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
+
 
 
 
