@@ -1,0 +1,30 @@
+name: Build and Deploy Backend
+
+on:
+  push:
+    paths:
+      - 'server/**'
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::058264329805:role/GitHubActionsRole-Dev
+          aws-region: eu-west-1
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # - name: Build and Push Docker Image
+      #   run: |
+      #     IMAGE_TAG=$(date +%Y%m%d%H%M%S)
+      #     docker build -f server/Dockerfile -t 058264329805.dkr.ecr.eu-west-1.amazonaws.com/backend:$IMAGE_TAG server/
+      #     docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/backend:$IMAGE_TAG
