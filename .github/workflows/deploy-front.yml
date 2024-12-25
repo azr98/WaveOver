@@ -2,6 +2,8 @@ name: Build and Deploy to EC2
 
 on:
   push:
+    paths:
+      - 'client/**'
     branches:
       - master  # Trigger the workflow when commits are pushed to master
 
