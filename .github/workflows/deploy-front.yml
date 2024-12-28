@@ -58,14 +58,14 @@ jobs:
       # Step 8: Start EC2 Instance
       - name: Start EC2 Instance
         run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
+          aws ec2 start-instances --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
+          aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
 
       # Step 9: Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.DEV_HOST_IP }}
+          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
           username: ec2-user
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
