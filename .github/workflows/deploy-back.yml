@@ -56,11 +56,11 @@ jobs:
           docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:$IMAGE_TAG
           docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:latest
       
-          - name: Start EC2 Instance
-          run: |
-            echo "DEV_BACKEND_INSTANCE_ID: ${{ secrets.DEV_BACKEND_INSTANCE_ID }}"
-            aws ec2 start-instances --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
-            aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
+      - name: Start EC2 Instance
+        run: |
+          echo "DEV_BACKEND_INSTANCE_ID: ${{ secrets.DEV_BACKEND_INSTANCE_ID }}"
+          aws ec2 start-instances --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
+          aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
   
       # Step 7: Deploy via SSM
       - name: Deploy via SSM
