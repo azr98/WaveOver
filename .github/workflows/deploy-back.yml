@@ -10,6 +10,14 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: WaveOver-Development
+    env:
+      AWS_DEFAULT_REGION: eu-west-1 
+    permissions:
+      id-token: write
+      contents: read
+
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,7 +26,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::058264329805:role/GitHubActionsRole-Dev
-          aws-region: eu-west-1
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
