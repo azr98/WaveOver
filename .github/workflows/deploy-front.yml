@@ -57,8 +57,6 @@ jobs:
 
       # Step 8: Start EC2 Instance
       - name: Start EC2 Instance
-        env:
-          DEV_FRONTEND_INSTANCE_ID : ${{secrets.DEV_FRONTEND_INSTANCE_ID}}
         run: |
           echo "DEV_FRONTEND_INSTANCE_ID: ${{ secrets.DEV_FRONTEND_INSTANCE_ID }}"
           aws ec2 start-instances --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
