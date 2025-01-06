@@ -65,6 +65,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Docker container for backend" \
             --parameters commands='[
+              "aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 058264329805.dkr.ecr.eu-west-1.amazonaws.com"
               "docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:latest",
               "docker stop waveover-backend-container || true",
               "docker rm waveover-backend-container || true",
