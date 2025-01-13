@@ -33,7 +33,7 @@ function TextEditor({ argument, userEmail }) {
         content: content.substring(0, 100) + '...',
         userEmail: userEmail
       });
-      const response = await axios.post('http://localhost:5000/save_content', {
+      const response = await axios.post('http://10.0.0.8:5000/save_content', {
         argument: argument,
         content: content,
         userEmail: userEmail
