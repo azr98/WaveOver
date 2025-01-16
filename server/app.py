@@ -27,7 +27,7 @@ CORS(app)  # This will handle CORS for all routes
 # AWS SDK Boto3 clients
 cognito = boto3.client('cognito-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
-dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.client('dynamodb',region_name='eu-west-1')
 argument_table = 'WaveOver_Dev'
 user_pool_id = 'eu-west-1_ENQscGoVL'
 
