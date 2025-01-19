@@ -73,33 +73,33 @@ def check_cognito_user_exists(email):
         print(f"An error occurred: {e}")
         return False
         
-# @app.after_request
-# def after_request(response):
-#     response.headers.add('Access-Control-Allow-Origin', '*')
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-#     return response
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
-# @app.before_request
-# def handle_cors():
-#     headers = {
-#     'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
-#     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-#     'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
-#     }
+@app.before_request
+def handle_cors():
+    headers = {
+    'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
+    }
 
-#     if request.method == 'OPTIONS':
-#         return jsonify(headers), 200
+    if request.method == 'OPTIONS':
+        return jsonify(headers), 200
 
-#     # Create a response object
-#     response = make_response("")
+    # Create a response object
+    response = make_response("")
 
-#     # Check for Flask version (assuming 2.0 or later for simplicity)
-#     if hasattr(response.headers, 'add'):  # Check if 'add' method exists
-#         response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
-#         response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
+    # Check for Flask version (assuming 2.0 or later for simplicity)
+    if hasattr(response.headers, 'add'):  # Check if 'add' method exists
+        response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
+        response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
 
-#     return response  # Return the modified response object
+    return response  # Return the modified response object
 
 
 @app.route('/submit_argument', methods=['POST'])
