@@ -4,8 +4,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . ./
+
+RUN ls -l nginx
 RUN npm run build
-RUN ls build
+
 
 # Step 2: Serve the app with Nginx
 FROM nginx:alpine
