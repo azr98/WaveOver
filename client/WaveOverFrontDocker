@@ -5,7 +5,8 @@ COPY package*.json ./
 RUN npm install
 COPY . ./
 
-RUN ls -l nginx
+RUN ls -l /etc/nginx/conf.d
+RUN ls -l 
 RUN npm run build
 
 
