@@ -5,19 +5,29 @@ COPY package*.json ./
 RUN npm install
 COPY . ./
 
-RUN ls -l # Debug step to inspect files in the build context
+# Verify files before running build
+RUN ls -l 
+
 RUN npm run build
+
+# Verify contents of the build folder
+RUN ls -l /app/build
 
 # Step 2: Serve the app with Nginx
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Debugging step to inspect Nginx configuration directory
+# Verify contents of Nginx HTML folder
+RUN ls -l /usr/share/nginx/html
+
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Debugging step to inspect Nginx configuration
 RUN cat /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
+
 
 
