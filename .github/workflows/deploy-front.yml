@@ -63,6 +63,22 @@ jobs:
           aws ec2 start-instances --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
           aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
 
+      # **NEW Step: Stop and clean up the running container and old image**
+      - name: Clean up Docker on EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
+          username: ec2-user
+          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
+          port: 22
+          script: |
+            echo "Stopping and removing the old container (if exists)..."
+            docker stop waveover-container || true
+            docker rm waveover-container || true
+
+            echo "Removing old image (if exists)..."
+            docker images -q 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest | xargs docker rmi -f || true
+
       # Step 9: Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.6
@@ -71,19 +87,18 @@ jobs:
           username: ec2-user
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
-          debug: true
           script: |
             docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
-            docker stop waveover-container || true
-            docker rm waveover-container || true
             docker run -d --name waveover-container -p 80:80 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
-            # Step 10: Output Docker Image Details
+
+      # Step 10: Output Docker Image Details
       - name: Output Docker Image Details
         run: |
           echo "Docker image built and used:"
           echo "Repository: 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development"
           echo "Tag: $IMAGE_TAG"
           echo "Latest Tag: latest"
+
 
 
 
