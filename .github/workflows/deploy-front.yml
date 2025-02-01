@@ -80,6 +80,7 @@ jobs:
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
+            REPOSITORY="waveover-development"  # Define repository variable inside SSH session
             echo "Stopping and removing the old container (if exists)..."
             docker stop waveover-container || true
             docker rm waveover-container || true
@@ -89,8 +90,6 @@ jobs:
 
       # Step 9: Deploy to EC2
       - name: Deploy to EC2
-        env:
-          REPOSITORY: waveover-development
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
@@ -98,6 +97,7 @@ jobs:
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
+            REPOSITORY="waveover-development"  # Define repository variable inside SSH session
             docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest
             docker run -d --name waveover-container -p 80:80 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest
 
