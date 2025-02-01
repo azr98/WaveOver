@@ -97,9 +97,18 @@ jobs:
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
-            REPOSITORY="waveover-development"  # Define repository variable inside SSH session
-            docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest
-            docker run -d --name waveover-container -p 80:80 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest
+              REPOSITORY="waveover-development"  # Define repository variable inside SSH session
+              AWS_REGION="eu-west-1"
+              REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+              echo "Logging in to Amazon ECR..."
+              aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY
+
+              echo "Pulling latest image..."
+              docker pull $REGISTRY/$REPOSITORY:latest
+
+              echo "Running container..."
+              docker run -d --name waveover-container -p 80:80 $REGISTRY/$REPOSITORY:latest
 
       # Step 10: Output Docker Image Details
       - name: Output Docker Image Details
