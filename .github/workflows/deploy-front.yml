@@ -46,19 +46,20 @@ jobs:
       - name: Build Docker image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: waveover-development
         run: |
           IMAGE_TAG=$(echo $GITHUB_REF_NAME | tr / -)-$(date +%Y%m%d%H%M%S)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
       
           echo "Building Docker Image..."
-          docker build -f client/WaveOverFrontDocker -t $REGISTRY/waveover-development:$IMAGE_TAG client/
+          docker build -f client/WaveOverFrontDocker -t $REGISTRY/$REPOSITORY:$IMAGE_TAG client/
       
           echo "Tagging Image as latest..."
-          docker tag $REGISTRY/waveover-development:$IMAGE_TAG $REGISTRY/waveover-development:latest
+          docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
       
           echo "Pushing Image to ECR..."
-          docker push $REGISTRY/waveover-development:$IMAGE_TAG
-          docker push $REGISTRY/waveover-development:latest
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:latest
       
 
       # Step 8: Start EC2 Instance
@@ -70,6 +71,8 @@ jobs:
 
       # **NEW Step: Stop and clean up the running container and old image**
       - name: Clean up Docker on EC2
+        env:
+          REPOSITORY: waveover-development
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
@@ -82,10 +85,12 @@ jobs:
             docker rm waveover-container || true
 
             echo "Removing old image (if exists)..."
-            docker images -q 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest | xargs docker rmi -f || true
+            docker images -q 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest | xargs docker rmi -f || true
 
       # Step 9: Deploy to EC2
       - name: Deploy to EC2
+        env:
+          REPOSITORY: waveover-development
         uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
@@ -93,14 +98,16 @@ jobs:
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
-            docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
-            docker run -d --name waveover-container -p 80:80 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
+            docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest
+            docker run -d --name waveover-container -p 80:80 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest
 
       # Step 10: Output Docker Image Details
       - name: Output Docker Image Details
+        env:
+              REPOSITORY: waveover-development
         run: |
           echo "Docker image built and used:"
-          echo "Repository: 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development"
+          echo "Repository: 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY"
           echo "Tag: $IMAGE_TAG"
           echo "Latest Tag: latest"
 
