@@ -80,13 +80,22 @@ jobs:
           key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
           port: 22
           script: |
-            REPOSITORY="waveover-development"  # Define repository variable inside SSH session
+            REPOSITORY="waveover-development"
+            AWS_REGION="eu-west-1"
+            REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
+
             echo "Stopping and removing the old container (if exists)..."
             docker stop waveover-container || true
             docker rm waveover-container || true
 
-            echo "Removing old image (if exists)..."
-            docker images -q 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY:latest | xargs docker rmi -f || true
+            echo "Fetching latest image ID from ECR..."
+            LATEST_IMAGE_ID=$(docker images --format "{{.ID}}" $REGISTRY/$REPOSITORY:latest)
+
+            echo "Finding all old images except the latest..."
+            docker images $REGISTRY/$REPOSITORY --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v $LATEST_IMAGE_ID | awk '{print $1}' | xargs -r docker rmi -f
+
+            echo "Pruning unused resources..."
+            docker system prune -f
 
       # Step 9: Deploy to EC2
       - name: Deploy to EC2
