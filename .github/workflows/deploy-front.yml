@@ -6,7 +6,7 @@ on:
       - 'client/**'
       - '.github/workflows/deploy-front.yml'
     branches:
-      - master  # Trigger the workflow when commits are pushed to master
+      - dns-backend-calls  # Trigger the workflow when commits are pushed to master
 
 jobs:
   build-and-deploy:
