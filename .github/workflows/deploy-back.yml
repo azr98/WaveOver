@@ -60,30 +60,19 @@ jobs:
       
       - name: Clean up Docker on EC2
         run: |
+          # Convert the script content to base64 to handle special characters safely
+          SCRIPT_CONTENT=$(base64 -w 0 server/server-cleanup.sh)
+          
           aws ssm send-command \
             --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} \
             --document-name "AWS-RunShellScript" \
-            --comment "Clean up backend by removing old Docker containers" \
+            --comment "Upload and execute cleanup script" \
             --parameters commands='[
-              "REPOSITORY=\"waveover-development-backend\"",
-              "AWS_REGION=\"eu-west-1\"",
-              "REGISTRY=\"058264329805.dkr.ecr.$AWS_REGION.amazonaws.com\"",
-      
-              "echo \"Stopping and removing the old container (if exists)...\"",
-              "docker stop waveover-container || true",
-              "docker rm waveover-container || true",
-      
-              "echo \"Fetching latest image ID from ECR...\"",
-              "LATEST_IMAGE_ID=$(docker images --format \"{{.ID}}\" $REGISTRY/$REPOSITORY:latest)",
-      
-              "echo \"Finding all old images except the latest...\"",
-              "docker images $REGISTRY/$REPOSITORY --format \"{{.ID}} {{.Repository}}:{{.Tag}}\" | grep -v $LATEST_IMAGE_ID | awk \'{print $1}\' | xargs -r docker rmi -f",
-      
-              "echo \"Pruning unused resources...\"",
-              "docker system prune -f"
+              "echo \"'$SCRIPT_CONTENT'\" | base64 -d > /tmp/server-cleanup.sh",
+              "chmod +x /tmp/server-cleanup.sh",
+              "/tmp/server-cleanup.sh"
             ]' \
             --region ${{ env.AWS_DEFAULT_REGION }}
-        
   
       - name: Deploy via SSM
         run: |
