@@ -5,8 +5,8 @@ AWS_REGION="eu-west-1"
 REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
 
 echo "Stopping and removing the old container (if exists)..."
-docker stop waveover-container || true
-docker rm waveover-container || true
+docker stop waveover-backend-container || true
+docker rm waveover-backend-container || true
 
 echo "Fetching latest image ID from ECR..."
 LATEST_IMAGE_ID=$(docker images --format "{{.ID}}" $REGISTRY/$REPOSITORY:latest)
