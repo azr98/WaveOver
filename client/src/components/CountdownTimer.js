@@ -10,7 +10,7 @@ function CountdownTimer({ deadline, userEmail, spouseEmail, children }) {
   useEffect(() => {
     const checkUsersExist = async () => {
       try {
-        const response = await axios.post('http://10.0.0.8:5000/check-users', { userEmail, spouseEmail });
+        const response = await axios.post('https://10.0.0.8:5000/check-users', { userEmail, spouseEmail });
         setUsersExist(response.data.usersExist);
       } catch (error) {
         console.error('Error checking users:', error);

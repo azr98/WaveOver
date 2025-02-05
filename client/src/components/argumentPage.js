@@ -23,7 +23,7 @@ function ArgumentPage() {
         setLoading(false);
       } else {
         try {
-          const response = await axios.get(`http://10.0.0.8:5000/get_argument`, {
+          const response = await axios.get(`https://10.0.0.8:5000/get_argument`, {
             params: {
               argument_topic: argumentTopic,
               submission_time: submissionTime,
