@@ -40,6 +40,12 @@ if tables:
 else:
     print("No DynamoDB tables found.")
 
+# AWS target group health check
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}), 200
+
+
 def update_argument(key, update_expression, expression_attribute_values,expression_attribute_names = None):
     # Construct the base parameters
     update_params = {
