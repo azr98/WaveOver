@@ -33,7 +33,7 @@ function TextEditor({ argument, userEmail }) {
         content: content.substring(0, 100) + '...',
         userEmail: userEmail
       });
-      const response = await axios.post('https://devbackend.waveover.info:5000/save_content', {
+      const response = await axios.post('https://devbackend.waveover.info/save_content', {
         argument: argument,
         content: content,
         userEmail: userEmail
