@@ -16,7 +16,7 @@ import traceback
 logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # This will handle CORS for all routes
+CORS(app, resources={r"/*": {"origins": "https://dev.waveover.info"}})
 
 
 # Configure Flask logging
