@@ -1,6 +1,6 @@
 # Dependencies
 from flask import Flask, jsonify, request, make_response
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime
@@ -79,33 +79,33 @@ def check_cognito_user_exists(email):
         print(f"An error occurred: {e}")
         return False
         
-# @app.after_request
-# def after_request(response):
-#     response.headers.add('Access-Control-Allow-Origin', '*')
-#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-#     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-#     return response
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
-# @app.before_request
-# def handle_cors():
-#     headers = {
-#     'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
-#     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-#     'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
-#     }
+@app.before_request
+def handle_cors():
+    headers = {
+    'Access-Control-Allow-Origin': '*',  # Adjust for specific origins if needed
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'  # Add other allowed headers as required
+    }
 
-#     if request.method == 'OPTIONS':
-#         return jsonify(headers), 200
+    if request.method == 'OPTIONS':
+        return jsonify(headers), 200
 
-#     # Create a response object
-#     response = make_response("")
+    # Create a response object
+    response = make_response("")
 
-#     # Check for Flask version (assuming 2.0 or later for simplicity)
-#     if hasattr(response.headers, 'add'):  # Check if 'add' method exists
-#         response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
-#         response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
+    # Check for Flask version (assuming 2.0 or later for simplicity)
+    if hasattr(response.headers, 'add'):  # Check if 'add' method exists
+        response.headers.add('Access-Control-Allow-Origin',headers['Access-Control-Allow-Origin'])
+        response.headers.add('Access-Control-Allow-Methods',headers['Access-Control-Allow-Methods'])
 
-#     return response  # Return the modified response object
+    return response  # Return the modified response object
 
 
 @app.route('/submit_argument', methods=['POST'])
@@ -142,18 +142,10 @@ def submit_argument():
 
     return jsonify({'message': 'Initial argument entry submitted'}), 201
 
-@app.route("/get_active_arguments", methods=["OPTIONS"])
-def handle_options():
-    return jsonify({}), 200
-
-
 @app.route('/get_active_arguments', methods=['GET'])
-@cross_origin(origin='*')
-
 def get_active_arguments():
     user_email = request.args.get('user_email')
     # Define the expression attribute values to only get argument_finishes == False entries
-
     expression_attribute_values = {
         ':false_value': {'BOOL': False},
          ':user_email': {'S': user_email}
@@ -191,11 +183,9 @@ def get_active_arguments():
 
 
 @app.route('/save_content', methods=['POST'])
-@cross_origin(origin='*')
 def save_content():
     try:
         data = request.get_json()
-
         # print(f"save_content route has been hit. Data is {data}", file=sys.stderr)
         submission_time = data['argument']['submission_time']
 
@@ -245,11 +235,9 @@ def save_content():
 
 
 @app.route('/get_argument', methods=['GET'])
-@cross_origin(origin='*')
 def get_argument():
     try:
         argument_topic = request.args.get('argument_topic')
-
         submission_time = request.args.get('submission_time')
 
         if not argument_topic or not submission_time:
@@ -275,10 +263,8 @@ def get_argument():
         return jsonify({'error': 'An unexpected error occurred'}), 500
     
 @app.route('/check-users', methods=['GET'])
-@cross_origin(origin='*')
 def check_users():
     user_email = request.args.get('user_email')
-
     spouse_email = request.args.get('spouse_email')
 
     try:
@@ -294,5 +280,6 @@ def check_users():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
+
 
 
