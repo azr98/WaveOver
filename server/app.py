@@ -81,9 +81,10 @@ def check_cognito_user_exists(email):
         
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers["Access-Control-Allow-Origin"] = "https://dev.waveover.info"  # Ensure only one allowed origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS, PUT, DELETE"
+    response.headers["Access-Control-Allow-Headers"] = "Origin, Content-Type, Accept, Authorization"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
 @app.before_request
