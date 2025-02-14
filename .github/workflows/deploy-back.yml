@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'server/**'
+      - '!server/lambdas/**'
       - '.github/workflows/deploy-back.yml'
     branches:
       - clerk-auth
