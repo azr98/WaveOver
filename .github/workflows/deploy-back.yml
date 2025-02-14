@@ -6,7 +6,7 @@ on:
       - 'server/**'
       - '.github/workflows/deploy-back.yml'
     branches:
-      - dns-backend-calls
+      - clerk-auth
 
 jobs:
   build-and-deploy:

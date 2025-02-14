@@ -6,7 +6,7 @@ on:
       - 'client/**'
       - '.github/workflows/deploy-front.yml'
     branches:
-      - dns-backend-calls  # Trigger the workflow when commits are pushed to master
+      - clerk-auth  # Trigger the workflow when commits are pushed to master
 
 jobs:
   build-and-deploy:
