@@ -8,6 +8,7 @@ function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');
   const [argumentTopic, setArgumentTopic] = useState('');
   const [initiated, setInitiated] = useState(false);
+  const [showSubmitForm, setShowSubmitForm] = useState(true);
   const [argumentsList, setArgumentsList] = useState(['No active arguments']);
   const [selectedArgument, setSelectedArgument] = useState(null);
   const navigate = useNavigate();
@@ -75,6 +76,10 @@ function Dashboard() {
         const response = await axios.post('https://devbackend.waveover.info/submit_argument', argumentSubmitData);
         console.log('API call successful:', response.data);
         setInitiated(true);
+        setShowSubmitForm(false);
+        // Clear the form fields
+        setSpouseEmail('');
+        setArgumentTopic('');
 
         // Reload arguments
         await fetchArguments(user.primaryEmailAddress.emailAddress);
@@ -93,8 +98,9 @@ function Dashboard() {
     );
   };
 
-  const handleSignOut = () => {
-    signOut();
+  const handleStartNewArgument = () => {
+    setShowSubmitForm(true);
+    setInitiated(false);
   };
 
   if (!user) {
@@ -104,23 +110,31 @@ function Dashboard() {
   return (
     <div>
       <h1>Dashboard</h1>
-      <button onClick={handleSignOut}>Sign Out</button>
       
       <div>
         <h2>Start a New Argument</h2>
-        <input
-          type="email"
-          placeholder="Spouse's Email"
-          value={spouseEmail}
-          onChange={(e) => setSpouseEmail(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Argument Topic"
-          value={argumentTopic}
-          onChange={(e) => setArgumentTopic(e.target.value)}
-        />
-        <button onClick={handleInitiate}>Initiate Argument</button>
+        {showSubmitForm ? (
+          <div>
+            <input
+              type="email"
+              placeholder="Spouse's Email"
+              value={spouseEmail}
+              onChange={(e) => setSpouseEmail(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Argument Topic"
+              value={argumentTopic}
+              onChange={(e) => setArgumentTopic(e.target.value)}
+            />
+            <button onClick={handleInitiate}>Initiate Argument</button>
+          </div>
+        ) : (
+          <div>
+            <p>Argument submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
+            <button onClick={handleStartNewArgument}>Click here to submit another argument</button>
+          </div>
+        )}
       </div>
 
       <div>
