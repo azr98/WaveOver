@@ -1,33 +1,73 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Dashboard from './components/dashboard.js';
 import LandingPage from './components/landingPage.js';
 import ArgumentPage from './components/argumentPage.js';
-import '@aws-amplify/ui-react/styles.css';
-import { withAuthenticator, useAuthenticator, Authenticator} from '@aws-amplify/ui-react';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-
+// Protected route wrapper component
+function ProtectedRoute({ children }) {
+  const location = useLocation();
+  
+  return (
+    <div>
+      <SignedIn>
+        {/* Header with profile button for all protected routes */}
+        <div style={{
+          position: 'fixed',
+          top: '1rem',
+          right: '1rem',
+          zIndex: 1000
+        }}>
+          <UserButton afterSignOutUrl="/" />
+        </div>
+        {children}
+      </SignedIn>
+      <SignedOut>
+        <Navigate to="/" state={{ from: location }} replace />
+      </SignedOut>
+    </div>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="*" element={<LandingPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/response" element={<ArgumentPage />} />
-          <Route path="/argument/:argumentTopic/:submissionTime" element={<ArgumentPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        {/* Public route */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/response"
+          element={
+            <ProtectedRoute>
+              <ArgumentPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/argument/:argumentTopic/:submissionTime"
+          element={
+            <ProtectedRoute>
+              <ArgumentPage />
+            </ProtectedRoute>
+          }
+        />
+        
+        {/* Redirect all other routes to landing */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
 
-export default App
-
-// https://waveover86050201dev-dev.auth.eu-west-1.amazoncognito.com/
-//https://waveover86050201dev-dev.auth.eu-west-1.amazoncognito.com/login?response_type=code&client_id=42rg1bncat7k6ep14qr3it4uvj&redirect_uri=http://localhost:3000/dashboard/
-
-//Problem URL
-//https://https//waveover86050201dev-dev.auth.eu-west-1.amazoncognito.com/oauth2/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&response_type=code&client_id=42rg1bncat7k6ep14qr3it4uvj&identity_provider=Google&scope=phone%20email%20openid%20profile%20aws.cognito.signin.user.admin&state=4uuu9Q8n2DmNtorRMMPAyqTXjJ87K6Aa&code_challenge=4SfyqhWOD9hMoGdQXL-cADUg1mbzLZzNoDCLvYpovv8&code_challenge_method=S256
+export default App;

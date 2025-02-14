@@ -1,25 +1,31 @@
-import React from 'react'
+import React from 'react';
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-
 
 function LandingPage() {
   const navigate = useNavigate();
 
-  const handleSignupClick = () => {
-    navigate('/dashboard'); // Replace '/signup' with your actual signup path
-  };
-
-
   return (
-    <div>landingPage
-       <button onClick={handleSignupClick}>Sign Up</button>
-       <p>Github actions test </p>
+    <div>
+      <h1>Welcome to WaveOver</h1>
+      
+      <SignedIn>
+        {/* Redirect to dashboard if already signed in */}
+        {navigate('/dashboard')}
+      </SignedIn>
+      
+      <SignedOut>
+        <div>
+          <p>Your platform for constructive arguments</p>
+          <SignInButton mode="modal">
+            <button className="sign-in-button">
+              Sign In
+            </button>
+          </SignInButton>
+        </div>
+      </SignedOut>
     </div>
-    
-  )
+  );
 }
 
-
-
-
-export default LandingPage
+export default LandingPage;

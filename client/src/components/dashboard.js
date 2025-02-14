@@ -1,46 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from "react-router-dom";
-import cognito_config from '../amplifyconfiguration.json'
-import { Amplify } from 'aws-amplify';
-import { getCurrentUser , fetchUserAttributes } from '@aws-amplify/auth';
-import '@aws-amplify/ui-react/styles.css';
-import { withAuthenticator} from '@aws-amplify/ui-react';
+import { useUser, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-
-Amplify.configure(cognito_config);
 
 function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');
   const [argumentTopic, setArgumentTopic] = useState('');
   const [initiated, setInitiated] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
   const [argumentsList, setArgumentsList] = useState(['No active arguments']);
   const [selectedArgument, setSelectedArgument] = useState(null);
   const navigate = useNavigate();
-
-  // Function to fetch logged in user email
-  const fetchUserEmail = async () => {
-    try {
-      const userAttributes = await fetchUserAttributes();
-      if (userAttributes.email) {
-        console.log("Pulled email", userAttributes.email);
-        return userAttributes.email;  // Return the email instead of setting state
-      } else {
-        console.log("Error: User email not found in attributes");
-        throw new Error("User email not found");
-      }
-    } catch (err) {
-      console.error("Error fetching user data:", err);
-      throw err;
-    }
-  };
+  const { user } = useUser();
+  const { signOut } = useClerk();
 
   // Function to fetch arguments based on logged in user email
-  const fetchArguments = async (cognitoUserEmail) => {
+  const fetchArguments = async (userEmail) => {
     try {
       const response = await axios.get('https://devbackend.waveover.info/get_active_arguments', {
-        params: { user_email: cognitoUserEmail }
+        params: { user_email: userEmail }
       });
       console.log("fetchArguments response", response.data);
       const items = response.data;
@@ -61,8 +39,8 @@ function Dashboard() {
           submission_time: arg.submission_time.S 
         };
 
-        console.log("userEmail in dashboard", cognitoUserEmail);
-        if (cognitoUserEmail === arg.user_email.S) {
+        console.log("userEmail in dashboard", userEmail);
+        if (userEmail === arg.user_email.S) {
           argumentObject.user_response = arg.user_response.S
         } else {
           argumentObject.spouse_response = arg.spouse_response.S
@@ -79,34 +57,17 @@ function Dashboard() {
     }
   };
 
-  const getUserEmailAndFetchArguments = async () => {
-    try {
-      const email = await fetchUserEmail();
-      setUserEmail(email);  // Set the userEmail state here
-      console.log("userEmail in dashboard fetchUserEmail", email);
-      if (email.includes('@')) {
-        await fetchArguments(email);
-        return
-      } else {
-        console.log("Invalid email format");
-      }
-    } catch (err) {
-      console.error("Error in fetching process:", err);
-    }
-  };
-
-  // Chain fetching user email and arguments list async
   useEffect(() => {
-    getUserEmailAndFetchArguments();
-    // console.log("getUserEmailAndFetchArguments argumentsList", argumentsList);
-  }, []);  // Empty dependency array to run once on mount
-
+    if (user) {
+      fetchArguments(user.primaryEmailAddress.emailAddress);
+    }
+  }, [user]);
 
   const handleInitiate = async () => {
     try {
-      if (userEmail) {
+      if (user) {
         const argumentSubmitData = {
-          user_email: userEmail,  // This is dynamically set based on logged-in user
+          user_email: user.primaryEmailAddress.emailAddress,
           spouse_email: spouseEmail,
           argument_topic: argumentTopic
         };
@@ -115,10 +76,10 @@ function Dashboard() {
         console.log('API call successful:', response.data);
         setInitiated(true);
 
-        // Call getUserEmailAndFetchArguments to reload arguments
-        await getUserEmailAndFetchArguments();
+        // Reload arguments
+        await fetchArguments(user.primaryEmailAddress.emailAddress);
       } else {
-        document.write("Wait for WavOver to fetch your user email");
+        console.error("No user is signed in");
       }
     } catch (error) {
       console.error('Error initiating argument:', error);
@@ -127,51 +88,59 @@ function Dashboard() {
 
   const handleArgumentClick = (argument) => {
     console.log("handleArgumentClick argument", argument);
-    navigate(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`, { state: { argument, userEmail } });
+    navigate(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`, 
+      { state: { argument, userEmail: user.primaryEmailAddress.emailAddress } }
+    );
   };
+
+  const handleSignOut = () => {
+    signOut();
+  };
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
-      <h1>Start a discussion</h1>
-      {!initiated ? (
-        <>
-          <input type="email" value={spouseEmail} onChange={(e) => setSpouseEmail(e.target.value)} placeholder="Spouse's Email" />
-          <input type="text" value={argumentTopic} onChange={(e) => setArgumentTopic(e.target.value)} placeholder="Argument Topic" />
-          <button onClick={handleInitiate}>Initiate Argument</button>
-        </>
-      ) : (
-        <p>Argument initiated. Waiting for spouse to join.</p>
-      )}
-          <div>
-      <h1>Current arguments</h1>
-      {argumentsList == 'No active arguments' ? (
-        <p>No active arguments</p>
-      ) : (
-        <ul>
-          {argumentsList.map((arg) => (
-            <li key={arg.argument_topic}>
-              <Link 
-                to={`/argument/${encodeURIComponent(arg.argument_topic)}/${encodeURIComponent(arg.submission_time)}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleArgumentClick(arg);
-                }}
-              >
-                Contact : {arg.user_email === userEmail ? arg.spouse_email : arg.user_email} | Topic: {arg.argument_topic} | Deadline: {arg.argument_deadline ? new Date(arg.argument_deadline).toLocaleString() : 'Will be set an hour after the contact signs up'} | Status: {arg.last_email_sent}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      <h1>Dashboard</h1>
+      <button onClick={handleSignOut}>Sign Out</button>
+      
+      <div>
+        <h2>Start a New Argument</h2>
+        <input
+          type="email"
+          placeholder="Spouse's Email"
+          value={spouseEmail}
+          onChange={(e) => setSpouseEmail(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Argument Topic"
+          value={argumentTopic}
+          onChange={(e) => setArgumentTopic(e.target.value)}
+        />
+        <button onClick={handleInitiate}>Initiate Argument</button>
+      </div>
+
+      <div>
+        <h2>Active Arguments</h2>
+        {Array.isArray(argumentsList) && argumentsList[0] !== 'No active arguments' ? (
+          <ul>
+            {argumentsList.map((argument, index) => (
+              <li key={index} onClick={() => handleArgumentClick(argument)}>
+                Topic: {argument.argument_topic}
+                <br />
+                With: {argument.spouse_email}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No active arguments</p>
+        )}
+      </div>
     </div>
   );
 }
 
-export default withAuthenticator(Dashboard);
-
-// {
-//   socialProviders: [
-//     'google'
-//   ]
-// }
+export default Dashboard;
