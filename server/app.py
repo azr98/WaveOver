@@ -26,7 +26,6 @@ CORS(app, resources={r"/*": {"origins": "https://dev.waveover.info"}})
 # app.logger.addHandler(handler)
 
 # AWS SDK Boto3 clients
-clerk = boto3.client('clerk-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
 dynamodb = boto3.client('dynamodb',region_name='eu-west-1')
 argument_table = 'WaveOver_Dev'
