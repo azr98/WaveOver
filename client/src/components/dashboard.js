@@ -15,6 +15,12 @@ function Dashboard() {
   const { user } = useUser();
   const { signOut } = useClerk();
 
+  // Insert helper function for getting user email right after useUser hook
+  const getUserEmail = () => {
+    console.log("Email of logged in user", user.emailAddresses);
+    return user && user.emailAddresses && user.emailAddresses.length > 0 ? user.emailAddresses[0].emailAddress : '';
+  };
+
   // Function to fetch arguments based on logged in user email
   const fetchArguments = async (userEmail) => {
     try {
@@ -60,7 +66,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      fetchArguments(user.primaryEmailAddress.emailAddress);
+      fetchArguments(getUserEmail());
     }
   }, [user]);
 
@@ -68,7 +74,7 @@ function Dashboard() {
     try {
       if (user) {
         const argumentSubmitData = {
-          user_email: user.primaryEmailAddress.emailAddress,
+          user_email: getUserEmail(),
           spouse_email: spouseEmail,
           argument_topic: argumentTopic
         };
@@ -82,7 +88,7 @@ function Dashboard() {
         setArgumentTopic('');
 
         // Reload arguments
-        await fetchArguments(user.primaryEmailAddress.emailAddress);
+        await fetchArguments(getUserEmail());
       } else {
         console.error("No user is signed in");
       }
@@ -94,7 +100,7 @@ function Dashboard() {
   const handleArgumentClick = (argument) => {
     console.log("handleArgumentClick argument", argument);
     navigate(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`, 
-      { state: { argument, userEmail: user.primaryEmailAddress.emailAddress } }
+      { state: { argument, userEmail: getUserEmail() } }
     );
   };
 

@@ -196,7 +196,7 @@ def lambda_handler(event, context):
 
 def send_email(addresses, subject, body):
     ses.send_email(
-        Source='dev@waveover.info',
+        Source='dev-reminder@waveover.info',
         Destination={'ToAddresses': addresses},
         Message={
             'Subject': {'Data': subject},

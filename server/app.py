@@ -11,6 +11,7 @@ import logging
 import sys
 from boto3.dynamodb.conditions import Attr
 import traceback
+import requests
 
 # Scheduler to handle timed tasks
 logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
@@ -25,7 +26,7 @@ CORS(app, resources={r"/*": {"origins": "https://dev.waveover.info"}})
 # app.logger.addHandler(handler)
 
 # AWS SDK Boto3 clients
-cognito = boto3.client('cognito-idp', region_name='eu-west-1')
+clerk = boto3.client('clerk-idp', region_name='eu-west-1')
 ses = boto3.client('ses', region_name='eu-west-1')
 dynamodb = boto3.client('dynamodb',region_name='eu-west-1')
 argument_table = 'WaveOver_Dev'
@@ -65,20 +66,32 @@ def update_argument(key, update_expression, expression_attribute_values,expressi
 
     return response
 
-def check_cognito_user_exists(email):
+def check_clerk_user_exists(email):
     try:
-        response = cognito.list_users(
-            UserPoolId=user_pool_id,
-            Filter=f'email = "{email}"'
-        )
-        print(f"User exists with email {email}")
-        return True
-    except cognito.exceptions.UserNotFoundException:
+        # Retrieve Clerk secret API key from AWS Parameter Store
+        ssm = boto3.client('ssm', region_name='eu-west-1')
+        parameter = ssm.get_parameter(Name='clerk-secret-api-key', WithDecryption=True)
+        clerk_secret = parameter["Parameter"]["Value"]
+
+        headers = {'Authorization': f'Bearer {clerk_secret}'}
+        url = "https://api.clerk.dev/v1/users"
+        params = {"email_address": email}
+        response = requests.get(url, headers=headers, params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            if "data" in data and len(data["data"]) > 0:
+                print(f"User exists with email {email}")
+                return True
+            else:
+                return False
+        else:
+            print(f"Error querying Clerk API: {response.status_code} {response.text}")
+            return False
+    except Exception as e:
+        print(f"An error occurred when checking Clerk user: {e}")
         return False
-    except ClientError as e:
-        print(f"An error occurred: {e}")
-        return False
-        
+
 # @app.after_request
 # def after_request(response):
 #     response.headers["Access-Control-Allow-Origin"] = "https://dev.waveover.info"  # Ensure only one allowed origin
@@ -174,7 +187,7 @@ def get_active_arguments():
         user_email = argument['user_email']['S']
         spouse_email = argument['spouse_email']['S']
 
-        if check_cognito_user_exists(user_email) and check_cognito_user_exists(spouse_email):
+        if check_clerk_user_exists(user_email) and check_clerk_user_exists(spouse_email):
             arguments.append(argument)
 
     print(f'get_active_arguments response from scan for arg list: {response}')
@@ -196,12 +209,12 @@ def save_content():
         argument_user_email = data['argument']['user_email']
         argument_spouse_email = data['argument']['spouse_email']
         content = data['content']
-        cognito_user_email = data['userEmail']
+        clerk_user_email = data['userEmail']
         
         # Determine which field to update based on the user's email
-        if cognito_user_email == argument_user_email:
+        if clerk_user_email == argument_user_email:
             update_expression = 'SET user_response = :content'
-        elif cognito_user_email == argument_spouse_email:
+        elif clerk_user_email == argument_spouse_email:
             update_expression = 'SET spouse_response = :content'
         else:
             return jsonify({'error': 'User not authorized to update this argument'}), 403
@@ -269,8 +282,8 @@ def check_users():
     spouse_email = request.args.get('spouse_email')
 
     try:
-        user_exists = check_cognito_user_exists(user_email)
-        spouse_exists = check_cognito_user_exists( spouse_email)
+        user_exists = check_clerk_user_exists(user_email)
+        spouse_exists = check_clerk_user_exists( spouse_email)
         
         return jsonify({'usersExist': user_exists and spouse_exists})
     except Exception as e:
