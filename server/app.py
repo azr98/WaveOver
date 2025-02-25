@@ -303,7 +303,10 @@ def check_users():
         print(f"Error checking users: {str(e)}")
         return jsonify({'error': 'Error checking users'}), 500
 
-
+@app.route('/test-connection', methods=['GET'])
+def test_connection():
+    app.logger.info('Test connection endpoint hit')
+    return jsonify({"status": "ok"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
