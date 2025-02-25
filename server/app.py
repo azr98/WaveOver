@@ -121,6 +121,16 @@ def check_clerk_user_exists(email):
 #     return response  # Return the modified response object
 
 
+@app.before_request
+def log_request_info():
+    app.logger.info('Headers: %s', request.headers)
+    app.logger.info('URL: %s', request.url)
+    app.logger.info('Path: %s', request.path)
+    app.logger.info('Method: %s', request.method)
+
+
+
+
 @app.route('/submit_argument', methods=['POST'])
 def submit_argument():
     data = request.get_json()
@@ -157,6 +167,10 @@ def submit_argument():
 
 @app.route('/get_active_arguments', methods=['GET'])
 def get_active_arguments():
+    app.logger.info('get_active_arguments called')
+    app.logger.info('Raw URL: %s', request.url)
+    app.logger.info('Query Parameters: %s', request.args)
+
     user_email = request.args.get('user_email')
     # Define the expression attribute values to only get argument_finishes == False entries
     expression_attribute_values = {
