@@ -24,7 +24,7 @@ function Dashboard() {
   // Function to fetch arguments based on logged in user email
   const fetchArguments = async (userEmail) => {
     try {
-      const response = await axios.get('/api/get_active_arguments', {
+      const response = await axios.get('https://devbackend.waveover.info/api/get_active_arguments', {
         params: { user_email: userEmail }
       });
       console.log("fetchArguments response", response.data);
