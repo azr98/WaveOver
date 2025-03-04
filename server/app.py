@@ -73,17 +73,13 @@ def check_clerk_user_exists(email):
         clerk_secret = parameter["Parameter"]["Value"]
 
         headers = {'Authorization': f'Bearer {clerk_secret}'}
-        url = "https://api.clerk.dev/v1/users"
-        params = {"email_address": email}
+        url = "https://api.clerk.com/v1/users/count"
+        params = {"email_address": [email]}  # Note: emailAddress parameter expects an array
         response = requests.get(url, headers=headers, params=params)
 
         if response.status_code == 200:
-            data = response.json()
-            if "data" in data and len(data["data"]) > 0:
-                print(f"User exists with email {email}")
-                return True
-            else:
-                return False
+            count = response.json()
+            return count > 0
         else:
             print(f"Error querying Clerk API: {response.status_code} {response.text}")
             return False
