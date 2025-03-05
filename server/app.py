@@ -79,7 +79,7 @@ def check_clerk_user_exists(email):
 
         if response.status_code == 200:
             count = response.json()
-            return count > 0
+            return count['total_count'] > 0
         else:
             print(f"Error querying Clerk API: {response.status_code} {response.text}")
             return False
