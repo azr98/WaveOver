@@ -19,24 +19,26 @@ clerk_api_key = ssm.get_parameter(
     WithDecryption=True
 )['Parameter']['Value']
 
-def check_user_exists(email):
+def check_clerk_user_exists(email):
     try:
-        headers = {
-            'Authorization': f'Bearer {clerk_api_key}',
-            'Content-Type': 'application/json'
-        }
-        response = requests.get(
-            f'https://api.clerk.dev/v1/users',
-            headers=headers,
-            params={'email_address': email}
-        )
-        
+        # Retrieve Clerk secret API key from AWS Parameter Store
+        ssm = boto3.client('ssm', region_name='eu-west-1')
+        parameter = ssm.get_parameter(Name='clerk-secret-api-key', WithDecryption=True)
+        clerk_secret = parameter["Parameter"]["Value"]
+
+        headers = {'Authorization': f'Bearer {clerk_secret}'}
+        url = "https://api.clerk.com/v1/users/count"
+        params = {"email_address": [email]}  # Note: emailAddress parameter expects an array
+        response = requests.get(url, headers=headers, params=params)
+
         if response.status_code == 200:
-            users = response.json()
-            return len(users.get('data', [])) > 0
-        return False
+            count = response.json()
+            return count['total_count'] > 0
+        else:
+            print(f"Error querying Clerk API: {response.status_code} {response.text}")
+            return False
     except Exception as e:
-        print(f"Error checking user existence: {str(e)}")
+        print(f"An error occurred when checking Clerk user: {e}")
         return False
 
 def lambda_handler(event, context):
@@ -71,8 +73,8 @@ def lambda_handler(event, context):
         for argument in arguments:
             user_email = argument['user_email']['S']
             spouse_email = argument['spouse_email']['S']
-            user_exists = check_user_exists(user_email)
-            spouse_exists = check_user_exists(spouse_email)
+            user_exists = check_clerk_user_exists(user_email)
+            spouse_exists = check_clerk_user_exists(spouse_email)
 
             submission_time = argument['submission_time']['S']
             addresses = [user_email, spouse_email]

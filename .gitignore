@@ -21,3 +21,6 @@ amplifytools.xcconfig
 **.sample
 #amplify-do-not-edit-end
 ocdi
+python
+server/create_layer
+server/requests-layer.zip
