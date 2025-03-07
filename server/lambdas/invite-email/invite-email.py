@@ -37,7 +37,7 @@ def lambda_handler(event, context):
             email_subject = f'Talk about {argument_topic} between {user_email} and {spouse_email}'
             
             addresses = [user_email, spouse_email]
-            message_id = send_email(ses, addresses, email_subject, email_body)
+            email_sent_response = send_email(ses, addresses, email_subject, email_body)
 
             argument_key = {
                 'user_email': {'S': user_email},
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
                 ':val': {'S': 'invite email'}
             }
             first_invite_sent_update = update_argument(dynamodb, table, argument_key, reminder_time_update_expression, reminder_expression_attribute_values)
-            print(f"first_invite_sent updated with ses message_id {message_id}.\n Arg {first_invite_sent_update} updated for topic {argument_topic} between {user_email} and {spouse_email}")
+            print(f"first_invite_sent updated with ses email message_id {email_sent_response['MessageId']}.\n Arg {first_invite_sent_update} updated for topic {argument_topic} between {user_email} and {spouse_email}")
             
             return {
                 'statusCode': 200,

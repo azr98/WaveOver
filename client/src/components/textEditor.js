@@ -9,8 +9,16 @@ function TextEditor({ argument, userEmail }) {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 
   useEffect(() => {
+    // Check if deadline has passed
+    if (argument?.argument_deadline) {
+      const deadline = new Date(argument.argument_deadline);
+      const now = new Date();
+      setIsDeadlinePassed(now > deadline);
+    }
+
     // Load the correct response when the component mounts or when the argument changes
     console.log("Full arg in textEditor", argument);
     if (argument && userEmail) {
@@ -75,15 +83,41 @@ function TextEditor({ argument, userEmail }) {
     setContent(value);
   };
 
+  const renderContent = () => {
+    // If there's no deadline, don't show anything
+    if (!argument?.argument_deadline) {
+      return null;
+    }
+
+    // If deadline has passed, show the appropriate response
+    if (isDeadlinePassed) {
+      if (userEmail === argument.user_email) {
+        return argument.spouse_response;
+      } else if (userEmail === argument.spouse_email) {
+        return argument.user_response;
+      }
+      return <p>Not authorized to view this response</p>;
+    }
+
+    // If deadline hasn't passed, show the editor
+    return (
+      <>
+        <ReactQuill value={content} onChange={handleChange} />
+        {isSaving && <p>Saving...</p>}
+      </>
+    );
+  };
+
   return (
     <div>
-      <CountdownTimer 
-        deadline={argument.argument_deadline}
-        userEmail={argument.user_email}
-        spouseEmail={argument.spouse_email}
-      />
-      <ReactQuill value={content} onChange={handleChange} />
-      {isSaving && <p>Saving...</p>}
+      {argument?.argument_deadline && (
+        <CountdownTimer 
+          deadline={argument.argument_deadline}
+          userEmail={argument.user_email}
+          spouseEmail={argument.spouse_email}
+        />
+      )}
+      {renderContent()}
       {error && <p style={{color: 'red'}}>{error}</p>}
     </div>
   );

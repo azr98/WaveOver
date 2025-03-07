@@ -75,6 +75,7 @@ def lambda_handler(event, context):
             spouse_email = argument['spouse_email']['S']
             user_exists = check_clerk_user_exists(user_email)
             spouse_exists = check_clerk_user_exists(spouse_email)
+            print(f"check_clerk_user_exists(): User : {user_exists}, spouse: {spouse_exists}")
 
             submission_time = argument['submission_time']['S']
             addresses = [user_email, spouse_email]
