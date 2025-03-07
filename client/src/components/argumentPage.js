@@ -20,7 +20,7 @@ function ArgumentPage() {
         setLoading(false);
       } else {
         try {
-          const response = await axios.get(`/api//get_argument`, {
+          const response = await axios.get(`/api/get_argument`, {
             params: {
               argument_topic: argumentTopic,
               submission_time: submissionTime,
