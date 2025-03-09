@@ -7,7 +7,7 @@ on:
       - '!server/lambdas/**'
       - '.github/workflows/deploy-back.yml'
     branches:
-      - clerk-auth
+      - asg-launch-workflow
 
 jobs:
   build-and-deploy:
