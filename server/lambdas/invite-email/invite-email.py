@@ -5,14 +5,13 @@ from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
 def lambda_handler(event, context):
-    print(f"The event is : {event}")
     db_event_trigger = event['Records'][0]['eventName']
     
     # For sending invite email when the trigger in DynamoDB INSERT
     if db_event_trigger == 'INSERT':
         try:
             # Extract date from INSERT trigger entry
-            print('Trigger is DynamoDB INSERT')
+            print('The trigger is DynamoDB INSERT', event['Records'][0]['eventName'] , event['Records'][0]['eventSource'])
             submission_time = event['Records'][0]['dynamodb']['NewImage']['submission_time']['S']
             user_email = event['Records'][0]['dynamodb']['Keys']['user_email']['S']
             spouse_email = event['Records'][0]['dynamodb']['NewImage']['spouse_email']['S']
@@ -22,13 +21,6 @@ def lambda_handler(event, context):
             dynamodb = boto3.client('dynamodb')
             ses = boto3.client('ses', region_name='eu-west-1')
             table = 'WaveOver_Dev'
-
-            # Get Clerk API key from Parameter Store
-            ssm = boto3.client('ssm')
-            clerk_api_key = ssm.get_parameter(
-                Name='clerk-secret-api-key',
-                WithDecryption=True
-            )['Parameter']['Value']
 
             # Composing email content
             email_body = f'''You are invited to write down your say in a discussion about '{argument_topic}' between {user_email} and {spouse_email}. \n Sign up or login here.
@@ -64,7 +56,7 @@ def lambda_handler(event, context):
 
 def send_email(ses_client, addresses, subject, body):
     try:
-        ses_client.send_email(
+        response = ses_client.send_email(
             Source='dev-invitation@waveover.info',
             Destination={'ToAddresses': addresses},
             Message={
@@ -73,6 +65,7 @@ def send_email(ses_client, addresses, subject, body):
             }
         )
         print(f"Email sent to {addresses} ")
+        return response  # Return the SES response
     except Exception as e:
         print(f"Error sending email: {str(e)}")
         raise e

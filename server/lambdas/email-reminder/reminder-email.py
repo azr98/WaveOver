@@ -43,6 +43,7 @@ def check_clerk_user_exists(email):
 
 def lambda_handler(event, context):
     if 'Event bridge rule' in event and event['Event bridge rule'] == 'Email reminder scheduler':
+        print(f"{event['Schedule']} triggered")
         # Define the filter expression
         filter_expression = 'argument_finished = :false_value'
 
@@ -52,7 +53,7 @@ def lambda_handler(event, context):
         }
         
         # Define the projection expression using the placeholder names
-        projection_expression = 'user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent'
+        projection_expression = 'user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent, user_response, spouse_response'
 
         # Get arguments with argument_finished == False and above attributes of them
         response = dynamodb.scan(
@@ -93,11 +94,11 @@ def lambda_handler(event, context):
             if user_exists and spouse_exists and last_email_sent == 'invite email' and reminder_time_two_days == '':
                 email_body = f''''''
                 deadlines = {
-                    "reminder_4_hours": (current_time + timedelta(hours=68)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_12_hours": (current_time + timedelta(hours=60)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_24_hours": (current_time + timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_48_hours": (current_time + timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "final_deadline": (current_time + timedelta(hours=72)).strftime("%Y-%m-%dT%H:%M:%S")
+                    "reminder_4_hours": (current_time + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "reminder_12_hours": (current_time + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "reminder_24_hours": (current_time + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "reminder_48_hours": (current_time + timedelta(minutes=60)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "final_deadline": (current_time + timedelta(minutes=75)).strftime("%Y-%m-%dT%H:%M:%S")
                 }
 
                 argument_key = {
@@ -126,12 +127,12 @@ def lambda_handler(event, context):
                 spouse_response = argument['spouse_response']['S']
 
                 exchange_email_body = f'Here is what {addresses[0]} had to say on {argument_topic}:\n {user_response}'
-                exchange_email_subject = f'Response from {addresses[0]} for {argument_topic}'
+                exchange_email_subject = f'Dev end to end test - Response from {addresses[0]} for {argument_topic}'
 
                 send_email([addresses[1]], exchange_email_subject, exchange_email_body)
 
                 exchange_email_body = f'Here is what {addresses[1]} had to say on {argument_topic}:\n {spouse_response}'
-                exchange_email_subject = f'Response from {addresses[1]} for {argument_topic}'
+                exchange_email_subject = f'Dev end to end test - Response from {addresses[1]} for {argument_topic}'
 
                 send_email([addresses[0]], exchange_email_subject, exchange_email_body)
                 print('final email deadline sent')
@@ -164,38 +165,47 @@ def lambda_handler(event, context):
                 new_last_email_sent = None
               
                 print(f"current time is {current_time}")
+                print(f"reminder times: two_days={reminder_times['two_days']}, one_days={reminder_times['one_days']}, twelve_hours={reminder_times['twelve_hours']}, four_hours={reminder_times['four_hours']}")
       
-                if current_time > reminder_times['two_days'] and last_email_sent == 'invite email':
-                    new_last_email_sent = 'two days reminder'
-                elif current_time > reminder_times['one_days'] and last_email_sent == 'two days reminder':
-                    new_last_email_sent = 'one day reminder'
-                elif current_time > reminder_times['twelve_hours'] and last_email_sent == 'one day reminder':
-                    new_last_email_sent = 'twelve hours reminder'
-                elif current_time > reminder_times['four_hours'] and last_email_sent == 'twelve hours reminder':
+                # Check if we need to send the four_hours reminder (highest priority)
+                if current_time > reminder_times['four_hours'] and last_email_sent in ['invite email', 'two days reminder', 'one day reminder', 'twelve hours reminder']:
                     new_last_email_sent = 'four hours reminder'
+                    print(f"Sending four hours reminder email. Current time: {current_time}, Reminder time: {reminder_times['four_hours']}")
+                # Check if we need to send the twelve_hours reminder
+                elif current_time > reminder_times['twelve_hours'] and last_email_sent in ['invite email', 'two days reminder', 'one day reminder']:
+                    new_last_email_sent = 'twelve hours reminder'
+                    print(f"Sending twelve hours reminder email. Current time: {current_time}, Reminder time: {reminder_times['twelve_hours']}")
+                # Check if we need to send the one_days reminder
+                elif current_time > reminder_times['one_days'] and last_email_sent in ['invite email', 'two days reminder']:
+                    new_last_email_sent = 'one day reminder'
+                    print(f"Sending one day reminder email. Current time: {current_time}, Reminder time: {reminder_times['one_days']}")
+                # Check if we need to send the two_days reminder
+                elif current_time > reminder_times['two_days'] and last_email_sent == 'invite email':
+                    new_last_email_sent = 'two days reminder'
+                    print(f"Sending two days reminder email. Current time: {current_time}, Reminder time: {reminder_times['two_days']}")
                 else:
                     # If none of the conditions are met, you may want to set default values or skip further execution
                     print('No reminder to send')
-                    return
+                    continue  # Skip to the next argument instead of returning
 
-                key = {
-                    'user_email': {'S': user_email},
-                    'submission_time': {'S': submission_time}
-                }
-                update_expression = "SET last_email_sent = :val"
-                expression_attribute_values = {
-                    ':val': {'S': new_last_email_sent}
-                }
-                subject_reminder = re.sub(r'\sreminder$', '', new_last_email_sent)
-                subject_reminder = subject_reminder[0].upper() + subject_reminder[1:]
+                if new_last_email_sent:
+                    key = {
+                        'user_email': {'S': user_email},
+                        'submission_time': {'S': submission_time}
+                    }
+                    update_expression = "SET last_email_sent = :val"
+                    expression_attribute_values = {
+                        ':val': {'S': new_last_email_sent}
+                    }
+                    subject_reminder = re.sub(r'\sreminder$', '', new_last_email_sent)
+                    subject_reminder = subject_reminder[0].upper() + subject_reminder[1:]
 
-                email_subject = f'Reminder for {argument_topic} : {subject_reminder} left in between {user_email} and {spouse_email}'
-                email_body = f'''This is a reminder that you have approximately {hours_left} hours left until responses are exchanged in the discussion between {user_email} and {spouse_email}'''
+                    email_subject = f'Dev end to end test - Reminder for {argument_topic} : {subject_reminder} left in between {user_email} and {spouse_email}'
+                    email_body = f'''This is a reminder that you have approximately {hours_left} hours left until responses are exchanged in the discussion between {user_email} and {spouse_email}'''
 
-                send_email(addresses, email_subject, email_body)
-                last_email_update = update_argument(key, update_expression, expression_attribute_values)
-                print(f"last_email_update happened response is: {last_email_update}")
-                return
+                    send_email(addresses, email_subject, email_body)
+                    last_email_update = update_argument(key, update_expression, expression_attribute_values)
+                    print(f"last_email_update happened response is: {last_email_update}")
 
 def send_email(addresses, subject, body):
     ses.send_email(
