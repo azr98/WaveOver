@@ -38,6 +38,17 @@ jobs:
           role-to-assume: arn:aws:iam::058264329805:role/GitHubActionsRole-Dev
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
+      # New Step: Update SSM Parameter with commit hash
+      - name: Update SSM Parameter with commit hash
+        run: |
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          aws ssm put-parameter \
+            --name "frontend-waveover-development-ecr-commit-hash-tag" \
+            --value "$COMMIT_HASH" \
+            --type "String" \
+            --overwrite
+
       # Step 5: Log in to Amazon ECR
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -54,13 +65,12 @@ jobs:
           echo "Building Docker Image..."
           docker build -f client/WaveOverFrontDocker -t $REGISTRY/$REPOSITORY:$IMAGE_TAG client/
       
-          echo "Tagging Image as latest..."
+          echo "Tagging Image with commit hash and latest..."
+          docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:$COMMIT_HASH
           docker tag $REGISTRY/$REPOSITORY:$IMAGE_TAG $REGISTRY/$REPOSITORY:latest
       
-          echo "Pushing Image to ECR..."
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-          docker push $REGISTRY/$REPOSITORY:latest
-      
+          echo "Pushing all image tags to ECR..."
+          docker push --all-tags $REGISTRY/$REPOSITORY
 
       # Step 8: Start EC2 Instance
       - name: Start EC2 Instance
@@ -126,7 +136,7 @@ jobs:
         run: |
           echo "Docker image built and used:"
           echo "Repository: 058264329805.dkr.ecr.eu-west-1.amazonaws.com/$REPOSITORY"
-          echo "Tag: $IMAGE_TAG"
+          echo "Tag: $COMMIT_HASH"
           echo "Latest Tag: latest"
 
 
