@@ -14,7 +14,6 @@ jobs:
     environment: WaveOver-Development
     env:
       AWS_DEFAULT_REGION: eu-west-1
-      ASG_NAME: WaveOver-Development-Frontend
     permissions:
       id-token: write
       contents: read
@@ -73,79 +72,62 @@ jobs:
           echo "Pushing all image tags to ECR..."
           docker push --all-tags $REGISTRY/$REPOSITORY
 
-      # Step 8: Get ASG Instance IPs
-      - name: Get ASG Instance IPs
+      # Step 8: Start EC2 Instance
+      - name: Start EC2 Instance
         run: |
-          # Get instance IDs from ASG using the tag
-          INSTANCE_IDS=$(aws ec2 describe-instances \
-            --filters "Name=tag:aws:autoscaling:groupName,Values=${{ env.ASG_NAME }}" "Name=instance-state-name,Values=running" \
-            --query "Reservations[].Instances[].InstanceId" \
-            --output text)
-          
-          # Get private IPs for all instances
-          for instance_id in $INSTANCE_IDS; do
-            PRIVATE_IP=$(aws ec2 describe-instances \
-              --instance-ids $instance_id \
-              --query "Reservations[].Instances[].PrivateIpAddress" \
-              --output text)
-            echo "$PRIVATE_IP" >> instance_ips.txt
-          done
-          
-          echo "Found the following instances:"
-          cat instance_ips.txt
+          echo "DEV_FRONTEND_INSTANCE_ID: ${{ secrets.DEV_FRONTEND_INSTANCE_ID }}"
+          aws ec2 start-instances --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
+          aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
 
-      # Step 9: Deploy to All ASG Instances
-      - name: Deploy to All ASG Instances
+      # **NEW Step: Stop and clean up the running container and old image**
+      - name: Clean up Docker on EC2
         env:
           REPOSITORY: waveover-development
-          SSH_PRIVATE_KEY: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
-        run: |
-          # Save SSH key
-          echo "$SSH_PRIVATE_KEY" > ssh_key.pem
-          chmod 600 ssh_key.pem
-          
-          while IFS= read -r ip; do
-            echo "Deploying to instance $ip..."
-            
-            # Clean up Docker on the instance
-            ssh -o StrictHostKeyChecking=no -i ssh_key.pem ec2-user@$ip "
-              REPOSITORY=\"waveover-development\"
-              AWS_REGION=\"eu-west-1\"
-              REGISTRY=\"058264329805.dkr.ecr.\$AWS_REGION.amazonaws.com\"
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
+          username: ec2-user
+          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
+          port: 22
+          script: |
+            REPOSITORY="waveover-development"
+            AWS_REGION="eu-west-1"
+            REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-              echo 'Stopping and removing the old container (if exists)...'
-              docker stop waveover-container || true
-              docker rm waveover-container || true
+            echo "Stopping and removing the old container (if exists)..."
+            docker stop waveover-container || true
+            docker rm waveover-container || true
 
-              echo 'Fetching latest image ID from ECR...'
-              LATEST_IMAGE_ID=\$(docker images --format \"{{.ID}}\" \$REGISTRY/\$REPOSITORY:latest)
+            echo "Fetching latest image ID from ECR..."
+            LATEST_IMAGE_ID=$(docker images --format "{{.ID}}" $REGISTRY/$REPOSITORY:latest)
 
-              echo 'Finding all old images except the latest...'
-              docker images \$REGISTRY/\$REPOSITORY --format \"{{.ID}} {{.Repository}}:{{.Tag}}\" | grep -v \$LATEST_IMAGE_ID | awk '{print \$1}' | xargs -r docker rmi -f
+            echo "Finding all old images except the latest..."
+            docker images $REGISTRY/$REPOSITORY --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v $LATEST_IMAGE_ID | awk '{print $1}' | xargs -r docker rmi -f
 
-              echo 'Pruning unused resources...'
-              docker system prune -f
+            echo "Pruning unused resources..."
+            docker system prune -f
 
-              echo 'Logging in to Amazon ECR...'
-              aws ecr get-login-password --region \$AWS_REGION | docker login --username AWS --password-stdin \$REGISTRY
+      # Step 9: Deploy to EC2
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
+          username: ec2-user
+          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
+          port: 22
+          script: |
+              REPOSITORY="waveover-development"  # Define repository variable inside SSH session
+              AWS_REGION="eu-west-1"
+              REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-              echo 'Pulling latest image...'
-              docker pull \$REGISTRY/\$REPOSITORY:latest
+              echo "Logging in to Amazon ECR..."
+              aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY
 
-              echo 'Running container...'
-              docker run -d --name waveover-container -p 80:80 \$REGISTRY/\$REPOSITORY:latest
-            "
-            
-            if [ $? -eq 0 ]; then
-              echo "Successfully deployed to $ip"
-            else
-              echo "Failed to deploy to $ip"
-              exit 1
-            fi
-          done < instance_ips.txt
-          
-          # Clean up
-          rm -f ssh_key.pem instance_ips.txt
+              echo "Pulling latest image..."
+              docker pull $REGISTRY/$REPOSITORY:latest
+
+              echo "Running container..."
+              docker run -d --name waveover-container -p 80:80 $REGISTRY/$REPOSITORY:latest
 
       # Step 10: Output Docker Image Details
       - name: Output Docker Image Details
