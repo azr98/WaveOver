@@ -94,11 +94,11 @@ def lambda_handler(event, context):
             if user_exists and spouse_exists and last_email_sent == 'invite email' and reminder_time_two_days == '':
                 email_body = f''''''
                 deadlines = {
-                    "reminder_4_hours": (current_time + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_12_hours": (current_time + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_24_hours": (current_time + timedelta(minutes=45)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_48_hours": (current_time + timedelta(minutes=60)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "final_deadline": (current_time + timedelta(minutes=75)).strftime("%Y-%m-%dT%H:%M:%S")
+                    "reminder_48_hours": (current_time + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "reminder_24_hours": (current_time + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "reminder_12_hours": (current_time + timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "reminder_4_hours": (current_time + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
+                    "final_deadline": (current_time + timedelta(hours=5)).strftime("%Y-%m-%dT%H:%M:%S")
                 }
 
                 argument_key = {

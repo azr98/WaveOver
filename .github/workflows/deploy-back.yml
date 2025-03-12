@@ -5,6 +5,7 @@ on:
     paths:
       - 'server/**'
       - '!server/lambdas/**'
+      - '!server/scripts/**'
       - '.github/workflows/deploy-back.yml'
     branches:
       - asg-launch-workflow
