@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# This script injects the public clerk api key for frontend clerk login
 # Get the Clerk key from Parameter Store
 CLERK_KEY=$(aws ssm get-parameter --name "clerk-gmail-api-key" --with-decryption --query "Parameter.Value" --output text)
 
