@@ -12,6 +12,9 @@ import sys
 from boto3.dynamodb.conditions import Attr
 import traceback
 import requests
+import time
+from botocore.exceptions import ConnectTimeoutError
+from botocore.config import Config
 
 # Scheduler to handle timed tasks
 logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
@@ -27,18 +30,32 @@ CORS(app, resources={r"/*": {"origins": "https://dev.waveover.info"}})
 
 # AWS SDK Boto3 clients
 ses = boto3.client('ses', region_name='eu-west-1')
-dynamodb = boto3.client('dynamodb',region_name='eu-west-1')
+dynamodb = boto3.client(
+    'dynamodb',
+    region_name='eu-west-1',
+    config=Config(connect_timeout=120, read_timeout=120, retries={'max_attempts': 5})
+)
 argument_table = 'WaveOver_Dev'
 user_pool_id = 'eu-west-1_ENQscGoVL'
 
-tables = dynamodb.list_tables()
-# Testing connection
-if tables:
-    print("Connected to DynamoDB! \n The list of tables is:")
-    for table in tables['TableNames']:
-        print(f"{table} Table")
-else:
-    print("No DynamoDB tables found.")
+max_attempts = 5
+for attempt in range(max_attempts):
+    try:
+        tables = dynamodb.list_tables()
+        if tables:
+            print("Connected to DynamoDB! \n The list of tables is:")
+            for table in tables['TableNames']:
+                print(f"{table} Table")
+        else:
+            print("No DynamoDB tables found.")
+        break
+    except ConnectTimeoutError as e:
+        app.logger.warning(f"Attempt {attempt + 1} failed: {e}")
+        if attempt < max_attempts - 1:
+            time.sleep(2 ** attempt)  # Exponential backoff
+        else:
+            app.logger.error("Failed to connect to DynamoDB after all attempts")
+            raise
 
 # AWS target group health check
 @app.route('/health', methods=['GET'])
