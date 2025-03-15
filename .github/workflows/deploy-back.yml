@@ -38,6 +38,16 @@ jobs:
           role-to-assume: arn:aws:iam::058264329805:role/GitHubActionsRole-Dev
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
+      - name: Update SSM Parameter with commit hash
+        run: |
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          aws ssm put-parameter \
+            --name "waveover-development-backend-ecr-commit-hash-tag" \
+            --value "$COMMIT_HASH" \
+            --type "String" \
+            --overwrite
+
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
@@ -45,14 +55,16 @@ jobs:
         run: |
           IMAGE_TAG=$(echo $GITHUB_REF_NAME | tr / -)-$(date +%Y%m%d%H%M%S)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          
           docker build -f server/WaveOverBackDocker -t 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:$IMAGE_TAG server/
+          
+          # Tag with commit hash and latest
+          docker tag 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:$IMAGE_TAG 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:$COMMIT_HASH
           docker tag 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:$IMAGE_TAG 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:latest
-      
 
       - name: Push Docker image to ECR
         run: |
-          docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:$IMAGE_TAG
-          docker push 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend:latest
+          docker push --all-tags 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development-backend
       
       - name: Start EC2 Instance
         run: |
