@@ -1,5 +1,3 @@
-
-
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
 amplify/.config/local-*
@@ -25,3 +23,6 @@ python
 server/create_layer
 server/requests-layer.zip
 .venv
+# CloudWatch agent config folders
+client/config/
+server/config/

@@ -79,6 +79,22 @@ jobs:
           aws ec2 start-instances --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
           aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
 
+      # Configure CloudWatch agent
+      - name: Configure CloudWatch Agent
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
+          username: ec2-user
+          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
+          port: 22
+          script: |
+            # Download config from S3
+            sudo aws s3 cp s3://waveover-development-config/Frontend/Cloudwatch-agent/cloudwatch-agent-frontend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
+            # Configure and start the CloudWatch agent
+            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            sudo systemctl restart amazon-cloudwatch-agent
+
       # **NEW Step: Stop and clean up the running container and old image**
       - name: Clean up Docker on EC2
         env:

@@ -71,6 +71,22 @@ jobs:
           echo "DEV_BACKEND_INSTANCE_ID: ${{ secrets.DEV_BACKEND_INSTANCE_ID }}"
           aws ec2 start-instances --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
           aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_BACKEND_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
+
+      # Configure CloudWatch agent
+      - name: Configure CloudWatch Agent
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.DEV_BACKEND_SERVER_IP }}
+          username: ec2-user
+          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
+          port: 22
+          script: |
+            # Download config from S3
+            sudo aws s3 cp s3://waveover-development-config/Backend/Cloudwatch-agent/cloudwatch-agent-backend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
+            # Configure and start the CloudWatch agent
+            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+            sudo systemctl restart amazon-cloudwatch-agent
   
       - name: Deploy via SSM
         run: |
