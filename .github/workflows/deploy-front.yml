@@ -91,9 +91,27 @@ jobs:
             # Download config from S3
             sudo aws s3 cp s3://waveover-development-config/Frontend/Cloudwatch-agent/cloudwatch-agent-frontend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 
-            # Configure and start the CloudWatch agent
-            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-            sudo systemctl restart amazon-cloudwatch-agent
+            # Check if CloudWatch agent service exists and its status
+            if systemctl list-unit-files | grep -q amazon-cloudwatch-agent.service; then
+              echo "CloudWatch agent service exists, checking status..."
+              if systemctl is-active amazon-cloudwatch-agent >/dev/null 2>&1; then
+                echo "CloudWatch agent is running, restarting with new configuration..."
+                sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+                sudo systemctl restart amazon-cloudwatch-agent
+              else
+                echo "CloudWatch agent is installed but not running, starting..."
+                sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+                sudo systemctl start amazon-cloudwatch-agent
+              fi
+            else
+              echo "CloudWatch agent service not found, starting agent..."
+              sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+              sudo systemctl start amazon-cloudwatch-agent
+            fi
+
+            # Verify the agent is running
+            echo "Verifying CloudWatch agent status..."
+            sudo systemctl status amazon-cloudwatch-agent
 
       # **NEW Step: Stop and clean up the running container and old image**
       - name: Clean up Docker on EC2
