@@ -23,5 +23,9 @@ ENV FLASK_APP=app.py
 ENV FLASK_ENV=development
 ENV FLASK_DEBUG=1
 
+# Create log dir
+RUN mkdir -p /var/log/waveover
+
+
 # Command to run the Flask application
-CMD ["python", "app.py"]
+CMD ["sh", "-c", "python app.py >> /var/log/waveover/flask.log 2>&1"]
