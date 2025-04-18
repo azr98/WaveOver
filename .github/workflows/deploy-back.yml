@@ -8,7 +8,7 @@ on:
       - '!server/scripts/**'
       - '.github/workflows/deploy-back.yml'
     branches:
-      - asg-launch-workflow
+      - feedback-form
 
 jobs:
   build-and-deploy:

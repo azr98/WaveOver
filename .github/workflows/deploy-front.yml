@@ -6,7 +6,7 @@ on:
       - 'client/**'
       - '.github/workflows/deploy-front.yml'
     branches:
-      - asg-launch-workflow  # Trigger the workflow when commits are pushed to master
+      - feedback-form  # Trigger the workflow when commits are pushed to master
 
 jobs:
   build-and-deploy:

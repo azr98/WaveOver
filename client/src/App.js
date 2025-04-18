@@ -2,6 +2,7 @@ import React from 'react';
 import Dashboard from './components/dashboard.js';
 import LandingPage from './components/landingPage.js';
 import ArgumentPage from './components/argumentPage.js';
+import BugReportForm from './components/BugReportForm.js';
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
@@ -30,6 +31,7 @@ function ProtectedRoute({ children }) {
         <UserButton afterSignOutUrl="/" />
       </div>
       {children}
+      <BugReportForm />
     </div>
   );
 }

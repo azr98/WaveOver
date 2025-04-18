@@ -15,6 +15,7 @@ import requests
 import time
 from botocore.exceptions import ConnectTimeoutError
 from botocore.config import Config
+import json
 
 # Scheduler to handle timed tasks
 logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
@@ -316,7 +317,56 @@ def check_users():
         print(f"Error checking users: {str(e)}")
         return jsonify({'error': 'Error checking users'}), 500
 
+def get_instance_id():
+    try:
+        return requests.get("http://169.254.169.254/latest/meta-data/instance-id", timeout=2).text
+    except:
+        return "unknown"
 
+@app.route('/report', methods=['POST'])
+def handle_feedback():
+    try:
+        data = request.json
+        is_bug = data.get("is_bug", False)
+
+        s3_client = boto3.client("s3")
+        sns_client = boto3.client("sns")
+
+        backend_instance_id = get_instance_id()
+        timestamp = datetime.utcnow().isoformat()
+
+        report_payload = {
+            "user_email": data.get("user_email"),
+            "title": data.get("title"),
+            "message": data.get("message"),
+            "is_bug": is_bug,
+            "frontend_instance_id": data.get("frontend_instance_id"),
+            "backend_instance_id": backend_instance_id,
+            "timestamp": timestamp
+        }
+
+        # Store in S3 (STANDARD_IA for cost-efficiency)
+        file_key = f"reports/{timestamp}_{backend_instance_id}.json"
+        s3_client.put_object(
+            Bucket="placeholder-bug-reports-bucket",
+            Key=file_key,
+            Body=json.dumps(report_payload),
+            StorageClass="STANDARD_IA"
+        )
+
+        # Notify via SNS if it's a bug
+        if is_bug:
+            sns_client.publish(
+                TopicArn="arn:aws:sns:region:account-id:placeholder-bug-reports-topic",
+                Subject=f"New Bug Report: {data.get('title', 'No Title')}",
+                Message=json.dumps(report_payload, indent=2)
+            )
+
+        return jsonify({"status": "ok"}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error handling bug report: {str(e)}")
+        return jsonify({"error": "Failed to process bug report"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
