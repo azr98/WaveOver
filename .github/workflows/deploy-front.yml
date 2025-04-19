@@ -79,79 +79,67 @@ jobs:
           aws ec2 start-instances --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
           aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID}} --region ${{ env.AWS_DEFAULT_REGION }}
 
-      # Configure CloudWatch agent
+      # Configure CloudWatch agent using SSM
       - name: Configure CloudWatch Agent
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
-          username: ec2-user
-          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
-          port: 22
-          script: |
-            # Download config from S3
-            sudo aws s3 cp s3://waveover-development-config/Frontend/Cloudwatch-agent/cloudwatch-agent-frontend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Configure CloudWatch agent" \
+            --parameters commands='[
+              "echo \"Downloading CloudWatch agent configuration from S3...\"",
+              "sudo aws s3 cp s3://waveover-development-config/Frontend/Cloudwatch-agent/cloudwatch-agent-frontend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+              "echo \"Configuring CloudWatch agent...\"",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+              "echo \"Starting CloudWatch agent...\"",
+              "sudo systemctl start amazon-cloudwatch-agent",
+              "echo \"Verifying CloudWatch agent status...\"",
+              "sudo systemctl status amazon-cloudwatch-agent"
+            ]' \
+            --region ${{ env.AWS_DEFAULT_REGION }}
 
-            # Configure and start the CloudWatch agent
-            echo "Configuring CloudWatch agent..."
-            sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
-
-            # Start the agent
-            echo "Starting CloudWatch agent..."
-            sudo systemctl start amazon-cloudwatch-agent
-
-            # Verify the agent is running
-            echo "Verifying CloudWatch agent status..."
-            sudo systemctl status amazon-cloudwatch-agent
-
-      # **NEW Step: Stop and clean up the running container and old image**
+      # Clean up Docker on EC2 using SSM
       - name: Clean up Docker on EC2
-        env:
-          REPOSITORY: waveover-development
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
-          username: ec2-user
-          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
-          port: 22
-          script: |
-            REPOSITORY="waveover-development"
-            AWS_REGION="eu-west-1"
-            REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Clean up Docker containers and images" \
+            --parameters commands='[
+              "REPOSITORY=\"waveover-development\"",
+              "AWS_REGION=\"eu-west-1\"",
+              "REGISTRY=\"058264329805.dkr.ecr.$AWS_REGION.amazonaws.com\"",
+              "echo \"Stopping and removing the old container (if exists)...\"",
+              "docker stop waveover-container || true",
+              "docker rm waveover-container || true",
+              "echo \"Fetching latest image ID from ECR...\"",
+              "LATEST_IMAGE_ID=$(docker images --format \"{{.ID}}\" $REGISTRY/$REPOSITORY:latest)",
+              "echo \"Finding all old images except the latest...\"",
+              "docker images $REGISTRY/$REPOSITORY --format \"{{.ID}} {{.Repository}}:{{.Tag}}\" | grep -v $LATEST_IMAGE_ID | awk \"{print $1}\" | xargs -r docker rmi -f",
+              "echo \"Pruning unused resources...\"",
+              "docker system prune -f"
+            ]' \
+            --region ${{ env.AWS_DEFAULT_REGION }}
 
-            echo "Stopping and removing the old container (if exists)..."
-            docker stop waveover-container || true
-            docker rm waveover-container || true
-
-            echo "Fetching latest image ID from ECR..."
-            LATEST_IMAGE_ID=$(docker images --format "{{.ID}}" $REGISTRY/$REPOSITORY:latest)
-
-            echo "Finding all old images except the latest..."
-            docker images $REGISTRY/$REPOSITORY --format "{{.ID}} {{.Repository}}:{{.Tag}}" | grep -v $LATEST_IMAGE_ID | awk '{print $1}' | xargs -r docker rmi -f
-
-            echo "Pruning unused resources..."
-            docker system prune -f
-
-      # Step 9: Deploy to EC2
+      # Deploy to EC2 using SSM
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.DEV_FRONTEND_SERVER_IP }}
-          username: ec2-user
-          key: ${{ secrets.WAVEOVER_DEV_PEM_KEY }}
-          port: 22
-          script: |
-              REPOSITORY="waveover-development"  # Define repository variable inside SSH session
-              AWS_REGION="eu-west-1"
-              REGISTRY="058264329805.dkr.ecr.$AWS_REGION.amazonaws.com"
-
-              echo "Logging in to Amazon ECR..."
-              aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY
-
-              echo "Pulling latest image..."
-              docker pull $REGISTRY/$REPOSITORY:latest
-
-              echo "Running container..."
-              docker run -d --name waveover-container -p 80:80 $REGISTRY/$REPOSITORY:latest
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.DEV_FRONTEND_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Docker container for frontend" \
+            --parameters commands='[
+              "REPOSITORY=\"waveover-development\"",
+              "AWS_REGION=\"eu-west-1\"",
+              "REGISTRY=\"058264329805.dkr.ecr.$AWS_REGION.amazonaws.com\"",
+              "echo \"Logging in to Amazon ECR...\"",
+              "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY",
+              "echo \"Pulling latest image...\"",
+              "docker pull $REGISTRY/$REPOSITORY:latest",
+              "echo \"Running container...\"",
+              "docker run -d --name waveover-container -p 80:80 $REGISTRY/$REPOSITORY:latest"
+            ]' \
+            --region ${{ env.AWS_DEFAULT_REGION }}
 
       # Step 10: Output Docker Image Details
       - name: Output Docker Image Details
