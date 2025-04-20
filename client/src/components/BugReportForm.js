@@ -71,7 +71,7 @@ const BugReportForm = () => {
           padding: '20px',
           borderRadius: '5px',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          width: '300px'
+          width: '400px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
             <span style={{ marginRight: '8px' }}>I want to report</span>
@@ -94,28 +94,35 @@ const BugReportForm = () => {
             </select>
           </div>
           {isBug && (
-            <div style={{ marginBottom: '15px' }}>
-              <span style={{ marginRight: '8px' }}>Bug Severity:</span>
-              <label style={{ marginRight: '15px' }}>
-                <input
-                  type="radio"
-                  value="major"
-                  checked={bugSeverity === 'major'}
-                  onChange={(e) => setBugSeverity(e.target.value)}
-                  style={{ marginRight: '5px' }}
-                />
-                Major Bug
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="minor"
-                  checked={bugSeverity === 'minor'}
-                  onChange={(e) => setBugSeverity(e.target.value)}
-                  style={{ marginRight: '5px' }}
-                />
-                Minor Bug
-              </label>
+            <div style={{ 
+              marginBottom: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'nowrap'
+            }}>
+              <span style={{ marginRight: '8px', whiteSpace: 'nowrap' }}>Bug Severity:</span>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <label style={{ whiteSpace: 'nowrap' }}>
+                  <input
+                    type="radio"
+                    value="major"
+                    checked={bugSeverity === 'major'}
+                    onChange={(e) => setBugSeverity(e.target.value)}
+                    style={{ marginRight: '5px' }}
+                  />
+                  Major Bug
+                </label>
+                <label style={{ whiteSpace: 'nowrap' }}>
+                  <input
+                    type="radio"
+                    value="minor"
+                    checked={bugSeverity === 'minor'}
+                    onChange={(e) => setBugSeverity(e.target.value)}
+                    style={{ marginRight: '5px' }}
+                  />
+                  Minor Bug
+                </label>
+              </div>
             </div>
           )}
           <form onSubmit={handleSubmit}>
