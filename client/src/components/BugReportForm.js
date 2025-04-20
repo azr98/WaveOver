@@ -9,6 +9,8 @@ const BugReportForm = () => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [isBug, setIsBug] = useState(true);
+  const [bugSeverity, setBugSeverity] = useState('major');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,11 +19,11 @@ const BugReportForm = () => {
 
     try {
       const response = await axios.post('/api/report', {
-        user_email: user.emailAddresses[0].emailAddress,
+        user_id: user.id,
         title: title,
         message: message,
-        is_bug: true,
-        frontend_instance_id: 'frontend-docker-container',
+        is_bug: isBug,
+        bug_severity: isBug ? bugSeverity : null,
         timestamp: new Date().toISOString()
       });
 
@@ -31,7 +33,7 @@ const BugReportForm = () => {
       setTimeout(() => setIsOpen(false), 2000);
     } catch (error) {
       setSubmitStatus('error');
-      console.error('Error submitting bug report:', error);
+      console.error('Error submitting report:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -71,7 +73,51 @@ const BugReportForm = () => {
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
           width: '300px'
         }}>
-          <h3>Report a Bug</h3>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+            <span style={{ marginRight: '8px' }}>I want to report</span>
+            <select
+              value={isBug ? 'a bug' : 'product feedback'}
+              onChange={(e) => {
+                setIsBug(e.target.value === 'a bug');
+                if (e.target.value !== 'a bug') {
+                  setBugSeverity('major'); // Reset severity when switching to feedback
+                }
+              }}
+              style={{
+                padding: '5px',
+                borderRadius: '4px',
+                border: '1px solid #ddd'
+              }}
+            >
+              <option value="product feedback">product feedback</option>
+              <option value="a bug">a bug</option>
+            </select>
+          </div>
+          {isBug && (
+            <div style={{ marginBottom: '15px' }}>
+              <span style={{ marginRight: '8px' }}>Bug Severity:</span>
+              <label style={{ marginRight: '15px' }}>
+                <input
+                  type="radio"
+                  value="major"
+                  checked={bugSeverity === 'major'}
+                  onChange={(e) => setBugSeverity(e.target.value)}
+                  style={{ marginRight: '5px' }}
+                />
+                Major Bug
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="minor"
+                  checked={bugSeverity === 'minor'}
+                  onChange={(e) => setBugSeverity(e.target.value)}
+                  style={{ marginRight: '5px' }}
+                />
+                Minor Bug
+              </label>
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <input
               type="text"

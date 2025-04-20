@@ -37,7 +37,8 @@ dynamodb = boto3.client(
     config=Config(connect_timeout=120, read_timeout=120, retries={'max_attempts': 5})
 )
 argument_table = 'WaveOver_Dev'
-user_pool_id = 'eu-west-1_ENQscGoVL'
+s3_client = boto3.client("s3")
+sns_client = boto3.client("sns")
 
 max_attempts = 5
 for attempt in range(max_attempts):
@@ -328,27 +329,37 @@ def handle_feedback():
     try:
         data = request.json
         is_bug = data.get("is_bug", False)
+        user_id = data.get("user_id")
+        timestamp = datetime.utcnow()
 
-        s3_client = boto3.client("s3")
-        sns_client = boto3.client("sns")
-
-        backend_instance_id = get_instance_id()
-        timestamp = datetime.utcnow().isoformat()
+        # Format timestamp for filename and payload
+        date_str = timestamp.strftime("%d/%m/%Y")
+        time_str = timestamp.strftime("%H:%M:%S")
+        timestamp_str = f"{date_str}_{time_str}"
 
         report_payload = {
-            "user_email": data.get("user_email"),
+            "user_id": user_id,
             "title": data.get("title"),
             "message": data.get("message"),
             "is_bug": is_bug,
-            "frontend_instance_id": data.get("frontend_instance_id"),
-            "backend_instance_id": backend_instance_id,
-            "timestamp": timestamp
+            "bug_severity": data.get("bug_severity"),
+            "timestamp": timestamp_str,
+            "report_status": "new"
         }
 
-        # Store in S3 (STANDARD_IA for cost-efficiency)
-        file_key = f"reports/{timestamp}_{backend_instance_id}.json"
+        # Determine the folder based on report type
+        if is_bug:
+            bug_severity = data.get("bug_severity", "major")
+            folder = f"bugs/{bug_severity}"
+        else:
+            folder = "feedback"
+        
+        # Create the file key with the new format
+        file_key = f"{folder}/{date_str}_report_{user_id}.json"
+
+        # Store in S3
         s3_client.put_object(
-            Bucket="placeholder-bug-reports-bucket",
+            Bucket="waveover-development-user-reports",
             Key=file_key,
             Body=json.dumps(report_payload),
             StorageClass="STANDARD_IA"
@@ -357,16 +368,16 @@ def handle_feedback():
         # Notify via SNS if it's a bug
         if is_bug:
             sns_client.publish(
-                TopicArn="arn:aws:sns:region:account-id:placeholder-bug-reports-topic",
-                Subject=f"New Bug Report: {data.get('title', 'No Title')}",
+                TopicArn="arn:aws:sns:eu-west-1:058264329805:waveover-development-bugreports.fifo",
+                Subject=f"New {bug_severity.capitalize()} Bug Report: {data.get('title', 'No Title')}",
                 Message=json.dumps(report_payload, indent=2)
             )
 
         return jsonify({"status": "ok"}), 200
 
     except Exception as e:
-        app.logger.error(f"Error handling bug report: {str(e)}")
-        return jsonify({"error": "Failed to process bug report"}), 500
+        app.logger.error(f"Error handling report: {str(e)}")
+        return jsonify({"error": "Failed to process report"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
