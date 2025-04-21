@@ -367,10 +367,19 @@ def handle_feedback():
 
         # Notify via SNS if it's a bug
         if is_bug:
+            subject = f"[BUG] {bug_severity.upper()} - {data.get('title', 'Untitled')} ({timestamp_str})"
+            body = (
+                f"New bug report received:\n\n"
+                f"Title: {data.get('title', 'Untitled')}\n"
+                f"Severity: {bug_severity}\n"
+                f"Time: {timestamp_str}\n"
+                f"User ID: {user_id}\n\n"
+                f"Message:\n{data.get('message', 'No details provided.')}\n"
+            )
             sns_client.publish(
-                TopicArn="arn:aws:sns:eu-west-1:058264329805:waveover-development-bugreports.fifo",
-                Subject=f"New {bug_severity.capitalize()} Bug Report: {data.get('title', 'No Title')}",
-                Message=json.dumps(report_payload, indent=2)
+                TopicArn="arn:aws:sns:eu-west-1:058264329805:waveover-development-bugreports",
+                Subject=subject,
+                Message=body
             )
 
         return jsonify({"status": "ok"}), 200
