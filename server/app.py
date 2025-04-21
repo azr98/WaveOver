@@ -38,7 +38,7 @@ dynamodb = boto3.client(
 )
 argument_table = 'WaveOver_Dev'
 s3_client = boto3.client("s3")
-sns_client = boto3.client("sns")
+sns_client = boto3.client("sns", region_name='eu-west-1')
 
 max_attempts = 5
 for attempt in range(max_attempts):
