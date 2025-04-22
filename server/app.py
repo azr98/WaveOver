@@ -349,8 +349,7 @@ def handle_feedback():
 
         # Determine the folder based on report type
         if is_bug:
-            bug_severity = data.get("bug_severity", "major")
-            folder = f"bugs/{bug_severity}"
+            folder = f"bugs/{data.get('bug_severity')}"
         else:
             folder = "feedback"
         
@@ -365,13 +364,13 @@ def handle_feedback():
             StorageClass="STANDARD_IA"
         )
 
-        # Notify via SNS if it's a bug
-        if is_bug:
-            subject = f"[BUG] {bug_severity.upper()} - {data.get('title', 'Untitled')} ({timestamp_str})"
+        # Notify via SNS only for major bugs
+        if is_bug and data.get('bug_severity') == "major":
+            subject = f"Major Bug WaveOver Dev - {data.get('title', 'Untitled')} ({timestamp_str})"
             body = (
                 f"New bug report received:\n\n"
                 f"Title: {data.get('title', 'Untitled')}\n"
-                f"Severity: {bug_severity}\n"
+                f"Severity: {data.get('bug_severity')}\n"
                 f"Time: {timestamp_str}\n"
                 f"User ID: {user_id}\n\n"
                 f"Message:\n{data.get('message', 'No details provided.')}\n"
