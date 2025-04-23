@@ -347,6 +347,9 @@ def handle_feedback():
             "report_status": "new"
         }
 
+        if not user_id or not data.get("title") or not data.get("message"):
+            return jsonify({"error": "Missing required fields"}), 400
+
         # Determine the folder based on report type
         if is_bug:
             folder = f"bugs/{data.get('bug_severity')}"
@@ -357,12 +360,17 @@ def handle_feedback():
         file_key = f"{folder}/{date_str}_report_{user_id}.json"
 
         # Store in S3
-        s3_client.put_object(
-            Bucket="waveover-development-user-reports",
-            Key=file_key,
-            Body=json.dumps(report_payload),
-            StorageClass="STANDARD_IA"
-        )
+        try:
+            s3_client.put_object(
+                Bucket="waveover-development-user-reports",
+                Key=file_key,
+                Body=json.dumps(report_payload),
+                StorageClass="STANDARD_IA"
+            )
+        except Exception as e:
+            app.logger.error(f"S3 upload failed: {e}")
+            return jsonify({"error": "Failed to store report"}), 500
+
 
         # Notify via SNS only for major bugs
         if is_bug and data.get('bug_severity') == "major":
@@ -375,11 +383,15 @@ def handle_feedback():
                 f"User ID: {user_id}\n\n"
                 f"Message:\n{data.get('message', 'No details provided.')}\n"
             )
-            sns_client.publish(
-                TopicArn="arn:aws:sns:eu-west-1:058264329805:waveover-development-bugreports",
-                Subject=subject,
-                Message=body
-            )
+            try:
+                sns_client.publish(
+                    TopicArn="arn:aws:sns:eu-west-1:058264329805:waveover-development-bugreports",
+                    Subject=subject,
+                    Message=body
+                )
+            except Exception as e:
+                app.logger.error(f"SNS publish failed: {e}")
+                return jsonify({"error": "Failed to notify via SNS"}), 500
 
         return jsonify({"status": "ok"}), 200
 
