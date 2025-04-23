@@ -18,6 +18,12 @@ const BugReportForm = () => {
     setSubmitStatus(null);
 
     try {
+      console.log("user_id", user.id);
+      console.log("title", title);
+      console.log("message", message);
+      console.log("isBug", isBug);
+      console.log("bugSeverity", bugSeverity);
+
       const response = await axios.post('/api/report', {
         user_id: user.id,
         title: title,
