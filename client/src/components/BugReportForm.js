@@ -39,7 +39,7 @@ const BugReportForm = () => {
       setTimeout(() => setIsOpen(false), 2000);
     } catch (error) {
       setSubmitStatus('error');
-      console.error('Error submitting report:', error);
+      console.error('Error submitting report:', error.response.data);
     } finally {
       setIsSubmitting(false);
     }
