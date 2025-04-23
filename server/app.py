@@ -333,8 +333,8 @@ def handle_feedback():
         timestamp = datetime.utcnow()
 
         # Format timestamp for filename and payload
-        date_str = timestamp.strftime("%d/%m/%Y")
-        time_str = timestamp.strftime("%H:%M:%S")
+        date_str = timestamp.strftime("%Y-%m-%d")
+        time_str = timestamp.strftime("%H-%M-%S")  
         timestamp_str = f"{date_str}_{time_str}"
 
         report_payload = {
