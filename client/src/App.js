@@ -3,6 +3,7 @@ import Dashboard from './components/dashboard.js';
 import LandingPage from './components/landingPage.js';
 import ArgumentPage from './components/argumentPage.js';
 import BugReportForm from './components/BugReportForm.js';
+import HelpPage from './components/helpPage.js';
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
@@ -72,6 +73,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/help"
+          element={
+            <ProtectedRoute>
+              <HelpPage />
             </ProtectedRoute>
           }
         />
