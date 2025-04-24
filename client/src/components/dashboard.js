@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-import './dashboard.css';
+import './css/dashboard.css';
 
 function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');

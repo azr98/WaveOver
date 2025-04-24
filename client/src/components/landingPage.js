@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
-import './landingPage.css';
+import './css/landingPage.css';
 
 function LandingPage() {
   const { signUp } = useClerk();
