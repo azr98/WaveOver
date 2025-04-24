@@ -38,16 +38,23 @@ function CountdownTimer({ deadline, userEmail, spouseEmail, children }) {
       if (difference > 0) {
         const hours = Math.floor(difference / (1000 * 60 * 60));
         const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
         setIsTimeUp(false);
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        
+        let timeString = '';
+        if (hours > 0) timeString += `${hours} hour${hours !== 1 ? 's' : ''} `;
+        if (minutes > 0) timeString += `${minutes} minute${minutes !== 1 ? 's' : ''} `;
+        timeString += `and ${seconds} second${seconds !== 1 ? 's' : ''}`;
+        
+        return timeString;
       }
       setIsTimeUp(true);
-      return '00:00';
+      return '0 seconds';
     };
 
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
-    }, 60000); // Update every minute
+    }, 1000); // Update every second
 
     setTimeLeft(calculateTimeLeft()); // Initial calculation
 
