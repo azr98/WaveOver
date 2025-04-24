@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
+import './dashboard.css';
 
 function Dashboard() {
   const [spouseEmail, setSpouseEmail] = useState('');
@@ -110,54 +111,84 @@ function Dashboard() {
   };
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      
-      <div>
-        <h2>Start a New Argument</h2>
-        {showSubmitForm ? (
-          <div>
-            <input
-              type="email"
-              placeholder="Spouse's Email"
-              value={spouseEmail}
-              onChange={(e) => setSpouseEmail(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Argument Topic"
-              value={argumentTopic}
-              onChange={(e) => setArgumentTopic(e.target.value)}
-            />
-            <button onClick={handleInitiate}>Initiate Argument</button>
-          </div>
-        ) : (
-          <div>
-            <p>Argument submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
-            <button onClick={handleStartNewArgument}>Click here to submit another argument</button>
-          </div>
-        )}
-      </div>
+    <div className="dashboard-container">
+      <header className="dashboard-header">
+        <h1>Your Dashboard</h1>
+        <button onClick={signOut} className="sign-out-button">Sign Out</button>
+      </header>
 
-      <div>
-        <h2>Active Arguments</h2>
-        {Array.isArray(argumentsList) && argumentsList[0] !== 'No active arguments' ? (
-          <ul>
-            {argumentsList.map((argument, index) => (
-              <li key={index} onClick={() => handleArgumentClick(argument)}>
-                Topic: {argument.argument_topic}
-                <br />
-                With: {argument.spouse_email}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No active arguments</p>
-        )}
+      <div className="dashboard-content">
+        <section className="new-argument-section">
+          <h2>Start a New Discussion</h2>
+          {showSubmitForm ? (
+            <div className="argument-form">
+              <div className="form-group">
+                <label htmlFor="spouseEmail">Partner's Email</label>
+                <input
+                  id="spouseEmail"
+                  type="email"
+                  placeholder="Enter their email address"
+                  value={spouseEmail}
+                  onChange={(e) => setSpouseEmail(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="argumentTopic">Discussion Topic</label>
+                <input
+                  id="argumentTopic"
+                  type="text"
+                  placeholder="What would you like to discuss?"
+                  value={argumentTopic}
+                  onChange={(e) => setArgumentTopic(e.target.value)}
+                />
+              </div>
+              <button 
+                onClick={handleInitiate}
+                className="submit-button"
+                disabled={!spouseEmail || !argumentTopic}
+              >
+                Start Discussion
+              </button>
+            </div>
+          ) : (
+            <div className="success-message">
+              <p>Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
+              <button onClick={handleStartNewArgument} className="new-discussion-button">
+                Start Another Discussion
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section className="active-arguments-section">
+          <h2>Active Discussions</h2>
+          {Array.isArray(argumentsList) && argumentsList[0] !== 'No active arguments' ? (
+            <div className="arguments-grid">
+              {argumentsList.map((argument, index) => (
+                <div 
+                  key={index} 
+                  className="argument-card"
+                  onClick={() => handleArgumentClick(argument)}
+                >
+                  <h3>{argument.argument_topic}</h3>
+                  <p className="partner-email">With: {argument.spouse_email}</p>
+                  <div className="argument-status">
+                    <span className="status-badge">Active</span>
+                    <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-arguments">
+              <p>No active discussions</p>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
