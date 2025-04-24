@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from "react-router-dom";
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
+import Header from './Header';
 import './css/dashboard.css';
 
 function Dashboard() {
@@ -116,11 +117,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Your Dashboard</h1>
-        <button onClick={signOut} className="sign-out-button">Sign Out</button>
-      </header>
-
+      <Header />
       <div className="dashboard-content">
         <section className="new-argument-section">
           <h2>Start a New Discussion</h2>

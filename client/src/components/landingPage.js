@@ -23,7 +23,7 @@ function LandingPage() {
               Talk It Out — Without Talking Over Each Other
             </h1>
             <p className="hero-subtitle">
-            Resolve conflicts, debates and ideate with a spouse, friend, colleague more effectively with writing
+              Resolve conflicts, debates and ideate with a spouse, friend, colleague more effectively with writing
             </p>
             <div className="cta-buttons">
               <SignInButton mode="modal">
@@ -31,6 +31,18 @@ function LandingPage() {
                   Always free
                 </button>
               </SignInButton>
+              <a 
+                href="https://buymeacoffee.com/azharsharif" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="coffee-button"
+              >
+                <img 
+                  src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" 
+                  alt="Buy Me A Coffee" 
+                  className="coffee-image"
+                />
+              </a>
             </div>
           </div>
         </section>

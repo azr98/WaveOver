@@ -44,6 +44,8 @@
   display: flex;
   gap: 1rem;
   justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .primary-button {
@@ -76,6 +78,22 @@
 .secondary-button:hover {
   background: #f7fafc;
   transform: translateY(-2px);
+}
+
+.coffee-button {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.coffee-image {
+  height: 45px;
+  width: auto;
+  transition: transform 0.2s;
+}
+
+.coffee-image:hover {
+  transform: scale(1.05);
 }
 
 /* How It Works Section */
