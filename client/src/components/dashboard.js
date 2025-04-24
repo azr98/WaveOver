@@ -180,8 +180,17 @@ function Dashboard() {
                   <h3>{argument.argument_topic}</h3>
                   <p className="partner-email">With: {argument.spouse_email}</p>
                   <div className="argument-status">
-                    <span className="status-badge">Active</span>
-                    <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
+                    <span className={`status-badge ${!argument.argument_deadline ? 'inactive' : ''}`}>
+                      {argument.argument_deadline ? 'Active' : 'Inactive'}
+                    </span>
+                    {!argument.argument_deadline ? (
+                      <span className="status-text">Deadline set and editor will be activated within 1 hour.</span>
+                    ) : (
+                      <span className="status-text">Click to write your say</span>
+                    )}
+                    {argument.argument_deadline && (
+                      <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
+                    )}
                   </div>
                 </div>
               ))}
