@@ -161,6 +161,12 @@ function Dashboard() {
           )}
         </section>
 
+        <div className="help-link-container">
+          <Link to="/help" className="help-link">
+            Detailed help
+          </Link>
+        </div>
+
         <section className="active-arguments-section">
           <h2>Active Discussions</h2>
           {Array.isArray(argumentsList) && argumentsList[0] !== 'No active arguments' ? (

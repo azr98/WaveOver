@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { SignedIn, SignedOut, SignInButton, useUser } from '@clerk/clerk-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './css/landingPage.css';
 
 function LandingPage() {
@@ -44,6 +44,9 @@ function LandingPage() {
                 />
               </a>
             </div>
+            <Link to="/help" className="help-link">
+              Full walkthrough
+            </Link>
           </div>
         </section>
 

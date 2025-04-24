@@ -222,4 +222,24 @@
   .arguments-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.help-link-container {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.help-link {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.2s;
+}
+
+.help-link:hover {
+  color: #2b6cb0;
+  text-decoration: underline;
 } 

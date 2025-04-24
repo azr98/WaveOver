@@ -219,4 +219,19 @@
   .step, .benefit-card {
     padding: 1.5rem;
   }
+}
+
+.help-link {
+  display: block;
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.help-link:hover {
+  color: #2b6cb0;
+  text-decoration: underline;
 } 
