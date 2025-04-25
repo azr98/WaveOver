@@ -179,23 +179,25 @@
 }
 
 .status-badge {
-  display: inline-block;
   padding: 4px 8px;
-  background-color: #4CAF50;
-  color: white;
   border-radius: 4px;
-  font-size: 0.9em;
-  margin-right: 8px;
+  font-size: 0.8em;
+  font-weight: bold;
 }
 
-.status-badge.inactive {
-  background-color: #f44336;
+.status-badge.active {
+  background-color: #28a745;
+  color: white;
 }
 
-.status-text {
-  color: #666;
-  font-size: 0.9em;
-  margin-left: 8px;
+.status-badge.pending {
+  background-color: #ffc107;
+  color: black;
+}
+
+.status-badge.finished {
+  background-color: #6c757d;
+  color: white;
 }
 
 .deadline {
@@ -255,4 +257,148 @@
 .help-link:hover {
   color: #2b6cb0;
   text-decoration: underline;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filter-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.argument-card.pending {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.finished-dialog {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.finished-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.dialog-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.dialog-buttons button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dialog-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.close-dialog {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close-dialog:hover {
+  background-color: #5a6268;
+}
+
+.acceptance-dialog {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.acceptance-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2d3748;
+}
+
+.acceptance-dialog p {
+  margin-bottom: 10px;
+  color: #4a5568;
+}
+
+.argument-topic {
+  font-weight: bold;
+  color: #2d3748;
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f7fafc;
+  border-radius: 4px;
+}
+
+.accept-button {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-right: 10px;
+}
+
+.accept-button:hover {
+  background-color: #218838;
+}
+
+.reject-button {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.reject-button:hover {
+  background-color: #c82333;
 } 

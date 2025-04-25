@@ -56,7 +56,7 @@ function LandingPage() {
           <div className="steps-container">
             <div className="step">
               <div className="step-number">1</div>
-              <h3>Invite Your Person</h3>
+              <h3>Invite Your Partner</h3>
               <p>Sign up and drop in the email of your partner, friend, family member, or colleague — along with the topic of discussion.</p>
             </div>
             <div className="step">

@@ -13,6 +13,10 @@ function Dashboard() {
   const [showSubmitForm, setShowSubmitForm] = useState(true);
   const [argumentsList, setArgumentsList] = useState(['No active arguments']);
   const [selectedArgument, setSelectedArgument] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('active');
+  const [showFinishedDialog, setShowFinishedDialog] = useState(false);
+  const [showAcceptanceDialog, setShowAcceptanceDialog] = useState(false);
+  const [selectedPendingArgument, setSelectedPendingArgument] = useState(null);
   const navigate = useNavigate();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -100,15 +104,85 @@ function Dashboard() {
   };
 
   const handleArgumentClick = (argument) => {
-    console.log("handleArgumentClick argument", argument);
-    navigate(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`, 
-      { state: { argument, userEmail: getUserEmail() } }
-    );
+    if (argument.argument_finished) {
+      setSelectedArgument(argument);
+      setShowFinishedDialog(true);
+    } else if (argument.spouse_accepted) {
+      navigate(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`, 
+        { state: { argument, userEmail: getUserEmail() } }
+      );
+    }
+  };
+
+  const handleReadResponse = (isUserResponse) => {
+    const response = isUserResponse ? selectedArgument.user_response : selectedArgument.spouse_response;
+    setShowFinishedDialog(false);
+    navigate('/view-response', { state: { response } });
   };
 
   const handleStartNewArgument = () => {
     setShowSubmitForm(true);
     setInitiated(false);
+  };
+
+  const handlePendingArgumentClick = (argument) => {
+    const userEmail = getUserEmail();
+    if (userEmail === argument.spouse_email && !argument.spouse_accepted) {
+      setSelectedPendingArgument(argument);
+      setShowAcceptanceDialog(true);
+    }
+  };
+
+  const handleAcceptanceResponse = async (accepted) => {
+    try {
+      const response = await axios.post('/api/update_spouse_acceptance', {
+        user_email: selectedPendingArgument.user_email,
+        submission_time: selectedPendingArgument.submission_time,
+        accepted: accepted
+      });
+
+      if (response.status === 200) {
+        // Refresh the arguments list
+        await fetchArguments(getUserEmail());
+        setShowAcceptanceDialog(false);
+        if (accepted) {
+          alert('You can start writing this discussion in the active section');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating acceptance status:', error);
+    }
+  };
+
+  const getFilteredArguments = () => {
+    if (!Array.isArray(argumentsList) || argumentsList[0] === 'No active arguments') {
+      return [];
+    }
+
+    return argumentsList.filter(argument => {
+      switch (activeFilter) {
+        case 'active':
+          return argument.spouse_accepted && !argument.argument_finished;
+        case 'pending':
+          return !argument.spouse_accepted;
+        case 'finished':
+          return argument.argument_finished;
+        default:
+          return true;
+      }
+    });
+  };
+
+  const getStatusMessage = (argument) => {
+    const userEmail = getUserEmail();
+    if (!argument.spouse_accepted) {
+      if (userEmail === argument.user_email) {
+        return 'Waiting for partner to accept';
+      } else {
+        return 'Waiting for you to accept this argument';
+      }
+    }
+    return '';
   };
 
   if (!user) {
@@ -169,26 +243,53 @@ function Dashboard() {
 
         <section className="active-arguments-section">
           <h2>Active Discussions</h2>
-          {Array.isArray(argumentsList) && argumentsList[0] !== 'No active arguments' ? (
+          <div className="filter-buttons">
+            <button 
+              className={`filter-button ${activeFilter === 'active' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('active')}
+            >
+              Active
+            </button>
+            <button 
+              className={`filter-button ${activeFilter === 'pending' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('pending')}
+            >
+              Pending
+            </button>
+            <button 
+              className={`filter-button ${activeFilter === 'finished' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('finished')}
+            >
+              Finished
+            </button>
+          </div>
+          {getFilteredArguments().length > 0 ? (
             <div className="arguments-grid">
-              {argumentsList.map((argument, index) => (
+              {getFilteredArguments().map((argument, index) => (
                 <div 
                   key={index} 
-                  className="argument-card"
-                  onClick={() => handleArgumentClick(argument)}
+                  className={`argument-card ${!argument.spouse_accepted ? 'pending' : ''}`}
+                  onClick={() => {
+                    if (!argument.spouse_accepted) {
+                      handlePendingArgumentClick(argument);
+                    } else if (argument.argument_finished) {
+                      setSelectedArgument(argument);
+                      setShowFinishedDialog(true);
+                    } else {
+                      handleArgumentClick(argument);
+                    }
+                  }}
                 >
                   <h3>{argument.argument_topic}</h3>
                   <p className="partner-email">With: {argument.spouse_email}</p>
                   <div className="argument-status">
-                    <span className={`status-badge ${!argument.argument_deadline ? 'inactive' : ''}`}>
-                      {argument.argument_deadline ? 'Active' : 'Inactive'}
+                    <span className={`status-badge ${argument.argument_finished ? 'finished' : argument.spouse_accepted ? 'active' : 'pending'}`}>
+                      {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
                     </span>
-                    {!argument.argument_deadline ? (
-                      <span className="status-text">Deadline set and editor will be activated within 1 hour.</span>
-                    ) : (
-                      <span className="status-text">Click to write your say</span>
+                    {getStatusMessage(argument) && (
+                      <span className="status-text">{getStatusMessage(argument)}</span>
                     )}
-                    {argument.argument_deadline && (
+                    {argument.argument_deadline && !argument.argument_finished && (
                       <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
                     )}
                   </div>
@@ -197,10 +298,60 @@ function Dashboard() {
             </div>
           ) : (
             <div className="no-arguments">
-              <p>No active discussions</p>
+              <p>No {activeFilter} discussions</p>
             </div>
           )}
         </section>
+
+        {showFinishedDialog && selectedArgument && (
+          <div className="dialog-overlay">
+            <div className="finished-dialog">
+              <h3>{selectedArgument.argument_topic}</h3>
+              <p>Choose which response to view:</p>
+              <div className="dialog-buttons">
+                <button onClick={() => handleReadResponse(true)}>
+                  Read what you said
+                </button>
+                <button onClick={() => handleReadResponse(false)}>
+                  Read what your partner said
+                </button>
+              </div>
+              <button className="close-dialog" onClick={() => setShowFinishedDialog(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showAcceptanceDialog && selectedPendingArgument && (
+          <div className="dialog-overlay">
+            <div className="acceptance-dialog">
+              <h3>Accept Discussion Invitation</h3>
+              <p>Would you like to accept this discussion invitation?</p>
+              <p className="argument-topic">{selectedPendingArgument.argument_topic}</p>
+              <div className="dialog-buttons">
+                <button 
+                  onClick={() => handleAcceptanceResponse(true)}
+                  className="accept-button"
+                >
+                  Accept
+                </button>
+                <button 
+                  onClick={() => handleAcceptanceResponse(false)}
+                  className="reject-button"
+                >
+                  Reject
+                </button>
+              </div>
+              <button 
+                className="close-dialog" 
+                onClick={() => setShowAcceptanceDialog(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

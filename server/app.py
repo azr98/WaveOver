@@ -170,9 +170,9 @@ def submit_argument():
     'reminder_time_four_hours': {'S': ''},
     'argument_deadline': {'S': ''},
     'argument_finished': {'BOOL': False},
+    'spouse_accepted': {'BOOL': False},
     'last_email_sent': {'S': ''}
 }
-    
     
     response = dynamodb.put_item(TableName=argument_table, Item=item)
     # print(f"Response from submit_argument route is {response}", file=sys.stderr)
@@ -398,6 +398,36 @@ def handle_feedback():
     except Exception as e:
         app.logger.error(f"Error handling report: {str(e)}")
         return jsonify({"error": "Failed to process report"}), 500
+
+@app.route('/update_spouse_acceptance', methods=['POST'])
+def update_spouse_acceptance():
+    try:
+        data = request.get_json()
+        user_email = data['user_email']
+        submission_time = data['submission_time']
+        accepted = data['accepted']
+
+        # Construct the key
+        key = {
+            'user_email': {'S': user_email},
+            'submission_time': {'S': submission_time}
+        }
+
+        # Update the spouse_accepted field
+        update_expression = 'SET spouse_accepted = :accepted'
+        expression_attribute_values = {
+            ':accepted': {'BOOL': True}
+        }
+
+        # Update the item
+        update_response = update_argument(key, update_expression, expression_attribute_values)
+        app.logger.info(f"Update spouse acceptance response: {update_response}")
+
+        return jsonify({'message': 'Spouse acceptance status updated successfully'}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error updating spouse acceptance: {str(e)}")
+        return jsonify({'error': 'Failed to update spouse acceptance status'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
