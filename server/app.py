@@ -19,8 +19,6 @@ import json
 from logging.handlers import RotatingFileHandler
 
 
-# Scheduler to handle timed tasks
-logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "https://dev.waveover.info"}})
