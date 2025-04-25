@@ -28,4 +28,5 @@ RUN mkdir -p /var/log/waveover
 
 
 # Command to run the Flask application
-CMD ["sh", "-c", "python app.py >> /var/log/waveover/flask.log 2>&1"]
+CMD ["python", "app.py"]
+

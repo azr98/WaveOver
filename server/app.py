@@ -16,6 +16,8 @@ import time
 from botocore.exceptions import ConnectTimeoutError
 from botocore.config import Config
 import json
+from logging.handlers import RotatingFileHandler
+
 
 # Scheduler to handle timed tasks
 logging.basicConfig(format = '%(levelname)s:%(name)s:%(message)s', datefmt="%d-%m %H:%M:%S",level=logging.DEBUG,filename= 'logs.log')
@@ -25,9 +27,20 @@ CORS(app, resources={r"/*": {"origins": "https://dev.waveover.info"}})
 
 
 # Configure Flask logging
-# app.logger.setLevel(logging.INFO)  # Set log level to INFO
-# handler = logging.FileHandler('app.log')  # Log to a file
-# app.logger.addHandler(handler)
+if not os.path.exists('/var/log/waveover'):
+    os.makedirs('/var/log/waveover')
+
+file_handler = RotatingFileHandler('/var/log/waveover/flask.log', maxBytes=10*1024*1024, backupCount=5)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+app.logger.addHandler(file_handler)
+app.logger.addHandler(stream_handler)
+app.logger.setLevel(logging.INFO)
 
 # AWS SDK Boto3 clients
 ses = boto3.client('ses', region_name='eu-west-1')
