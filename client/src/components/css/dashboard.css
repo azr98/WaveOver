@@ -281,7 +281,13 @@
 
 .argument-card.pending {
   opacity: 0.8;
-  cursor: not-allowed;
+  cursor: pointer;
+  border: 1px solid #ffc107;
+}
+
+.argument-card.pending:hover {
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
 }
 
 .dialog-overlay {

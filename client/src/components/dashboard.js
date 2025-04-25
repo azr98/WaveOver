@@ -142,11 +142,18 @@ function Dashboard() {
       });
 
       if (response.status === 200) {
-        // Refresh the arguments list
-        await fetchArguments(getUserEmail());
+        // Force a complete refresh of the arguments list
+        const userEmail = getUserEmail();
+        await fetchArguments(userEmail);
+        
+        // Clear the selected argument and close the dialog
+        setSelectedPendingArgument(null);
         setShowAcceptanceDialog(false);
+        
         if (accepted) {
           alert('You can start writing this discussion in the active section');
+          // Force a re-render by updating the filter
+          setActiveFilter('active');
         }
       }
     } catch (error) {

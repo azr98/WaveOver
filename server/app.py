@@ -429,7 +429,7 @@ def update_spouse_acceptance():
         # Update the spouse_accepted field
         update_expression = 'SET spouse_accepted = :accepted'
         expression_attribute_values = {
-            ':accepted': {'BOOL': True}
+            ':accepted': {'BOOL': accepted}
         }
 
         # Update the item
