@@ -44,29 +44,41 @@ function Dashboard() {
       
       // Parse the DynamoDB response
       const parsedArguments = items.map(arg => {
+        console.log('Processing argument:', arg);
+        
+        // Safely extract boolean values with fallbacks
+        const spouseAccepted = arg.spouse_accepted?.BOOL ?? false;
+        const argumentFinished = arg.argument_finished?.BOOL ?? false;
+        
+        console.log('Extracted values:', {
+          spouseAccepted,
+          argumentFinished,
+          submissionTime: arg.submission_time?.S
+        });
+
         let argumentObject = {
-          argument_topic: arg.argument_topic.S,
-          user_email: arg.user_email.S,
-          spouse_email: arg.spouse_email.S,
-          last_email_sent: arg.last_email_sent.S,
-          argument_deadline: arg.argument_deadline.S,
-          submission_time: arg.submission_time.S,
-          spouse_accepted: arg.spouse_accepted.BOOL || false,
-          argument_finished: arg.argument_finished.BOOL || false
+          argument_topic: arg.argument_topic?.S || '',
+          user_email: arg.user_email?.S || '',
+          spouse_email: arg.spouse_email?.S || '',
+          last_email_sent: arg.last_email_sent?.S || '',
+          argument_deadline: arg.argument_deadline?.S || '',
+          submission_time: arg.submission_time?.S || '',
+          spouse_accepted: spouseAccepted,
+          argument_finished: argumentFinished
         };
 
-        console.log("userEmail in dashboard", userEmail);
-        if (userEmail === arg.user_email.S) {
-          argumentObject.user_response = arg.user_response.S
+        if (userEmail === arg.user_email?.S) {
+          argumentObject.user_response = arg.user_response?.S || '';
         } else {
-          argumentObject.spouse_response = arg.spouse_response.S
+          argumentObject.spouse_response = arg.spouse_response?.S || '';
         }
         
+        console.log('Created argument object:', argumentObject);
         return argumentObject;
       });
       
+      console.log("Final parsed arguments:", parsedArguments);
       setArgumentsList(parsedArguments);
-      console.log("setArgumentsList updated with:", parsedArguments);
     } catch (error) {
       console.error('Error fetching arguments:', error);
       setArgumentsList(['No active arguments']);
@@ -180,10 +192,21 @@ function Dashboard() {
       return [];
     }
 
-    return argumentsList.filter(argument => {
+    console.log('Filtering arguments with current list:', argumentsList);
+    console.log('Active filter:', activeFilter);
+
+    const filtered = argumentsList.filter(argument => {
       const isActive = argument.spouse_accepted && !argument.argument_finished;
       const isPending = !argument.spouse_accepted;
       const isFinished = argument.argument_finished;
+
+      console.log('Checking argument:', {
+        topic: argument.argument_topic,
+        spouse_accepted: argument.spouse_accepted,
+        isActive,
+        isPending,
+        isFinished
+      });
 
       switch (activeFilter) {
         case 'active':
@@ -196,6 +219,9 @@ function Dashboard() {
           return true;
       }
     });
+
+    console.log('Filtered results:', filtered);
+    return filtered;
   };
 
   const getStatusMessage = (argument) => {

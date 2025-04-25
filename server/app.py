@@ -225,6 +225,10 @@ def get_active_arguments():
     for argument in response['Items']:
         user_email = argument['user_email']['S']
         spouse_email = argument['spouse_email']['S']
+        spouse_accepted = argument.get('spouse_accepted', {}).get('BOOL', False)
+        
+        app.logger.info(f'Processing argument: {argument}')
+        app.logger.info(f'spouse_accepted value: {spouse_accepted}')
 
         if check_clerk_user_exists(user_email) and check_clerk_user_exists(spouse_email):
             arguments.append(argument)
