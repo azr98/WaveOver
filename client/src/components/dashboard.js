@@ -17,6 +17,7 @@ function Dashboard() {
   const [showFinishedDialog, setShowFinishedDialog] = useState(false);
   const [showAcceptanceDialog, setShowAcceptanceDialog] = useState(false);
   const [selectedPendingArgument, setSelectedPendingArgument] = useState(null);
+  const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -41,7 +42,7 @@ function Dashboard() {
         return;
       }
       
-      // Parse the DynamoDB response. Set response based on who is logged in
+      // Parse the DynamoDB response
       const parsedArguments = items.map(arg => {
         let argumentObject = {
           argument_topic: arg.argument_topic.S,
@@ -49,7 +50,9 @@ function Dashboard() {
           spouse_email: arg.spouse_email.S,
           last_email_sent: arg.last_email_sent.S,
           argument_deadline: arg.argument_deadline.S,
-          submission_time: arg.submission_time.S 
+          submission_time: arg.submission_time.S,
+          spouse_accepted: arg.spouse_accepted.BOOL || false,
+          argument_finished: arg.argument_finished.BOOL || false
         };
 
         console.log("userEmail in dashboard", userEmail);
@@ -142,18 +145,29 @@ function Dashboard() {
       });
 
       if (response.status === 200) {
-        // Force a complete refresh of the arguments list
-        const userEmail = getUserEmail();
-        await fetchArguments(userEmail);
+        // Update the arguments list directly
+        const updatedArguments = argumentsList.map(arg => {
+          if (arg.submission_time === selectedPendingArgument.submission_time) {
+            return { ...arg, spouse_accepted: accepted };
+          }
+          return arg;
+        });
         
-        // Clear the selected argument and close the dialog
+        setArgumentsList(updatedArguments);
         setSelectedPendingArgument(null);
         setShowAcceptanceDialog(false);
         
         if (accepted) {
-          alert('You can start writing this discussion in the active section');
-          // Force a re-render by updating the filter
           setActiveFilter('active');
+          setNotification({
+            message: 'Discussion now active. Write away!',
+            topic: selectedPendingArgument.argument_topic
+          });
+          
+          // Clear notification after 5 seconds
+          setTimeout(() => {
+            setNotification(null);
+          }, 5000);
         }
       }
     } catch (error) {
@@ -167,13 +181,17 @@ function Dashboard() {
     }
 
     return argumentsList.filter(argument => {
+      const isActive = argument.spouse_accepted && !argument.argument_finished;
+      const isPending = !argument.spouse_accepted;
+      const isFinished = argument.argument_finished;
+
       switch (activeFilter) {
         case 'active':
-          return argument.spouse_accepted && !argument.argument_finished;
+          return isActive;
         case 'pending':
-          return !argument.spouse_accepted;
+          return isPending;
         case 'finished':
-          return argument.argument_finished;
+          return isFinished;
         default:
           return true;
       }
@@ -247,6 +265,13 @@ function Dashboard() {
             Detailed help
           </Link>
         </div>
+
+        {notification && (
+          <div className="notification-banner">
+            <p>{notification.message}</p>
+            <p className="notification-topic">{notification.topic}</p>
+          </div>
+        )}
 
         <section className="active-arguments-section">
           <h2>Active Discussions</h2>

@@ -200,21 +200,19 @@ def get_active_arguments():
     app.logger.info('Query Parameters: %s', request.args)
 
     user_email = request.args.get('user_email')
-    # Define the expression attribute values to only get argument_finishes == False entries
+    # Define the expression attribute values to get all arguments for the user
     expression_attribute_values = {
-        ':false_value': {'BOOL': False},
-         ':user_email': {'S': user_email}
-        }
+        ':user_email': {'S': user_email}
+    }
 
-        # Define the projection expression using the placeholder names
+    # Define the filter expression to get all arguments where the user is either the initiator or spouse
     filter_expression = (
-        'argument_finished = :false_value AND (user_email = :user_email OR spouse_email = :user_email)'
+        'user_email = :user_email OR spouse_email = :user_email'
     )
 
+    projection_expression = 'user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent, user_response, spouse_response, spouse_accepted'
 
-    projection_expression = 'user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent, user_response, spouse_response'
-
-        # Perform the scan operation
+    # Perform the scan operation
     response = dynamodb.scan(
         TableName=argument_table,
         FilterExpression=filter_expression,
@@ -231,9 +229,7 @@ def get_active_arguments():
         if check_clerk_user_exists(user_email) and check_clerk_user_exists(spouse_email):
             arguments.append(argument)
 
-    print(f'get_active_arguments response from scan for arg list: {response}')
-
-
+    app.logger.info(f'get_active_arguments response: {arguments}')
     return jsonify(arguments), 200
 
 

@@ -407,4 +407,46 @@
 
 .reject-button:hover {
   background-color: #c82333;
+}
+
+.notification-banner {
+  background-color: #28a745;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  animation: slideIn 0.5s ease-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.notification-banner p {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.notification-topic {
+  font-weight: bold;
+  margin-top: 5px !important;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
 } 
