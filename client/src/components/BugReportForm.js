@@ -9,7 +9,7 @@ const BugReportForm = () => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const [isBug, setIsBug] = useState(true);
+  const [isBug, setIsBug] = useState(false);
   const [bugSeverity, setBugSeverity] = useState('major');
 
   const handleSubmit = async (e) => {
@@ -149,7 +149,7 @@ const BugReportForm = () => {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Describe the bug..."
+              placeholder={isBug ? "Describe the bug..." : "Give your feedback here..."}
               style={{
                 width: '100%',
                 minHeight: '100px',
