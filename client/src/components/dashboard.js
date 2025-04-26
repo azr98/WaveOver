@@ -18,6 +18,7 @@ function Dashboard() {
   const [showAcceptanceDialog, setShowAcceptanceDialog] = useState(false);
   const [selectedPendingArgument, setSelectedPendingArgument] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [activeView, setActiveView] = useState('display');
   const navigate = useNavigate();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -85,9 +86,24 @@ function Dashboard() {
     }
   };
 
+  // Add new function to check if user has active or pending arguments
+  const hasActiveOrPendingArguments = () => {
+    if (!Array.isArray(argumentsList) || argumentsList[0] === 'No active arguments') {
+      return false;
+    }
+    return argumentsList.some(arg => 
+      (!arg.argument_finished && arg.spouse_accepted) || // Active
+      !arg.spouse_accepted // Pending
+    );
+  };
+
+  // Update useEffect to set initial view
   useEffect(() => {
     if (user) {
-      fetchArguments(getUserEmail());
+      fetchArguments(getUserEmail()).then(() => {
+        // Set initial view based on whether user has active/pending arguments
+        setActiveView(hasActiveOrPendingArguments() ? 'display' : 'submit');
+      });
     }
   }, [user]);
 
@@ -101,7 +117,7 @@ function Dashboard() {
         };
 
         const response = await axios.post('/api/submit_argument', argumentSubmitData);
-        console.log('API call successful:', response.data);
+        console.log('argument submitted:', response.data);
         setInitiated(true);
         setShowSubmitForm(false);
         // Clear the form fields
@@ -200,14 +216,6 @@ function Dashboard() {
       const isPending = !argument.spouse_accepted;
       const isFinished = argument.argument_finished;
 
-      console.log('Checking argument:', {
-        topic: argument.argument_topic,
-        spouse_accepted: argument.spouse_accepted,
-        isActive,
-        isPending,
-        isFinished
-      });
-
       switch (activeFilter) {
         case 'active':
           return isActive;
@@ -244,52 +252,19 @@ function Dashboard() {
     <div className="dashboard-container">
       <Header />
       <div className="dashboard-content">
-        <section className="new-argument-section">
-          <h2>Start a New Discussion</h2>
-          {showSubmitForm ? (
-            <div className="argument-form">
-              <div className="form-group">
-                <label htmlFor="spouseEmail">Partner's Email</label>
-                <input
-                  id="spouseEmail"
-                  type="email"
-                  placeholder="Enter their email address"
-                  value={spouseEmail}
-                  onChange={(e) => setSpouseEmail(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="argumentTopic">Discussion Topic</label>
-                <input
-                  id="argumentTopic"
-                  type="text"
-                  placeholder="What would you like to discuss?"
-                  value={argumentTopic}
-                  onChange={(e) => setArgumentTopic(e.target.value)}
-                />
-              </div>
-              <button 
-                onClick={handleInitiate}
-                className="submit-button"
-                disabled={!spouseEmail || !argumentTopic}
-              >
-                Start Discussion
-              </button>
-            </div>
-          ) : (
-            <div className="success-message">
-              <p>Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
-              <button onClick={handleStartNewArgument} className="new-discussion-button">
-                Start Another Discussion
-              </button>
-            </div>
-          )}
-        </section>
-
-        <div className="help-link-container">
-          <Link to="/help" className="help-link">
-            Detailed help
-          </Link>
+        <div className="main-view-toggle">
+          <button 
+            className={`main-toggle-button ${activeView === 'submit' ? 'active' : ''}`}
+            onClick={() => setActiveView('submit')}
+          >
+            Submit New Discussion
+          </button>
+          <button 
+            className={`main-toggle-button ${activeView === 'display' ? 'active' : ''}`}
+            onClick={() => setActiveView('display')}
+          >
+            Display Current Discussions
+          </button>
         </div>
 
         {notification && (
@@ -299,67 +274,117 @@ function Dashboard() {
           </div>
         )}
 
-        <section className="active-arguments-section">
-          <h2>Active Discussions</h2>
-          <div className="filter-buttons">
-            <button 
-              className={`filter-button ${activeFilter === 'active' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('active')}
-            >
-              Active
-            </button>
-            <button 
-              className={`filter-button ${activeFilter === 'pending' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('pending')}
-            >
-              Pending
-            </button>
-            <button 
-              className={`filter-button ${activeFilter === 'finished' ? 'active' : ''}`}
-              onClick={() => setActiveFilter('finished')}
-            >
-              Finished
-            </button>
-          </div>
-          {getFilteredArguments().length > 0 ? (
-            <div className="arguments-grid">
-              {getFilteredArguments().map((argument, index) => (
-                <div 
-                  key={index} 
-                  className={`argument-card ${!argument.spouse_accepted ? 'pending' : ''}`}
-                  onClick={() => {
-                    if (!argument.spouse_accepted) {
-                      handlePendingArgumentClick(argument);
-                    } else if (argument.argument_finished) {
-                      setSelectedArgument(argument);
-                      setShowFinishedDialog(true);
-                    } else {
-                      handleArgumentClick(argument);
-                    }
-                  }}
-                >
-                  <h3>{argument.argument_topic}</h3>
-                  <p className="partner-email">With: {argument.spouse_email}</p>
-                  <div className="argument-status">
-                    <span className={`status-badge ${argument.argument_finished ? 'finished' : argument.spouse_accepted ? 'active' : 'pending'}`}>
-                      {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
-                    </span>
-                    {getStatusMessage(argument) && (
-                      <span className="status-text">{getStatusMessage(argument)}</span>
-                    )}
-                    {argument.argument_deadline && !argument.argument_finished && (
-                      <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
-                    )}
-                  </div>
+        {activeView === 'submit' ? (
+          <section className="new-argument-section">
+            <h2>Start a New Discussion</h2>
+            {showSubmitForm ? (
+              <div className="argument-form">
+                <div className="form-group">
+                  <label htmlFor="spouseEmail">Partner's Email</label>
+                  <input
+                    id="spouseEmail"
+                    type="email"
+                    placeholder="Enter their email address"
+                    value={spouseEmail}
+                    onChange={(e) => setSpouseEmail(e.target.value)}
+                  />
                 </div>
-              ))}
+                <div className="form-group">
+                  <label htmlFor="argumentTopic">Discussion Topic</label>
+                  <input
+                    id="argumentTopic"
+                    type="text"
+                    placeholder="What would you like to discuss?"
+                    value={argumentTopic}
+                    onChange={(e) => setArgumentTopic(e.target.value)}
+                  />
+                </div>
+                <button 
+                  onClick={handleInitiate}
+                  className="submit-button"
+                  disabled={!spouseEmail || !argumentTopic}
+                >
+                  Start Discussion
+                </button>
+              </div>
+            ) : (
+              <div className="success-message">
+                <p>Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
+                <button onClick={handleStartNewArgument} className="new-discussion-button">
+                  Start Another Discussion
+                </button>
+              </div>
+            )}
+          </section>
+        ) : (
+          <section className="active-arguments-section">
+            <h2>Current Discussions</h2>
+            <div className="filter-buttons">
+              <button 
+                className={`filter-button ${activeFilter === 'active' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('active')}
+              >
+                Active
+              </button>
+              <button 
+                className={`filter-button ${activeFilter === 'pending' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('pending')}
+              >
+                Pending
+              </button>
+              <button 
+                className={`filter-button ${activeFilter === 'finished' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('finished')}
+              >
+                Finished
+              </button>
             </div>
-          ) : (
-            <div className="no-arguments">
-              <p>No {activeFilter} discussions</p>
-            </div>
-          )}
-        </section>
+            {getFilteredArguments().length > 0 ? (
+              <div className="arguments-grid">
+                {getFilteredArguments().map((argument, index) => (
+                  <div 
+                    key={index} 
+                    className={`argument-card ${!argument.spouse_accepted ? 'pending' : ''}`}
+                    onClick={() => {
+                      if (!argument.spouse_accepted) {
+                        handlePendingArgumentClick(argument);
+                      } else if (argument.argument_finished) {
+                        setSelectedArgument(argument);
+                        setShowFinishedDialog(true);
+                      } else {
+                        handleArgumentClick(argument);
+                      }
+                    }}
+                  >
+                    <h3>{argument.argument_topic}</h3>
+                    <p className="partner-email">With: {argument.spouse_email}</p>
+                    <div className="argument-status">
+                      <span className={`status-badge ${argument.argument_finished ? 'finished' : argument.spouse_accepted ? 'active' : 'pending'}`}>
+                        {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
+                      </span>
+                      {getStatusMessage(argument) && (
+                        <span className="status-text">{getStatusMessage(argument)}</span>
+                      )}
+                      {argument.argument_deadline && !argument.argument_finished && (
+                        <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-arguments">
+                <p>No {activeFilter} discussions</p>
+              </div>
+            )}
+          </section>
+        )}
+
+        <div className="help-link-container">
+          <Link to="/help" className="help-link">
+            Detailed help
+          </Link>
+        </div>
 
         {showFinishedDialog && selectedArgument && (
           <div className="dialog-overlay">
