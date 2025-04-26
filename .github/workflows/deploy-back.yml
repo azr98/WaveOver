@@ -8,7 +8,7 @@ on:
       - '!server/scripts/**'
       - '.github/workflows/deploy-back.yml'
     branches:
-      - flask-cw-logging
+      - 21stdev-ui
 
 jobs:
   build-and-deploy:
