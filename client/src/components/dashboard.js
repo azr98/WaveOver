@@ -276,7 +276,6 @@ function Dashboard() {
 
         {activeView === 'submit' ? (
           <section className="new-argument-section">
-            <h2>Start a New Discussion</h2>
             {showSubmitForm ? (
               <div className="argument-form">
                 <div className="form-group">
@@ -318,7 +317,6 @@ function Dashboard() {
           </section>
         ) : (
           <section className="active-arguments-section">
-            <h2>Current Discussions</h2>
             <div className="filter-buttons">
               <button 
                 className={`filter-button ${activeFilter === 'active' ? 'active' : ''}`}
