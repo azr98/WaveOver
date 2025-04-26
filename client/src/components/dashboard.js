@@ -267,6 +267,10 @@ function Dashboard() {
           </button>
         </div>
 
+        <p style={{ color: 'red', marginTop: '20px', fontSize: '0.9em', textAlign: 'center' }}>
+          Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
+        </p>
+
         {notification && (
           <div className="notification-banner">
             <p>{notification.message}</p>
@@ -312,9 +316,6 @@ function Dashboard() {
                 <button onClick={handleStartNewArgument} className="new-discussion-button">
                   Start Another Discussion
                 </button>
-                <p style={{ color: 'red', marginTop: '20px', fontSize: '0.9em', textAlign: 'center' }}>
-                  Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
-                </p>
               </div>
             )}
           </section>
