@@ -274,6 +274,35 @@ function Dashboard() {
     return '';
   };
 
+  // Add function to format date with ordinal
+  const formatDateWithOrdinal = (dateString) => {
+    const date = new Date(dateString);
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const dayOfWeek = days[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    // Get ordinal suffix
+    const getOrdinalSuffix = (n) => {
+      const s = ['th', 'st', 'nd', 'rd'];
+      const v = n % 100;
+      return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    };
+
+    // Format time in 12-hour format
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+
+    return `${dayOfWeek} ${getOrdinalSuffix(day)} ${month} ${year} - ${formattedHours}:${formattedMinutes} ${ampm}`;
+  };
+
   if (!user) {
     return <div className="loading">Loading...</div>;
   }
@@ -398,7 +427,9 @@ function Dashboard() {
                         <span className="status-text">{getStatusMessage(argument)}</span>
                       )}
                       {argument.argument_deadline && !argument.argument_finished && (
-                        <span className="deadline">Deadline: {new Date(argument.argument_deadline).toLocaleDateString()}</span>
+                        <span className="deadline">
+                          Deadline: {formatDateWithOrdinal(argument.argument_deadline)}
+                        </span>
                       )}
                     </div>
                   </div>
