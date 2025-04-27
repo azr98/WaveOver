@@ -232,6 +232,26 @@ function Dashboard() {
     return filtered;
   };
 
+  // Add new function to calculate argument counts
+  const getArgumentCounts = () => {
+    if (!Array.isArray(argumentsList) || argumentsList[0] === 'No active arguments') {
+      return { active: 0, pending: 0, finished: 0, total: 0 };
+    }
+
+    return argumentsList.reduce((counts, argument) => {
+      const isActive = argument.spouse_accepted && !argument.argument_finished;
+      const isPending = !argument.spouse_accepted;
+      const isFinished = argument.argument_finished;
+
+      if (isActive) counts.active++;
+      if (isPending) counts.pending++;
+      if (isFinished) counts.finished++;
+      counts.total++;
+
+      return counts;
+    }, { active: 0, pending: 0, finished: 0, total: 0 });
+  };
+
   const getStatusMessage = (argument) => {
     const userEmail = getUserEmail();
     if (!argument.spouse_accepted) {
@@ -263,7 +283,7 @@ function Dashboard() {
             className={`main-toggle-button ${activeView === 'display' ? 'active' : ''}`}
             onClick={() => setActiveView('display')}
           >
-            Display Current Discussions
+            Display Current Discussions ({getArgumentCounts().total})
           </button>
         </div>
 
@@ -326,19 +346,19 @@ function Dashboard() {
                 className={`filter-button ${activeFilter === 'active' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('active')}
               >
-                Active
+                Active ({getArgumentCounts().active})
               </button>
               <button 
                 className={`filter-button ${activeFilter === 'pending' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('pending')}
               >
-                Pending
+                Pending ({getArgumentCounts().pending})
               </button>
               <button 
                 className={`filter-button ${activeFilter === 'finished' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('finished')}
               >
-                Finished
+                Finished ({getArgumentCounts().finished})
               </button>
             </div>
             {getFilteredArguments().length > 0 ? (
