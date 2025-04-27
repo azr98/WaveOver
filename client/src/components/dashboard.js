@@ -101,8 +101,18 @@ function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchArguments(getUserEmail()).then(() => {
-        // Set initial view based on whether user has active/pending arguments
-        setActiveView(hasActiveOrPendingArguments() ? 'display' : 'submit');
+        const counts = getArgumentCounts();
+        
+        // Set initial view and filter based on argument counts
+        if (counts.active > 0) {
+          setActiveView('display');
+          setActiveFilter('active');
+        } else if (counts.pending > 0) {
+          setActiveView('display');
+          setActiveFilter('pending');
+        } else {
+          setActiveView('submit');
+        }
       });
     }
   }, [user]);
