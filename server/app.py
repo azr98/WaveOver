@@ -170,7 +170,11 @@ def submit_argument():
     # Store initial argument entry in DynamoDB
     item={
     'user_email': {'S': data['user_email']},
+    'user_firstname': {'S': data['user_firstname']},
+    'user_lastname': {'S': data['user_lastname']},
     'spouse_email': {'S': data['spouse_email']},
+    'spouse_firstname': {'S': data['spouse_firstname']},
+    'spouse_lastname': {'S': data['spouse_lastname']},
     'submission_time': {'S': submission_time},
     'argument_topic': {'S': data['argument_topic']},
     'user_response': {'S': ''},
@@ -186,7 +190,6 @@ def submit_argument():
 }
     
     response = dynamodb.put_item(TableName=argument_table, Item=item)
-    # print(f"Response from submit_argument route is {response}", file=sys.stderr)
     
 
     return jsonify({'message': 'Initial argument entry submitted'}), 201
@@ -417,6 +420,8 @@ def update_spouse_acceptance():
         user_email = data['user_email']
         submission_time = data['submission_time']
         accepted = data['accepted']
+        spouse_firstname = data['spouse_firstname']
+        spouse_lastname = data['spouse_lastname']
 
         # Construct the key
         key = {
@@ -424,10 +429,12 @@ def update_spouse_acceptance():
             'submission_time': {'S': submission_time}
         }
 
-        # Update the spouse_accepted field
-        update_expression = 'SET spouse_accepted = :accepted'
+        # Update the spouse_accepted field and spouse name fields
+        update_expression = 'SET spouse_accepted = :accepted, spouse_firstname = :spouse_firstname, spouse_lastname = :spouse_lastname'
         expression_attribute_values = {
-            ':accepted': {'BOOL': accepted}
+            ':accepted': {'BOOL': accepted},
+            ':spouse_firstname': {'S': spouse_firstname},
+            ':spouse_lastname': {'S': spouse_lastname}
         }
 
         # Update the item

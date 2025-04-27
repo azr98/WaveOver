@@ -14,7 +14,11 @@ def lambda_handler(event, context):
             print('The trigger is DynamoDB INSERT', event['Records'][0]['eventName'] , event['Records'][0]['eventSource'])
             submission_time = event['Records'][0]['dynamodb']['NewImage']['submission_time']['S']
             user_email = event['Records'][0]['dynamodb']['Keys']['user_email']['S']
+            user_firstname = event['Records'][0]['dynamodb']['NewImage']['user_firstname']['S']
+            user_lastname = event['Records'][0]['dynamodb']['NewImage']['user_lastname']['S']
             spouse_email = event['Records'][0]['dynamodb']['NewImage']['spouse_email']['S']
+            spouse_firstname = event['Records'][0]['dynamodb']['NewImage']['spouse_firstname']['S']
+            spouse_lastname = event['Records'][0]['dynamodb']['NewImage']['spouse_lastname']['S']
             argument_topic = event['Records'][0]['dynamodb']['NewImage']['argument_topic']['S']
 
             # Initialize clients
@@ -23,10 +27,21 @@ def lambda_handler(event, context):
             table = 'WaveOver_Dev'
 
             # Composing email content
-            email_body = f'''You are invited to write down your say in a discussion about '{argument_topic}' between {user_email} and {spouse_email}. \n Sign up or login here.
-            After both of you have an account you will have 3 days to write what you want and will receive a reminder 48, 24, 12 and 4 horus before the deadline. 
-            \n After 3 days each persons say is exchanfed and emailed to the other'''
-            email_subject = f'Talk about {argument_topic} between {user_email} and {spouse_email}'
+            email_body = f'''{user_firstname} {user_lastname} wants to discuss '{argument_topic}' with {spouse_firstname} {spouse_lastname}
+            \n Once {spouse_firstname} signs up or logs in at dev.waveover.info and accepts the discussion, a 3 day timer will start.
+            \n
+            Both of you have all that time to write your say in the text editor. No more, no less.
+            Open the text editor by clicking 'Display Current Discussions' -> 'Active' -> and click the discussion.
+            \n After 3 days what each of you wrote is sent to the other by email automatically. 
+            Both of {user_firstname} and {spouse_firstname} will receive a reminder 2 days, 1 day,, 12 hours and 4 hours before the 3 day deadline.
+
+            For a more detailed guide read here: https://waveover.info/help
+            \n
+            Thanks for using my app!
+            \n
+            Azhar , creator of WaveOver
+            '''
+            email_subject = f'Discussion about {argument_topic} between {user_firstname} {user_lastname} and {spouse_firstname} {spouse_lastname}'
             
             addresses = [user_email, spouse_email]
             email_sent_response = send_email(ses, addresses, email_subject, email_body)

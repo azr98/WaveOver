@@ -122,7 +122,11 @@ function Dashboard() {
       if (user) {
         const argumentSubmitData = {
           user_email: getUserEmail(),
+          user_firstname: user.firstName,
+          user_lastname: user.lastName,
           spouse_email: spouseEmail,
+          spouse_firstname: '',
+          spouse_lastname: '',
           argument_topic: argumentTopic
         };
 
@@ -418,7 +422,15 @@ function Dashboard() {
                     }}
                   >
                     <h3>{argument.argument_topic}</h3>
-                    <p className="partner-email">With: {argument.spouse_email}</p>
+                    <p className="partner-email">
+                      With: {argument.spouse_accepted || argument.argument_finished ? 
+                        (getUserEmail() === argument.user_email ? 
+                          `${argument.spouse_firstname} ${argument.spouse_lastname}` : 
+                          `${argument.user_firstname} ${argument.user_lastname}`) :
+                        (getUserEmail() === argument.user_email ? 
+                          argument.spouse_email : 
+                          argument.user_email)}
+                    </p>
                     <div className="argument-status">
                       <span className={`status-badge ${argument.argument_finished ? 'finished' : argument.spouse_accepted ? 'active' : 'pending'}`}>
                         {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
