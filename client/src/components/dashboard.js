@@ -183,7 +183,9 @@ function Dashboard() {
       const response = await axios.post('/api/update_spouse_acceptance', {
         user_email: selectedPendingArgument.user_email,
         submission_time: selectedPendingArgument.submission_time,
-        accepted: accepted
+        accepted: accepted,
+        spouse_firstname: user.firstName,
+        spouse_lastname: user.lastName
       });
 
       if (response.status === 200) {

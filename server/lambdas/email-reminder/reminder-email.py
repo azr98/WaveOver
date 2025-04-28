@@ -246,11 +246,17 @@ def lambda_handler(event, context):
                     subject_reminder = subject_reminder[0].upper() + subject_reminder[1:]
 
                     email_subject = f'Dev - Discussion reminder for {argument_topic} : {subject_reminder} left'
-                    email_body = f''' Hi {user_firstname} and {spouse_firstname} !,\n
-                    
-                    There are {hours_left} hours left until responses are exchanged in your discussion about {argument_topic}'''
+                    email_body_html = f'''<!DOCTYPE html>
+                                <html>
+                                <body>
+                                <p>Hi {user_firstname} and {spouse_firstname} !</p>
+                                <p>There are {hours_left} hours left until responses are exchanged in your discussion about {argument_topic}</p>
+                                <p>Get back into by going to dev.waveover.info and click 'Display Current Discussions' -> 'Active' -> and click the discussion.</p>
+                                </body>
+                                </html>
+                                '''
 
-                    send_email(addresses, email_subject, email_body)
+                    send_email(addresses, email_subject, email_body_html    )
                     last_email_update = update_argument(key, update_expression, expression_attribute_values)
                     print(f"last_email_update happened response is: {last_email_update}")
     else:
