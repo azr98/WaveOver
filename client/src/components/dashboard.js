@@ -36,6 +36,7 @@ function Dashboard() {
         params: { user_email: userEmail }
       });
       console.log("fetchArguments response", response.data);
+      
       const items = response.data;
       if (!items || items.length === 0) {
         console.log("No active arguments found for user");
@@ -54,7 +55,11 @@ function Dashboard() {
         console.log('Extracted values:', {
           spouseAccepted,
           argumentFinished,
-          submissionTime: arg.submission_time?.S
+          submissionTime: arg.submission_time?.S,
+          userFirstname: arg.user_firstname?.S,
+          userLastname: arg.user_lastname?.S,
+          spouseFirstname: arg.spouse_firstname?.S,
+          spouseLastname: arg.spouse_lastname?.S
         });
 
         let argumentObject = {
@@ -65,7 +70,11 @@ function Dashboard() {
           argument_deadline: arg.argument_deadline?.S || '',
           submission_time: arg.submission_time?.S || '',
           spouse_accepted: spouseAccepted,
-          argument_finished: argumentFinished
+          argument_finished: argumentFinished,
+          user_firstname: arg.user_firstname?.S || '',
+          user_lastname: arg.user_lastname?.S || '',
+          spouse_firstname: arg.spouse_firstname?.S || '',
+          spouse_lastname: arg.spouse_lastname?.S || ''
         };
 
         if (userEmail === arg.user_email?.S) {

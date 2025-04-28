@@ -215,7 +215,14 @@ def get_active_arguments():
         'user_email = :user_email OR spouse_email = :user_email'
     )
 
-    projection_expression = 'user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent, user_response, spouse_response, spouse_accepted'
+    # Include all necessary fields in the projection expression
+    projection_expression = (
+        'user_email, spouse_email, argument_topic, reminder_time_two_days, '
+        'reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, '
+        'argument_deadline, submission_time, argument_finished, last_email_sent, '
+        'user_response, spouse_response, spouse_accepted, user_firstname, user_lastname, '
+        'spouse_firstname, spouse_lastname'
+    )
 
     # Perform the scan operation
     response = dynamodb.scan(
@@ -228,14 +235,13 @@ def get_active_arguments():
     arguments = []
 
     for argument in response['Items']:
-        user_email = argument['user_email']['S']
-        spouse_email = argument['spouse_email']['S']
-        spouse_accepted = argument.get('spouse_accepted', {}).get('BOOL', False)
-        
         app.logger.info(f'Processing argument: {argument}')
-        app.logger.info(f'spouse_accepted value: {spouse_accepted}')
+        app.logger.info(f'Name fields in argument: user_firstname={argument.get("user_firstname", {}).get("S")}, '
+                       f'user_lastname={argument.get("user_lastname", {}).get("S")}, '
+                       f'spouse_firstname={argument.get("spouse_firstname", {}).get("S")}, '
+                       f'spouse_lastname={argument.get("spouse_lastname", {}).get("S")}')
 
-        if check_clerk_user_exists(user_email) and check_clerk_user_exists(spouse_email):
+        if check_clerk_user_exists(user_email):
             arguments.append(argument)
 
     app.logger.info(f'get_active_arguments response: {arguments}')
