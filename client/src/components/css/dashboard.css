@@ -148,6 +148,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
+  padding: 1rem;
 }
 
 .argument-card {
@@ -156,6 +157,9 @@
   border-radius: 0.75rem;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .argument-card:hover {
@@ -166,18 +170,22 @@
 .argument-card h3 {
   font-size: 1.25rem;
   color: #2d3748;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  word-break: break-word;
 }
 
 .partner-email {
   color: #4a5568;
-  margin-bottom: 1rem;
+  margin: 0;
+  word-break: break-word;
 }
 
 .argument-status {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 0.5rem;
+  gap: 0.5rem;
 }
 
 .status-badge {
@@ -185,6 +193,7 @@
   border-radius: 4px;
   font-size: 0.8em;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .status-badge.active {
@@ -202,11 +211,19 @@
   color: white;
 }
 
+.status-text {
+  color: #4a5568;
+  font-size: 0.9em;
+  margin: 0;
+  flex: 1;
+  word-break: break-word;
+}
+
 .deadline {
-  display: block;
   color: #666;
   font-size: 0.9em;
-  margin-top: 4px;
+  margin: 0;
+  word-break: break-word;
 }
 
 .no-arguments {
