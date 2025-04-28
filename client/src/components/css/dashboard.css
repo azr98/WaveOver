@@ -324,7 +324,7 @@
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 20px;
+  margin: 20px 0;
 }
 
 .dialog-buttons button {
@@ -348,7 +348,10 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+  display: block;
+  width: 100%;
 }
 
 .close-dialog:hover {
@@ -394,7 +397,6 @@
   font-size: 14px;
   min-width: 100px;
   width: 100px;
-  margin-right: 10px;
   transition: background-color 0.3s;
 }
 
