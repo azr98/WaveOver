@@ -322,9 +322,9 @@
 
 .dialog-buttons {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: 10px;
-  margin: 20px 0;
+  margin-top: 20px;
 }
 
 .dialog-buttons button {
@@ -385,32 +385,38 @@
 }
 
 .accept-button {
-  background-color: #28a745;
+  background-color: #4CAF50;
   color: white;
-  padding: 10px 20px;
   border: none;
+  padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  min-width: 100px;
+  width: 100px;
   margin-right: 10px;
+  transition: background-color 0.3s;
 }
 
 .accept-button:hover {
-  background-color: #218838;
+  background-color: #45a049;
 }
 
 .reject-button {
-  background-color: #dc3545;
+  background-color: #f44336;
   color: white;
-  padding: 10px 20px;
   border: none;
+  padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  min-width: 100px;
+  width: 100px;
+  transition: background-color 0.3s;
 }
 
 .reject-button:hover {
-  background-color: #c82333;
+  background-color: #da190b;
 }
 
 .notification-banner {
