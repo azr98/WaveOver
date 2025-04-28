@@ -160,21 +160,25 @@ def log_request_info():
 @app.route('/submit_argument', methods=['POST'])
 def submit_argument():
     data = request.get_json()
-    # print(f"submit_argument route has been hit. Data is {data}" ,file=sys.stderr)
     app.logger.info('submit arg req', data)
     logging.info('submit arg req', data)
     submission_time = datetime.now(pytz.utc)
-    # submission_time = datetime.now()
     submission_time = submission_time.strftime("%Y-%m-%dT%H:%M:%S")
+
+    # Capitalize first and last names
+    user_firstname = data['user_firstname'].strip().capitalize()
+    user_lastname = data['user_lastname'].strip().capitalize()
+    spouse_firstname = data['spouse_firstname'].strip().capitalize()
+    spouse_lastname = data['spouse_lastname'].strip().capitalize()
 
     # Store initial argument entry in DynamoDB
     item={
     'user_email': {'S': data['user_email']},
-    'user_firstname': {'S': data['user_firstname']},
-    'user_lastname': {'S': data['user_lastname']},
+    'user_firstname': {'S': user_firstname},
+    'user_lastname': {'S': user_lastname},
     'spouse_email': {'S': data['spouse_email']},
-    'spouse_firstname': {'S': data['spouse_firstname']},
-    'spouse_lastname': {'S': data['spouse_lastname']},
+    'spouse_firstname': {'S': spouse_firstname},
+    'spouse_lastname': {'S': spouse_lastname},
     'submission_time': {'S': submission_time},
     'argument_topic': {'S': data['argument_topic']},
     'user_response': {'S': ''},
@@ -420,8 +424,10 @@ def update_spouse_acceptance():
         user_email = data['user_email']
         submission_time = data['submission_time']
         accepted = data['accepted']
-        spouse_firstname = data['spouse_firstname']
-        spouse_lastname = data['spouse_lastname']
+        
+        # Capitalize spouse first and last names
+        spouse_firstname = data['spouse_firstname'].strip().capitalize()
+        spouse_lastname = data['spouse_lastname'].strip().capitalize()
 
         # Construct the key
         key = {
