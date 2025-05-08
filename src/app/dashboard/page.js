@@ -1,7 +1,6 @@
 "use client";
 // Next.js dashboard page, refactored from src/components/dashboard.js
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
