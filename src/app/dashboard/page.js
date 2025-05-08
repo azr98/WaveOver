@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
-import "../../components/css/dashboard.css";
+import "../../components/react-archive/css/dashboard.css";
 
 export default function DashboardPage() {
   const [spouseEmail, setSpouseEmail] = useState("");
