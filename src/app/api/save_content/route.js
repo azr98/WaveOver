@@ -48,21 +48,47 @@ const DUMMY_ARGUMENTS = [
   },
 ];
 
-export async function GET(req) {
-  const { searchParams } = new URL(req.url);
-  const user_email = searchParams.get('user_email');
-  console.log('[API] /api/get_active_arguments called');
-  console.log('[API] Query params:', Object.fromEntries(searchParams.entries()));
+export async function POST(req) {
+  try {
+    const data = await req.json();
+    console.log('[API] save_content called with:', data);
 
-  let filtered = DUMMY_ARGUMENTS;
-  if (user_email) {
-    filtered = DUMMY_ARGUMENTS.filter(
-      (a) => a.user_email === user_email || a.spouse_email === user_email
+    const { argument, content, userEmail } = data;
+    const { submission_time, user_email, spouse_email } = argument;
+
+    // Find the argument in our dummy data
+    const argumentIndex = DUMMY_ARGUMENTS.findIndex(
+      (arg) => arg.submission_time === submission_time
     );
-    console.log(`[API] Filtered arguments for user_email=${user_email}:`, filtered);
-  } else {
-    console.log('[API] No user_email provided, returning all arguments.');
-  }
 
-  return NextResponse.json({ arguments: filtered });
-} 
+    if (argumentIndex === -1) {
+      console.log('[API] Argument not found:', submission_time);
+      return NextResponse.json(
+        { error: 'Argument not found' },
+        { status: 404 }
+      );
+    }
+
+    // Determine which field to update based on the user's email
+    if (userEmail === user_email) {
+      DUMMY_ARGUMENTS[argumentIndex].user_response = content;
+    } else if (userEmail === spouse_email) {
+      DUMMY_ARGUMENTS[argumentIndex].spouse_response = content;
+    } else {
+      console.log('[API] User not authorized:', { userEmail, user_email, spouse_email });
+      return NextResponse.json(
+        { error: 'Not authorized to update this argument' },
+        { status: 403 }
+      );
+    }
+
+    console.log('[API] Content saved successfully');
+    return NextResponse.json({ message: 'Content saved successfully' });
+  } catch (error) {
+    console.error('[API] Error saving content:', error);
+    return NextResponse.json(
+      { error: 'Failed to save content' },
+      { status: 500 }
+    );
+  }
+}

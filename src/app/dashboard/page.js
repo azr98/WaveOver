@@ -5,13 +5,14 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import "../../components/react-archive/css/dashboard.css";
+import axios from "axios";
 
 export default function DashboardPage() {
   const [spouseEmail, setSpouseEmail] = useState("");
   const [argumentTopic, setArgumentTopic] = useState("");
   const [initiated, setInitiated] = useState(false);
   const [showSubmitForm, setShowSubmitForm] = useState(true);
-  const [argumentsList, setArgumentsList] = useState(["No active arguments"]);
+  const [argumentsList, setArgumentsList] = useState({ arguments: [] });
   const [selectedArgument, setSelectedArgument] = useState(null);
   const [activeFilter, setActiveFilter] = useState("active");
   const [showFinishedDialog, setShowFinishedDialog] = useState(false);
@@ -27,53 +28,24 @@ export default function DashboardPage() {
     return user && user.emailAddresses && user.emailAddresses.length > 0 ? user.emailAddresses[0].emailAddress : '';
   };
 
-  const fetchArguments = async (userEmail) => {
+  const fetchArguments = async () => {
     try {
+      const userEmail = getUserEmail();
       console.log("calling get_active_arguments called with userEmail:", userEmail);
-      const response = await axios.get("/api/get_active_arguments", {
-        params: { user_email: userEmail },
-      });
+      const response = await axios.get(`/api/get_active_arguments?user_email=${userEmail}`);
       console.log("[API] get_active_arguments response:", response.data);
-      const items = response.data;
-      if (!items || items.length === 0) {
-        setArgumentsList(["No active arguments"]);
-        return;
-      }
-      const parsedArguments = items.map((arg) => {
-        const spouseAccepted = arg.spouse_accepted?.BOOL ?? false;
-        const argumentFinished = arg.argument_finished?.BOOL ?? false;
-        let argumentObject = {
-          argument_topic: arg.argument_topic?.S || '',
-          user_email: arg.user_email?.S || '',
-          spouse_email: arg.spouse_email?.S || '',
-          last_email_sent: arg.last_email_sent?.S || '',
-          argument_deadline: arg.argument_deadline?.S || '',
-          submission_time: arg.submission_time?.S || '',
-          spouse_accepted: spouseAccepted,
-          argument_finished: argumentFinished,
-          user_firstname: arg.user_firstname?.S || '',
-          user_lastname: arg.user_lastname?.S || '',
-          spouse_firstname: arg.spouse_firstname?.S || '',
-          spouse_lastname: arg.spouse_lastname?.S || '',
-        };
-        if (userEmail === arg.user_email?.S) {
-          argumentObject.user_response = arg.user_response?.S || '';
-        } else {
-          argumentObject.spouse_response = arg.spouse_response?.S || '';
-        }
-        return argumentObject;
-      });
-      setArgumentsList(parsedArguments);
+      setArgumentsList(response.data);
     } catch (error) {
-      setArgumentsList(["No active arguments"]);
+      console.error("Error fetching arguments:", error);
+      setArgumentsList({ arguments: [] });
     }
   };
 
   const getArgumentCounts = () => {
-    if (!Array.isArray(argumentsList) || argumentsList[0] === "No active arguments") {
+    if (!Array.isArray(argumentsList.arguments) || argumentsList.arguments.length === 0) {
       return { active: 0, pending: 0, finished: 0, total: 0 };
     }
-    return argumentsList.reduce((counts, argument) => {
+    return argumentsList.arguments.reduce((counts, argument) => {
       const isActive = argument.spouse_accepted && !argument.argument_finished;
       const isPending = !argument.spouse_accepted;
       const isFinished = argument.argument_finished;
@@ -86,10 +58,10 @@ export default function DashboardPage() {
   };
 
   const getFilteredArguments = () => {
-    if (!Array.isArray(argumentsList) || argumentsList[0] === "No active arguments") {
+    if (!Array.isArray(argumentsList.arguments) || argumentsList.arguments.length === 0) {
       return [];
     }
-    return argumentsList.filter((argument) => {
+    return argumentsList.arguments.filter((argument) => {
       const isActive = argument.spouse_accepted && !argument.argument_finished;
       const isPending = !argument.spouse_accepted;
       const isFinished = argument.argument_finished;
@@ -108,18 +80,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      fetchArguments(getUserEmail()).then(() => {
-        const counts = getArgumentCounts();
-        if (counts.active > 0) {
-          setActiveView("display");
-          setActiveFilter("active");
-        } else if (counts.pending > 0) {
-          setActiveView("display");
-          setActiveFilter("pending");
-        } else {
-          setActiveView("submit");
-        }
-      });
+      fetchArguments();
     }
   }, [user]);
 
@@ -140,7 +101,7 @@ export default function DashboardPage() {
         setShowSubmitForm(false);
         setSpouseEmail("");
         setArgumentTopic("");
-        await fetchArguments(getUserEmail());
+        await fetchArguments();
       }
     } catch (error) {}
   };
@@ -150,6 +111,11 @@ export default function DashboardPage() {
       setSelectedArgument(argument);
       setShowFinishedDialog(true);
     } else if (argument.spouse_accepted) {
+      console.log("Navigating to argument with:", {
+        topic: argument.argument_topic,
+        time: argument.submission_time,
+        fullUrl: `/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`
+      });
       router.push(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`);
     }
   };
@@ -183,13 +149,13 @@ export default function DashboardPage() {
         spouse_lastname: user.lastName
       });
       if (response.status === 200) {
-        const updatedArguments = argumentsList.map(arg => {
+        const updatedArguments = argumentsList.arguments.map(arg => {
           if (arg.submission_time === selectedPendingArgument.submission_time) {
             return { ...arg, spouse_accepted: accepted };
           }
           return arg;
         });
-        setArgumentsList(updatedArguments);
+        setArgumentsList({ arguments: updatedArguments });
         setSelectedPendingArgument(null);
         setShowAcceptanceDialog(false);
         if (accepted) {

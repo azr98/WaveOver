@@ -8,7 +8,7 @@ on:
       - '!server/scripts/**'
       - '.github/workflows/deploy-back.yml'
     branches:
-      - 21stdev-ui
+      - nextjs-aws-dev
 
 jobs:
   build-and-deploy:

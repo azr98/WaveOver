@@ -4,7 +4,7 @@ const DUMMY_ARGUMENTS = [
   {
     argument_topic: 'Active',
     submission_time: '2025-04-08T16:30:00',
-    user_email: 'user@example.com',
+    user_email: 'azhar981@gmail.com',
     user_firstname: 'Alice',
     user_lastname: 'Smith',
     spouse_email: 'spouse@example.com',
@@ -19,7 +19,7 @@ const DUMMY_ARGUMENTS = [
   {
     argument_topic: 'Pending',
     submission_time: '2025-04-08T16:30:00',
-    user_email: 'user@example.com',
+    user_email: 'azhar981@gmail.com',
     user_firstname: 'Alice',
     user_lastname: 'Smith',
     spouse_email: 'spouse@example.com',
@@ -34,7 +34,7 @@ const DUMMY_ARGUMENTS = [
   {
     argument_topic: 'Finished',
     submission_time: '2025-04-06T16:30:00',
-    user_email: 'user@example.com',
+    user_email: 'azhar981@gmail.com',
     user_firstname: 'Alice',
     user_lastname: 'Smith',
     spouse_email: 'spouse@example.com',
@@ -52,13 +52,46 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const argument_topic = searchParams.get('argument_topic');
   const submission_time = searchParams.get('submission_time');
+  const userEmail = searchParams.get('userEmail');
 
-  const found = DUMMY_ARGUMENTS.find(
-    (a) => a.argument_topic === argument_topic && a.submission_time === submission_time
+  console.log('[API] /api/get_argument called with:', { 
+    argument_topic, 
+    submission_time, 
+    userEmail,
+    url: req.url,
+    searchParams: Object.fromEntries(searchParams.entries())
+  });
+
+  if (!argument_topic || !submission_time) {
+    console.log('[API] Missing required parameters:', { argument_topic, submission_time });
+    return NextResponse.json(
+      { error: 'Both argument_topic and submission_time are required' },
+      { status: 400 }
+    );
+  }
+
+  // Find the argument in our dummy data
+  const argument = DUMMY_ARGUMENTS.find(
+    (arg) => arg.argument_topic === argument_topic && arg.submission_time === submission_time
   );
 
-  if (!found) {
-    return NextResponse.json({ error: 'Argument not found' }, { status: 404 });
+  if (!argument) {
+    console.log('[API] Argument not found:', { argument_topic, submission_time });
+    return NextResponse.json(
+      { error: 'Argument not found' },
+      { status: 404 }
+    );
   }
-  return NextResponse.json(found);
+
+  // Check if user is authorized to view this argument
+  if (userEmail !== argument.user_email && userEmail !== argument.spouse_email) {
+    console.log('[API] User not authorized:', { userEmail, argument_user: argument.user_email, argument_spouse: argument.spouse_email });
+    return NextResponse.json(
+      { error: 'Not authorized to view this argument' },
+      { status: 403 }
+    );
+  }
+
+  console.log('[API] Returning argument:', argument);
+  return NextResponse.json(argument);
 } 

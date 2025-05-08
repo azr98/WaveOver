@@ -10,6 +10,13 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.19.1",
+    "@tiptap/extension-image": "^2.12.0",
+    "@tiptap/extension-link": "^2.12.0",
+    "@tiptap/pm": "^2.12.0",
+    "@tiptap/react": "^2.12.0",
+    "@tiptap/starter-kit": "^2.12.0",
+    "axios": "^1.9.0",
+    "lodash.debounce": "^4.0.8",
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
