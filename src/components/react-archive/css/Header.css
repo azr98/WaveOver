@@ -1,0 +1,49 @@
+.app-header {
+  background: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-coffee-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.header-coffee-image {
+  height: 40px;
+  width: auto;
+  transition: transform 0.2s;
+}
+
+.header-coffee-image:hover {
+  transform: scale(1.05);
+}
+
+.sign-out-button {
+  background: none;
+  border: 2px solid #e2e8f0;
+  color: #4a5568;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sign-out-button:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+} 
