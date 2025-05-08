@@ -26,3 +26,4 @@ server/requests-layer.zip
 # CloudWatch agent config folders
 client/config/
 server/config/
+.next
