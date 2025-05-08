@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 15, "column": 0}, "map": {"version":3,"sources":["file:///E:/Projects/RealProjects/waveover/src/app/layout.js"],"sourcesContent":["import { ClerkProvider } from '@clerk/nextjs';\r\n\r\n// Import global CSS if you have it (e.g., Tailwind or your own)\r\n// import '../styles/globals.css';\r\n\r\nexport const metadata = {\r\n  title: 'WaveOver',\r\n  description: 'Talk It Out — Without Talking Over Each Other',\r\n};\r\n\r\nexport default function RootLayout({ children }) {\r\n  return (\r\n    <html lang=\"en\">\r\n      <body>\r\n        {/* Wrap the app in ClerkProvider. Replace the publishableKey below with your own Clerk key. */}\r\n        <ClerkProvider publishableKey=\"pk_test_ZXZpZGVudC1vc3RyaWNoLTYyLmNsZXJrLmFjY291bnRzLmRldiQ\">\r\n          {children}\r\n        </ClerkProvider>\r\n      </body>\r\n    </html>\r\n  );\r\n} "],"names":[],"mappings":";;;;;AAAA;;;AAKO,MAAM,WAAW;IACtB,OAAO;IACP,aAAa;AACf;AAEe,SAAS,WAAW,EAAE,QAAQ,EAAE;IAC7C,qBACE,8OAAC;QAAK,MAAK;kBACT,cAAA,8OAAC;sBAEC,cAAA,8OAAC,yKAAA,CAAA,gBAAa;gBAAC,gBAAe;0BAC3B;;;;;;;;;;;;;;;;AAKX","debugId":null}}]
-}
