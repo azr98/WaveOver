@@ -2,7 +2,7 @@
 // Next.js root landing page, refactored from src/components/landingPage.js
 // Uses Clerk placeholders and Next.js navigation
 import { useEffect } from "react";
-import { SignedIn, SignedOut, SignInButton, useUser } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, SignInButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import "../components/css/landingPage.css";

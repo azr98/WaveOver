@@ -1,4 +1,4 @@
-import { ClerkProvider } from '@clerk/clerk-react';
+import { ClerkProvider } from '@clerk/nextjs';
 
 // Import global CSS if you have it (e.g., Tailwind or your own)
 // import '../styles/globals.css';
