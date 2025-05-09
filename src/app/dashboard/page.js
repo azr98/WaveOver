@@ -115,7 +115,10 @@ export default function DashboardPage() {
         time: argument.submission_time,
         fullUrl: `/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`
       });
-      router.push(`/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`);
+      router.push(
+        `/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`,
+        { state: { argument } }
+      );
     }
   };
 
