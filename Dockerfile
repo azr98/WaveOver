@@ -43,4 +43,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Start the app
-CMD ["node", "server.js"] 
+CMD ["npm", "run", "dev", "--", "-p", "3000", "-H", "0.0.0.0"] 
