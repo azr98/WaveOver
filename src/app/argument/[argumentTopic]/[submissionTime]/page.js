@@ -25,26 +25,17 @@ export default function ArgumentPage() {
   }, [params, argumentTopic, submissionTime]);
 
   useEffect(() => {
-    // Try to get argument from router state
-    if (router?.state?.argument) {
-      setArgument(router.state.argument);
-      setLoading(false);
-    } else {
-      // fallback to API call if not present
-      async function fetchArgument() {
+    async function fetchArgument() {
+      // 1. Try to get argument from router state
+      if (router?.state?.argument) {
+        setArgument(router.state.argument);
+        setLoading(false);
+      } else {
+        // 2. Fallback: fetch from API using params
         if (!user) return;
         try {
           const decodedTopic = decodeURIComponent(argumentTopic);
           const decodedTime = decodeURIComponent(submissionTime);
-          
-          console.log("Fetching argument with params:", {
-            rawTopic: argumentTopic,
-            rawTime: submissionTime,
-            decodedTopic,
-            decodedTime,
-            userEmail: user.primaryEmailAddress?.emailAddress,
-          });
-
           const response = await axios.get(`/api/get_argument`, {
             params: {
               argument_topic: decodedTopic,
@@ -52,23 +43,15 @@ export default function ArgumentPage() {
               userEmail: user.primaryEmailAddress?.emailAddress,
             },
           });
-          console.log("Fetched argument:", response.data);
           setArgument(response.data);
           setLoading(false);
         } catch (err) {
-          console.error("Error fetching argument:", err);
-          console.error("Error details:", {
-            message: err.message,
-            response: err.response?.data,
-            status: err.response?.status,
-            config: err.config
-          });
           setError("Failed to load argument. Please try again.");
           setLoading(false);
         }
       }
-      if (user) fetchArgument();
     }
+    if (user) fetchArgument();
   }, [router, user, argumentTopic, submissionTime]);
 
   useEffect(() => {
