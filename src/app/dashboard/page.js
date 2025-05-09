@@ -31,7 +31,6 @@ export default function DashboardPage() {
   const fetchArguments = async () => {
     try {
       const userEmail = getUserEmail();
-      console.log("calling get_active_arguments called with userEmail:", userEmail);
       const response = await axios.get(`/api/get_active_arguments?user_email=${userEmail}`);
       console.log("[API] get_active_arguments response:", response.data);
       setArgumentsList(response.data);
