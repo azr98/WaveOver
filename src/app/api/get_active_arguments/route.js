@@ -1,68 +1,52 @@
+import { DynamoDBClient, ScanCommand } from '@aws-sdk/client-dynamodb';
 import { NextResponse } from 'next/server';
 
-const DUMMY_ARGUMENTS = [
-  {
-    argument_topic: 'Active',
-    submission_time: '2025-04-08T16:30:00',
-    user_email: 'azhar981@gmail.com',
-    user_firstname: 'Alice',
-    user_lastname: 'Smith',
-    spouse_email: 'spouse@example.com',
-    spouse_firstname: 'Bob',
-    spouse_lastname: 'Jones',
-    user_response: '<p>This is the <b>user</b> response for the active argument.</p>',
-    spouse_response: '<p>This is the <i>spouse</i> response for the active argument.</p>',
-    argument_deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days in future
-    argument_finished: false,
-    spouse_accepted: true,
-  },
-  {
-    argument_topic: 'Pending',
-    submission_time: '2025-04-08T16:30:00',
-    user_email: 'azhar981@gmail.com',
-    user_firstname: 'Alice',
-    user_lastname: 'Smith',
-    spouse_email: 'spouse@example.com',
-    spouse_firstname: 'Bob',
-    spouse_lastname: 'Jones',
-    user_response: '<p>This is the <b>user</b> response for the pending argument.</p>',
-    spouse_response: '<p>This is the <i>spouse</i> response for the pending argument.</p>',
-    argument_deadline: '',
-    argument_finished: false,
-    spouse_accepted: false,
-  },
-  {
-    argument_topic: 'Finished',
-    submission_time: '2025-04-06T16:30:00',
-    user_email: 'azhar981@gmail.com',
-    user_firstname: 'Alice',
-    user_lastname: 'Smith',
-    spouse_email: 'spouse@example.com',
-    spouse_firstname: 'Bob',
-    spouse_lastname: 'Jones',
-    user_response: '<p>This is the <b>user</b> response for the finished argument.</p>',
-    spouse_response: '<p>This is the <i>spouse</i> response for the finished argument.</p>',
-    argument_deadline: '2025-04-05T16:30:00', // 3 days in the past
-    argument_finished: true,
-    spouse_accepted: true,
-  },
-];
-
 export async function GET(req) {
-  const { searchParams } = new URL(req.url);
-  const user_email = searchParams.get('user_email');
-  console.log('[API] /api/get_active_arguments called');
-  console.log('[API] Query params:', Object.fromEntries(searchParams.entries()));
+  try {
+    const { searchParams } = new URL(req.url);
+    const user_email = searchParams.get('user_email');
+    if (!user_email) {
+      return NextResponse.json({ arguments: [] });
+    }
 
-  let filtered = DUMMY_ARGUMENTS;
-  if (user_email) {
-    filtered = DUMMY_ARGUMENTS.filter(
-      (a) => a.user_email === user_email || a.spouse_email === user_email
-    );
-    console.log(`[API] Filtered arguments for user_email=${user_email}:`, filtered);
-  } else {
-    console.log('[API] No user_email provided, returning all arguments.');
+    const client = new DynamoDBClient({ region: process.env.AWS_DEFAULT_REGION || 'eu-west-1' });
+    // DynamoDB Scan with filter for user_email or spouse_email
+    const params = {
+      TableName: process.env.ARGUMENT_TABLE || 'WaveOver_Dev',
+      FilterExpression: 'user_email = :user_email OR spouse_email = :user_email',
+      ExpressionAttributeValues: {
+        ':user_email': { S: user_email }
+      },
+      ProjectionExpression: [
+        'user_email, spouse_email, argument_topic, reminder_time_two_days,',
+        'reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours,',
+        'argument_deadline, submission_time, argument_finished, last_email_sent,',
+        'user_response, spouse_response, spouse_accepted, user_firstname, user_lastname,',
+        'spouse_firstname, spouse_lastname'
+      ].join(' ')
+    };
+    const command = new ScanCommand(params);
+    const response = await client.send(command);
+    // Convert DynamoDB format to plain JS objects for the frontend
+    const argumentsList = (response.Items || []).map(item => ({
+      argument_topic: item.argument_topic?.S || '',
+      user_email: item.user_email?.S || '',
+      spouse_email: item.spouse_email?.S || '',
+      last_email_sent: item.last_email_sent?.S || '',
+      argument_deadline: item.argument_deadline?.S || '',
+      submission_time: item.submission_time?.S || '',
+      spouse_accepted: item.spouse_accepted?.BOOL ?? false,
+      argument_finished: item.argument_finished?.BOOL ?? false,
+      user_firstname: item.user_firstname?.S || '',
+      user_lastname: item.user_lastname?.S || '',
+      spouse_firstname: item.spouse_firstname?.S || '',
+      spouse_lastname: item.spouse_lastname?.S || '',
+      user_response: item.user_response?.S || '',
+      spouse_response: item.spouse_response?.S || ''
+    }));
+    return NextResponse.json({ arguments: argumentsList });
+  } catch (err) {
+    console.error('Error in get_active_arguments:', err);
+    return NextResponse.json({ arguments: [], error: err.message }, { status: 500 });
   }
-
-  return NextResponse.json({ arguments: filtered });
 } 
