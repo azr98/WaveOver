@@ -111,12 +111,12 @@ export default function DashboardPage() {
       setShowFinishedDialog(true);
     } else if (argument.spouse_accepted) {
       console.log("Navigating to argument with:", {
-        topic: argument.argument_topic,
-        time: argument.submission_time,
-        fullUrl: `/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`
+        user_email: argument.user_email,
+        submission_time: argument.submission_time,
+        fullUrl: `/argument/${encodeURIComponent(argument.user_email)}/${encodeURIComponent(argument.submission_time)}`
       });
       router.push(
-        `/argument/${encodeURIComponent(argument.argument_topic)}/${encodeURIComponent(argument.submission_time)}`,
+        `/argument/${encodeURIComponent(argument.user_email)}/${encodeURIComponent(argument.submission_time)}`,
         { state: { argument } }
       );
     }
@@ -152,7 +152,10 @@ export default function DashboardPage() {
       });
       if (response.status === 200) {
         const updatedArguments = argumentsList.arguments.map(arg => {
-          if (arg.submission_time === selectedPendingArgument.submission_time) {
+          if (
+            arg.user_email === selectedPendingArgument.user_email &&
+            arg.submission_time === selectedPendingArgument.submission_time
+          ) {
             return { ...arg, spouse_accepted: accepted };
           }
           return arg;
