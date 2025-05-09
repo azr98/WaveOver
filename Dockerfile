@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 3000
 
 # Start Next.js in dev mode, listening on all interfaces
-CMD ["npm", "run", "dev", "--", "-p", "3000", "-H", "0.0.0.0"] 
+CMD ["npm", "run", "dev"]
