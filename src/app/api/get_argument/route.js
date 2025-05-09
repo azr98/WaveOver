@@ -4,13 +4,13 @@ import { NextResponse } from 'next/server';
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const argument_topic = searchParams.get('argument_topic');
-    const submission_time = searchParams.get('submission_time');
-    const userEmail = searchParams.get('userEmail');
+    const user_email = searchParams.get('user_email'); // Partition key
+    const submission_time = searchParams.get('submission_time'); // Sort key
+    const userEmail = searchParams.get('userEmail'); // The requesting user's email for auth
 
-    if (!argument_topic || !submission_time) {
+    if (!user_email || !submission_time) {
       return NextResponse.json(
-        { error: 'Both argument_topic and submission_time are required' },
+        { error: 'Both user_email and submission_time are required' },
         { status: 400 }
       );
     }
@@ -19,7 +19,7 @@ export async function GET(req) {
     const params = {
       TableName: process.env.ARGUMENT_TABLE || 'WaveOver_Dev',
       Key: {
-        argument_topic: { S: argument_topic },
+        user_email: { S: user_email },
         submission_time: { S: submission_time }
       }
     };

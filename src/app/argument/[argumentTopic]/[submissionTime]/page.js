@@ -15,17 +15,8 @@ export default function ArgumentPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("Argument page mounted with params:", {
-      rawParams: params,
-      argumentTopic,
-      submissionTime,
-      decodedTopic: decodeURIComponent(argumentTopic),
-      decodedTime: decodeURIComponent(submissionTime)
-    });
-  }, [params, argumentTopic, submissionTime]);
-
-  useEffect(() => {
-    console.log("router.state:", router?.state);
+    // Only run on client after user is loaded
+    if (!user) return;
     async function fetchArgument() {
       // 1. Try to get argument from router state
       if (router?.state?.argument) {
@@ -33,14 +24,12 @@ export default function ArgumentPage() {
         setLoading(false);
       } else {
         // 2. Fallback: fetch from API using params
-        if (!user) return;
         try {
-          const decodedTopic = decodeURIComponent(argumentTopic);
-          const decodedTime = decodeURIComponent(submissionTime);
+          // You must pass user_email and submission_time to the API
           const response = await axios.get(`/api/get_argument`, {
             params: {
-              argument_topic: decodedTopic,
-              submission_time: decodedTime,
+              user_email: user.primaryEmailAddress?.emailAddress, // or argument.user_email if you have it
+              submission_time: decodeURIComponent(submissionTime),
               userEmail: user.primaryEmailAddress?.emailAddress,
             },
           });
@@ -48,12 +37,11 @@ export default function ArgumentPage() {
           setLoading(false);
         } catch (err) {
           setError("Failed to load argument. Please try again.");
-          console.error("API error:", err, err?.response?.data);
           setLoading(false);
         }
       }
     }
-    if (user) fetchArgument();
+    fetchArgument();
   }, [router, user, argumentTopic, submissionTime]);
 
   useEffect(() => {
@@ -63,10 +51,8 @@ export default function ArgumentPage() {
     }
   }, [argument, router]);
 
-  if (!user) {
-    return <div>Please sign in to view this argument.</div>;
-  }
-  if (loading) {
+  // Hydration-safe: always render loading until user and argument are loaded
+  if (!user || loading) {
     return <div>Loading...</div>;
   }
   if (error) {
