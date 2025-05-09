@@ -25,6 +25,7 @@ export default function ArgumentPage() {
   }, [params, argumentTopic, submissionTime]);
 
   useEffect(() => {
+    console.log("router.state:", router?.state);
     async function fetchArgument() {
       // 1. Try to get argument from router state
       if (router?.state?.argument) {
@@ -47,6 +48,7 @@ export default function ArgumentPage() {
           setLoading(false);
         } catch (err) {
           setError("Failed to load argument. Please try again.");
+          console.error("API error:", err, err?.response?.data);
           setLoading(false);
         }
       }
