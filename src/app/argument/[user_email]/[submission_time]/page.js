@@ -26,11 +26,11 @@ export default function ArgumentPage() {
       } else {
         // 2. Fallback: fetch from API using params
         try {
-          // You must pass user_email and submission_time to the API
+          // Pass raw values to Axios params, let Axios handle encoding
           const response = await axios.get(`/api/get_argument`, {
             params: {
-              user_email,
-              submission_time,
+              user_email, // plain string from useParams
+              submission_time, // plain string from useParams
               userEmail: user.primaryEmailAddress?.emailAddress,
             },
           });
