@@ -1,5 +1,5 @@
 import { ClerkProvider, SignedIn } from '@clerk/nextjs';
-import BugReportForm from "@/components/BugReportForm";
+import BugReportForm from "../components/BugReportForm";
 
 // Import global CSS if you have it (e.g., Tailwind or your own)
 // import '../styles/globals.css';
