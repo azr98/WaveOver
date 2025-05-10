@@ -14,6 +14,11 @@ export default function ArgumentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  console.log('Params from useParams:', { user_email, submission_time });
+
+  const decodedUserEmail = decodeURIComponent(user_email);
+  const decodedSubmissionTime = decodeURIComponent(submission_time);
+
   useEffect(() => {
     // Only run on client after user is loaded
     if (!user) return;
@@ -29,8 +34,8 @@ export default function ArgumentPage() {
           // Pass raw values to Axios params, let Axios handle encoding
           const response = await axios.get(`/api/get_argument`, {
             params: {
-              user_email, // plain string from useParams
-              submission_time, // plain string from useParams
+              user_email: decodedUserEmail,
+              submission_time: decodedSubmissionTime,
               userEmail: user.primaryEmailAddress?.emailAddress,
             },
           });
@@ -43,7 +48,7 @@ export default function ArgumentPage() {
       }
     }
     fetchArgument();
-  }, [router, user, user_email, submission_time]);
+  }, [router, user, decodedUserEmail, decodedSubmissionTime]);
 
   useEffect(() => {
     // If argument is finished, redirect to /response
