@@ -13,8 +13,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        {/* Wrap the app in ClerkProvider. Replace the publishableKey below with your own Clerk key. */}
-        <ClerkProvider publishableKey="pk_test_ZXZpZGVudC1vc3RyaWNoLTYyLmNsZXJrLmFjY291bnRzLmRldiQ">
+        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
           <SignedIn>
             <BugReportForm />
           </SignedIn>
