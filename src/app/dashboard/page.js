@@ -1,7 +1,7 @@
 "use client";
 // Next.js dashboard page, refactored from src/components/dashboard.js
 import { useEffect, useState } from "react";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser, useClerk, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import "../../components/react-archive/css/dashboard.css";
@@ -217,6 +217,12 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-container">
+      {/* User profile button in top right */}
+      <SignedIn>
+        <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1000 }}>
+          <UserButton afterSignOutUrl="/" />
+        </div>
+      </SignedIn>
       <Header />
       <div className="dashboard-content">
         <div className="main-view-toggle">
