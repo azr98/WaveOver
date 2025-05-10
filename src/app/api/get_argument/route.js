@@ -25,6 +25,7 @@ export async function GET(req) {
     };
     const command = new GetItemCommand(params);
     const response = await client.send(command);
+    console.log("response from get_argument:", response);
     if (!response.Item) {
       return NextResponse.json(
         { error: 'Argument not found' },

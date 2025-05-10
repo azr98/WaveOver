@@ -110,7 +110,7 @@ export default function DashboardPage() {
       setSelectedArgument(argument);
       setShowFinishedDialog(true);
     } else if (argument.spouse_accepted) {
-      console.log("Navigating to argument with:", {
+      console.log("Navigating to argumentPage with:", {
         user_email: argument.user_email,
         submission_time: argument.submission_time,
         fullUrl: `/argument/${encodeURIComponent(argument.user_email)}/${encodeURIComponent(argument.submission_time)}`
