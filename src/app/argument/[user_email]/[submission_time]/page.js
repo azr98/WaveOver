@@ -9,7 +9,7 @@ export default function ArgumentPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
-  const { argumentTopic, submissionTime } = params;
+  const { user_email, submission_time } = params;
   const [argument, setArgument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +21,7 @@ export default function ArgumentPage() {
       // 1. Try to get argument from router state
       if (router?.state?.argument) {
         setArgument(router.state.argument);
+        console.log("argument passed in from dashboard to argument page:", router.state.argument);
         setLoading(false);
       } else {
         // 2. Fallback: fetch from API using params
@@ -28,8 +29,8 @@ export default function ArgumentPage() {
           // You must pass user_email and submission_time to the API
           const response = await axios.get(`/api/get_argument`, {
             params: {
-              user_email: user.primaryEmailAddress?.emailAddress, // or argument.user_email if you have it
-              submission_time: decodeURIComponent(submissionTime),
+              user_email,
+              submission_time,
               userEmail: user.primaryEmailAddress?.emailAddress,
             },
           });
@@ -42,7 +43,7 @@ export default function ArgumentPage() {
       }
     }
     fetchArgument();
-  }, [router, user, argumentTopic, submissionTime]);
+  }, [router, user, user_email, submission_time]);
 
   useEffect(() => {
     // If argument is finished, redirect to /response
