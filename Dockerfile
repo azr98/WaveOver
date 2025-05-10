@@ -9,6 +9,10 @@ RUN npm install
 # Copy the rest of your app (including src/, app/, public/, etc.)
 COPY . .
 
+# Set environment variable for Clerk
+ARG NEXT_APP_CLERK_PUBLISHABLE_KEY
+ENV NEXT_APP_CLERK_PUBLISHABLE_KEY=$NEXT_APP_CLERK_PUBLISHABLE_KEY
+
 # Expose the dev port
 EXPOSE 3000
 
