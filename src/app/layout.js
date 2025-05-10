@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ClerkProvider, SignedIn } from '@clerk/nextjs';
 import BugReportForm from "../components/BugReportForm";
 
@@ -10,10 +11,20 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const [publishableKey, setPublishableKey] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPublishableKey(window.CLERK_PUBLISHABLE_KEY || "");
+    }
+  }, []);
+
+  if (!publishableKey) return null; // or a loading spinner
+
   return (
     <html lang="en">
       <body>
-        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+        <ClerkProvider publishableKey={publishableKey}>
           <SignedIn>
             <BugReportForm />
           </SignedIn>

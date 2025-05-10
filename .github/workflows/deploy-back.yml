@@ -9,6 +9,7 @@ on:
       - 'package.json'
       - '.github/workflows/deploy-back.yml'
       - 'Dockerfile'
+      - '!scripts/**'
     branches:
       - nextjs-aws-dev
 
