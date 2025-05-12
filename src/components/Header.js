@@ -1,13 +1,17 @@
 "use client";
-import { useClerk } from '@clerk/nextjs';
+import { useClerk, UserButton, SignedIn } from '@clerk/nextjs';
 import "./react-archive/css/Header.css";
 
 export default function HeaderNext() {
-  const { signOut } = useClerk();
-
   return (
-    <header className="app-header">
-      <div className="header-content">
+    <header className="app-header position-relative">
+      {/* Profile button fixed to top right */}
+      <SignedIn>
+        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1050 }}>
+          <UserButton afterSignOutUrl="/" />
+        </div>
+      </SignedIn>
+      <div className="header-content justify-content-center">
         <a
           href="https://buymeacoffee.com/azharsharif"
           target="_blank"

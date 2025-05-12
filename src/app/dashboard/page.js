@@ -19,6 +19,8 @@ export default function DashboardPage() {
   const [selectedPendingArgument, setSelectedPendingArgument] = useState(null);
   const [notification, setNotification] = useState(null);
   const [activeView, setActiveView] = useState("display");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(6); // Number of arguments per page
   const router = useRouter();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -76,11 +78,19 @@ export default function DashboardPage() {
     });
   };
 
+  const filteredArguments = getFilteredArguments();
+  const totalPages = Math.ceil(filteredArguments.length / pageSize);
+  const paginatedArguments = filteredArguments.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   useEffect(() => {
     if (user) {
       fetchArguments();
     }
   }, [user]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter, argumentsList]);
 
   const handleInitiate = async () => {
     try {
@@ -224,140 +234,141 @@ export default function DashboardPage() {
       </SignedIn>
       <Header />
       <div className="max-w-4xl mx-auto p-4">
-        <div className="flex gap-4 justify-center mb-6">
-          <button className="btn btn-primary"
-            onClick={() => setActiveView('submit')}
-          >
-            Submit New Discussion
-          </button>
-          <button className="btn btn-outline-primary"
-            onClick={() => setActiveView('display')}
-          >
-            Display Current Discussions ({getArgumentCounts().total})
-          </button>
-        </div>
-        <p className="text-red-600 mt-5 text-sm text-center">
-          Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
-        </p>
-        {notification && (
-          <div className="bg-blue-100 border border-blue-300 rounded p-3 my-4 text-center">
-            <p className="font-semibold">{notification.message}</p>
-            <p className="text-blue-700">{notification.topic}</p>
-          </div>
-        )}
-        {activeView === 'submit' ? (
-          <section className="bg-white rounded shadow p-6 mt-6">
-            {showSubmitForm ? (
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="spouseEmail" className="block font-medium mb-1">Partner's Email</label>
-                  <input
-                    id="spouseEmail"
-                    type="email"
-                    placeholder="Enter their email address"
-                    value={spouseEmail}
-                    onChange={(e) => setSpouseEmail(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="argumentTopic" className="block font-medium mb-1">Discussion Topic</label>
-                  <input
-                    id="argumentTopic"
-                    type="text"
-                    placeholder="What would you like to discuss?"
-                    value={argumentTopic}
-                    onChange={(e) => setArgumentTopic(e.target.value)}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <button
-                  onClick={handleInitiate}
-                  disabled={!spouseEmail || !argumentTopic}
-                  className="w-full"
-                >
-                  Start Discussion
-                </button>
+        {/* Always show submit form */}
+        <section className="bg-white rounded shadow p-6 mt-6">
+          {showSubmitForm ? (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="spouseEmail" className="block font-medium mb-1">Partner's Email</label>
+                <input
+                  id="spouseEmail"
+                  type="email"
+                  placeholder="Enter their email address"
+                  value={spouseEmail}
+                  onChange={(e) => setSpouseEmail(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
               </div>
-            ) : (
-              <div className="text-center space-y-4">
-                <p className="text-green-700">Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
-                <button onClick={handleStartNewArgument} className="w-full">
-                  Start Another Discussion
-                </button>
+              <div>
+                <label htmlFor="argumentTopic" className="block font-medium mb-1">Discussion Topic</label>
+                <input
+                  id="argumentTopic"
+                  type="text"
+                  placeholder="What would you like to discuss?"
+                  value={argumentTopic}
+                  onChange={(e) => setArgumentTopic(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
               </div>
-            )}
-          </section>
-        ) : (
-          <section className="mt-6">
-            <div className="flex gap-2 mb-4 justify-center">
               <button
-                className={`btn btn-primary ${activeFilter === 'active' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('active')}
+                onClick={handleInitiate}
+                disabled={!spouseEmail || !argumentTopic}
+                className="btn btn-primary w-100"
               >
-                Active ({getArgumentCounts().active})
-              </button>
-              <button
-                className={`btn btn-primary ${activeFilter === 'pending' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('pending')}
-              >
-                Pending ({getArgumentCounts().pending})
-              </button>
-              <button
-                className={`btn btn-primary ${activeFilter === 'finished' ? 'active' : ''}`}
-                onClick={() => setActiveFilter('finished')}
-              >
-                Finished ({getArgumentCounts().finished})
+                Start Discussion
               </button>
             </div>
-            {getFilteredArguments().length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getFilteredArguments().map((argument, index) => (
-                  <div
-                    key={index}
-                    className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : argument.argument_finished ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'}`}
-                    onClick={() => {
-                      if (!argument.spouse_accepted) {
-                        handlePendingArgumentClick(argument);
-                      } else if (argument.argument_finished) {
-                        setSelectedArgument(argument);
-                        setShowFinishedDialog(true);
-                      } else {
-                        handleArgumentClick(argument);
-                      }
-                    }}
-                  >
-                    <h3 className="font-semibold text-lg mb-1">{argument.argument_topic}</h3>
-                    <p className="text-gray-600 text-sm mb-2">
-                      With: {argument.spouse_accepted || argument.argument_finished ?
-                        (getUserEmail() === argument.user_email ?
-                          `${argument.spouse_firstname} ${argument.spouse_lastname}` :
-                          `${argument.user_firstname} ${argument.user_lastname}`) :
-                        (getUserEmail() === argument.user_email ?
-                          argument.spouse_email :
-                          argument.user_email)}
-                    </p>
-                    <div className="flex flex-col gap-1">
-                      <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${argument.argument_finished ? 'bg-gray-300 text-gray-700' : argument.spouse_accepted ? 'bg-blue-200 text-blue-800' : 'bg-yellow-200 text-yellow-800'}`}>
-                        {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
-                      </span>
-                      {getStatusMessage(argument) && (
-                        <span className="text-xs text-gray-500">{getStatusMessage(argument)}</span>
-                      )}
-                      {argument.argument_deadline && !argument.argument_finished && (
-                        <span className="text-xs text-red-500">Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
-                      )}
-                    </div>
+          ) : (
+            <div className="text-center space-y-4">
+              <p className="text-success">Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
+              <button onClick={handleStartNewArgument} className="btn btn-outline-primary w-100">
+                Start Another Discussion
+              </button>
+            </div>
+          )}
+        </section>
+        {/* Spam warning message in red */}
+        <p className="text-danger mt-4 text-center" style={{ fontWeight: 600 }}>
+          Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
+        </p>
+        {/* Filter buttons for active, pending, finished */}
+        <div className="d-flex justify-content-center mb-4 mt-5" style={{ gap: '0.75rem' }}>
+          <button
+            className={`btn btn-primary${activeFilter === 'active' ? ' active' : ''}`}
+            onClick={() => setActiveFilter('active')}
+          >
+            Active ({getArgumentCounts().active})
+          </button>
+          <button
+            className={`btn btn-primary${activeFilter === 'pending' ? ' active' : ''}`}
+            onClick={() => setActiveFilter('pending')}
+          >
+            Pending ({getArgumentCounts().pending})
+          </button>
+          <button
+            className={`btn btn-primary${activeFilter === 'finished' ? ' active' : ''}`}
+            onClick={() => setActiveFilter('finished')}
+          >
+            Finished ({getArgumentCounts().finished})
+          </button>
+        </div>
+        {/* Paginated argument cards */}
+        <section className="mt-3">
+          {paginatedArguments.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {paginatedArguments.map((argument, index) => (
+                <div
+                  key={index}
+                  className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : argument.argument_finished ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'}`}
+                  onClick={() => {
+                    if (!argument.spouse_accepted) {
+                      handlePendingArgumentClick(argument);
+                    } else if (argument.argument_finished) {
+                      setSelectedArgument(argument);
+                      setShowFinishedDialog(true);
+                    } else {
+                      handleArgumentClick(argument);
+                    }
+                  }}
+                >
+                  <h3 className="font-semibold text-lg mb-1">{argument.argument_topic}</h3>
+                  <p className="text-gray-600 text-sm mb-2">
+                    With: {argument.spouse_accepted || argument.argument_finished ?
+                      (getUserEmail() === argument.user_email ?
+                        `${argument.spouse_firstname} ${argument.spouse_lastname}` :
+                        `${argument.user_firstname} ${argument.user_lastname}`) :
+                      (getUserEmail() === argument.user_email ?
+                        argument.spouse_email :
+                        argument.user_email)}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${argument.argument_finished ? 'bg-gray-300 text-gray-700' : argument.spouse_accepted ? 'bg-blue-200 text-blue-800' : 'bg-yellow-200 text-yellow-800'}`}>
+                      {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
+                    </span>
+                    {getStatusMessage(argument) && (
+                      <span className="text-xs text-gray-500">{getStatusMessage(argument)}</span>
+                    )}
+                    {argument.argument_deadline && !argument.argument_finished && (
+                      <span className="text-xs text-danger">Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
+                    )}
                   </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              <p>No {activeFilter} discussions</p>
+            </div>
+          )}
+          {/* Pagination controls */}
+          {totalPages > 1 && (
+            <nav className="d-flex justify-content-center mt-4">
+              <ul className="pagination">
+                <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>&laquo;</button>
+                </li>
+                {[...Array(totalPages)].map((_, idx) => (
+                  <li key={idx} className={`page-item${currentPage === idx + 1 ? ' active' : ''}`}>
+                    <button className="page-link" onClick={() => setCurrentPage(idx + 1)}>{idx + 1}</button>
+                  </li>
                 ))}
-              </div>
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                <p>No {activeFilter} discussions</p>
-              </div>
-            )}
-          </section>
-        )}
+                <li className={`page-item${currentPage === totalPages ? ' disabled' : ''}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>&raquo;</button>
+                </li>
+              </ul>
+            </nav>
+          )}
+        </section>
         <div className="flex justify-center mt-8">
           <a href="/help" className="text-blue-600 hover:underline font-medium">
             Detailed help
