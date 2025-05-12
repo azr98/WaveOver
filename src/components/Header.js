@@ -20,9 +20,6 @@ export default function HeaderNext() {
             className="header-coffee-image"
           />
         </a>
-        <button onClick={signOut} className="sign-out-button">
-          Sign Out
-        </button>
       </div>
     </header>
   );
