@@ -144,7 +144,7 @@ export default function DashboardPage() {
   const handleArgumentClick = (argument) => {
     if (argument.argument_finished) {
       setSelectedArgument(argument);
-      setShowFinishedDialog(true);
+      setShowFinishedDialog('choose');
     } else if (argument.spouse_accepted) {
       console.log("Navigating to argumentPage with:", {
         user_email: argument.user_email,
@@ -353,7 +353,7 @@ export default function DashboardPage() {
                       handlePendingArgumentClick(argument);
                     } else if (isArgumentFinished(argument)) {
                       setSelectedArgument(argument);
-                      setShowFinishedDialog(true);
+                      setShowFinishedDialog('choose');
                     } else {
                       handleArgumentClick(argument);
                     }
@@ -412,34 +412,52 @@ export default function DashboardPage() {
             Detailed help
           </a>
         </div>
-        {showFinishedDialog && selectedArgument && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-              <h3 className="font-bold text-lg mb-2">{selectedArgument.argument_topic}</h3>
-              <p className="mb-4">Choose which response to view:</p>
-              <div className="flex gap-4 mb-4">
-                <button onClick={() => setShowFinishedDialog('user')} className="flex-1 btn btn-outline-primary">What you said</button>
-                <button onClick={() => setShowFinishedDialog('partner')} className="flex-1 btn btn-outline-secondary">What your partner said</button>
+        {/* Finished argument choose dialog */}
+        {showFinishedDialog === 'choose' && selectedArgument && (
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">{selectedArgument.argument_topic}</h5>
+                </div>
+                <div className="modal-body">
+                  <p>Choose which response to view:</p>
+                  <div className="d-flex gap-2 mb-3">
+                    <button onClick={() => setShowFinishedDialog('user')} className="btn btn-outline-primary flex-fill">What you said</button>
+                    <button onClick={() => setShowFinishedDialog('partner')} className="btn btn-outline-secondary flex-fill">What your partner said</button>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-outline-secondary w-100" onClick={() => setShowFinishedDialog(false)}>Close</button>
+                </div>
               </div>
-              <button className="btn btn-outline-secondary w-full" onClick={() => setShowFinishedDialog(false)}>Close</button>
             </div>
           </div>
         )}
+        {/* Finished argument response view (read-only) */}
         {(showFinishedDialog === 'user' || showFinishedDialog === 'partner') && selectedArgument && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-              <h3 className="font-bold text-lg mb-2">{selectedArgument.argument_topic}</h3>
-              <div className="mb-4" style={{ minHeight: 120, maxHeight: 300, overflowY: 'auto', border: '1px solid #eee', borderRadius: 8, padding: 12 }}>
-                {(() => {
-                  const userEmail = getUserEmail();
-                  if (showFinishedDialog === 'user') {
-                    return userEmail === selectedArgument.user_email ? selectedArgument.user_response : selectedArgument.spouse_response;
-                  } else {
-                    return userEmail === selectedArgument.user_email ? selectedArgument.spouse_response : selectedArgument.user_response;
-                  }
-                })()}
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">{selectedArgument.argument_topic}</h5>
+                </div>
+                <div className="modal-body">
+                  <div style={{ minHeight: 120, maxHeight: 300, overflowY: 'auto', border: '1px solid #eee', borderRadius: 8, padding: 12 }}>
+                    {(() => {
+                      const userEmail = getUserEmail();
+                      if (showFinishedDialog === 'user') {
+                        return userEmail === selectedArgument.user_email ? selectedArgument.user_response : selectedArgument.spouse_response;
+                      } else {
+                        return userEmail === selectedArgument.user_email ? selectedArgument.spouse_response : selectedArgument.user_response;
+                      }
+                    })()}
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-outline-secondary w-100" onClick={() => setShowFinishedDialog('choose')}>Back</button>
+                </div>
               </div>
-              <button className="btn btn-outline-secondary w-full" onClick={() => setShowFinishedDialog(true)}>Back</button>
             </div>
           </div>
         )}
