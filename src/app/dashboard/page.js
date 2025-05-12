@@ -21,6 +21,9 @@ export default function DashboardPage() {
   const [activeView, setActiveView] = useState("display");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(6); // Number of arguments per page
+  const [showSelfInviteDialog, setShowSelfInviteDialog] = useState(false);
+  const [showInviteConfirmDialog, setShowInviteConfirmDialog] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
   const router = useRouter();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -103,6 +106,15 @@ export default function DashboardPage() {
   }, [activeFilter, argumentsList]);
 
   const handleInitiate = async () => {
+    if (user && spouseEmail.trim().toLowerCase() === getUserEmail().trim().toLowerCase()) {
+      setShowSelfInviteDialog(true);
+      return;
+    }
+    setShowInviteConfirmDialog(true);
+    setPendingSubmit(true);
+  };
+
+  const confirmSubmitArgument = async () => {
     try {
       if (user) {
         const argumentSubmitData = {
@@ -119,9 +131,14 @@ export default function DashboardPage() {
         setShowSubmitForm(false);
         setSpouseEmail("");
         setArgumentTopic("");
+        setShowInviteConfirmDialog(false);
+        setPendingSubmit(false);
         await fetchArguments();
       }
-    } catch (error) {}
+    } catch (error) {
+      setShowInviteConfirmDialog(false);
+      setPendingSubmit(false);
+    }
   };
 
   const handleArgumentClick = (argument) => {
@@ -161,11 +178,16 @@ export default function DashboardPage() {
   };
 
   const handleAcceptanceResponse = async (accepted) => {
+    if (!accepted) {
+      setShowAcceptanceDialog(false);
+      setSelectedPendingArgument(null);
+      return;
+    }
     try {
       const response = await axios.post('/api/update_spouse_acceptance', {
         user_email: selectedPendingArgument.user_email,
         submission_time: selectedPendingArgument.submission_time,
-        accepted: accepted,
+        accepted: true,
         spouse_firstname: user.firstName,
         spouse_lastname: user.lastName
       });
@@ -175,25 +197,27 @@ export default function DashboardPage() {
             arg.user_email === selectedPendingArgument.user_email &&
             arg.submission_time === selectedPendingArgument.submission_time
           ) {
-            return { ...arg, spouse_accepted: accepted };
+            return { ...arg, spouse_accepted: true };
           }
           return arg;
         });
         setArgumentsList({ arguments: updatedArguments });
         setSelectedPendingArgument(null);
         setShowAcceptanceDialog(false);
-        if (accepted) {
-          setActiveFilter('active');
-          setNotification({
-            message: 'Discussion now active. Write away!',
-            topic: selectedPendingArgument.argument_topic
-          });
-          setTimeout(() => {
-            setNotification(null);
-          }, 5000);
-        }
+        setActiveFilter('active');
+        setNotification({
+          message: 'Discussion now active. Write away!',
+          topic: selectedPendingArgument.argument_topic
+        });
+        setTimeout(() => {
+          setNotification(null);
+        }, 5000);
+        router.push(`/argument/${encodeURIComponent(selectedPendingArgument.user_email)}/${encodeURIComponent(selectedPendingArgument.submission_time)}?readonly=1`);
       }
-    } catch (error) {}
+    } catch (error) {
+      setShowAcceptanceDialog(false);
+      setSelectedPendingArgument(null);
+    }
   };
 
   const getStatusMessage = (argument) => {
@@ -273,7 +297,7 @@ export default function DashboardPage() {
                 />
               </div>
               <button
-                onClick={handleInitiate}
+                onClick={e => { e.preventDefault(); handleInitiate(); }}
                 disabled={!spouseEmail || !argumentTopic}
                 className="btn btn-primary w-100 mt-2"
                 type="button"
@@ -420,16 +444,57 @@ export default function DashboardPage() {
           </div>
         )}
         {showAcceptanceDialog && selectedPendingArgument && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-              <h3 className="font-bold text-lg mb-2">Accept Discussion Invitation</h3>
-              <p className="mb-2">Would you like to accept this discussion invitation?</p>
-              <p className="font-semibold mb-4">{selectedPendingArgument.argument_topic}</p>
-              <div className="flex gap-4 mb-4">
-                <button onClick={() => handleAcceptanceResponse(true)} className="flex-1 bg-green-600 hover:bg-green-700 text-white">Accept</button>
-                <button onClick={() => handleAcceptanceResponse(false)} className="flex-1 bg-red-600 hover:bg-red-700 text-white">Reject</button>
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Accept Discussion Invitation</h5>
+                </div>
+                <div className="modal-body">
+                  <p>Would you like to discuss <b>{selectedPendingArgument.argument_topic}</b> with <b>{selectedPendingArgument.user_firstname} {selectedPendingArgument.user_lastname}</b> on <b>{selectedPendingArgument.user_email}</b>?</p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-success" onClick={() => handleAcceptanceResponse(true)}>Accept</button>
+                  <button className="btn btn-danger" onClick={() => handleAcceptanceResponse(false)}>Reject</button>
+                </div>
               </div>
-              <button onClick={() => setShowAcceptanceDialog(false)} className="w-full">Close</button>
+            </div>
+          </div>
+        )}
+        {/* Self-invite dialog */}
+        {showSelfInviteDialog && (
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Invalid Partner Email</h5>
+                </div>
+                <div className="modal-body">
+                  <p>You cannot invite yourself as a partner.</p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-danger" onClick={() => setShowSelfInviteDialog(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Invite confirmation dialog */}
+        {showInviteConfirmDialog && (
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Confirm Invitation</h5>
+                </div>
+                <div className="modal-body">
+                  <p>Invite <b>{spouseEmail}</b> to discuss <b>{argumentTopic}</b>?</p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-success" onClick={confirmSubmitArgument}>Confirm</button>
+                  <button className="btn btn-danger" onClick={() => { setShowInviteConfirmDialog(false); setPendingSubmit(false); }}>Back</button>
+                </div>
+              </div>
             </div>
           </div>
         )}
