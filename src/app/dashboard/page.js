@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useUser, useClerk, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
-import "../../components/react-archive/css/dashboard.css";
 import axios from "axios";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const [spouseEmail, setSpouseEmail] = useState("");
@@ -212,111 +212,113 @@ export default function DashboardPage() {
   };
 
   if (!user) {
-    return <div className="loading">Loading...</div>;
+    return <div className="text-center py-10 text-lg">Loading...</div>;
   }
 
   return (
-    <div className="dashboard-container">
+    <div className="min-h-screen bg-gray-50">
       {/* User profile button in top right */}
       <SignedIn>
-        <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1000 }}>
+        <div className="fixed top-4 right-4 z-50">
           <UserButton afterSignOutUrl="/" />
         </div>
       </SignedIn>
       <Header />
-      <div className="dashboard-content">
-        <div className="main-view-toggle">
-          <button 
-            className={`main-toggle-button ${activeView === 'submit' ? 'active' : ''}`}
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="flex gap-4 justify-center mb-6">
+          <Button
+            variant={activeView === 'submit' ? "default" : "outline"}
             onClick={() => setActiveView('submit')}
           >
             Submit New Discussion
-          </button>
-          <button 
-            className={`main-toggle-button ${activeView === 'display' ? 'active' : ''}`}
+          </Button>
+          <Button
+            variant={activeView === 'display' ? "default" : "outline"}
             onClick={() => setActiveView('display')}
           >
             Display Current Discussions ({getArgumentCounts().total})
-          </button>
+          </Button>
         </div>
-        <p style={{ color: 'red', marginTop: '20px', fontSize: '0.9em', textAlign: 'center' }}>
+        <p className="text-red-600 mt-5 text-sm text-center">
           Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
         </p>
         {notification && (
-          <div className="notification-banner">
-            <p>{notification.message}</p>
-            <p className="notification-topic">{notification.topic}</p>
+          <div className="bg-blue-100 border border-blue-300 rounded p-3 my-4 text-center">
+            <p className="font-semibold">{notification.message}</p>
+            <p className="text-blue-700">{notification.topic}</p>
           </div>
         )}
         {activeView === 'submit' ? (
-          <section className="new-argument-section">
+          <section className="bg-white rounded shadow p-6 mt-6">
             {showSubmitForm ? (
-              <div className="argument-form">
-                <div className="form-group">
-                  <label htmlFor="spouseEmail">Partner's Email</label>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="spouseEmail" className="block font-medium mb-1">Partner's Email</label>
                   <input
                     id="spouseEmail"
                     type="email"
                     placeholder="Enter their email address"
                     value={spouseEmail}
                     onChange={(e) => setSpouseEmail(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="argumentTopic">Discussion Topic</label>
+                <div>
+                  <label htmlFor="argumentTopic" className="block font-medium mb-1">Discussion Topic</label>
                   <input
                     id="argumentTopic"
                     type="text"
                     placeholder="What would you like to discuss?"
                     value={argumentTopic}
                     onChange={(e) => setArgumentTopic(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
-                <button 
+                <Button
                   onClick={handleInitiate}
-                  className="submit-button"
                   disabled={!spouseEmail || !argumentTopic}
+                  className="w-full"
                 >
                   Start Discussion
-                </button>
+                </Button>
               </div>
             ) : (
-              <div className="success-message">
-                <p>Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
-                <button onClick={handleStartNewArgument} className="new-discussion-button">
+              <div className="text-center space-y-4">
+                <p className="text-green-700">Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
+                <Button onClick={handleStartNewArgument} className="w-full">
                   Start Another Discussion
-                </button>
+                </Button>
               </div>
             )}
           </section>
         ) : (
-          <section className="active-arguments-section">
-            <div className="filter-buttons">
-              <button 
-                className={`filter-button ${activeFilter === 'active' ? 'active' : ''}`}
+          <section className="mt-6">
+            <div className="flex gap-2 mb-4 justify-center">
+              <Button
+                variant={activeFilter === 'active' ? "default" : "outline"}
                 onClick={() => setActiveFilter('active')}
               >
                 Active ({getArgumentCounts().active})
-              </button>
-              <button 
-                className={`filter-button ${activeFilter === 'pending' ? 'active' : ''}`}
+              </Button>
+              <Button
+                variant={activeFilter === 'pending' ? "default" : "outline"}
                 onClick={() => setActiveFilter('pending')}
               >
                 Pending ({getArgumentCounts().pending})
-              </button>
-              <button 
-                className={`filter-button ${activeFilter === 'finished' ? 'active' : ''}`}
+              </Button>
+              <Button
+                variant={activeFilter === 'finished' ? "default" : "outline"}
                 onClick={() => setActiveFilter('finished')}
               >
                 Finished ({getArgumentCounts().finished})
-              </button>
+              </Button>
             </div>
             {getFilteredArguments().length > 0 ? (
-              <div className="arguments-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {getFilteredArguments().map((argument, index) => (
-                  <div 
-                    key={index} 
-                    className={`argument-card ${!argument.spouse_accepted ? 'pending' : ''}`}
+                  <div
+                    key={index}
+                    className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : argument.argument_finished ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'}`}
                     onClick={() => {
                       if (!argument.spouse_accepted) {
                         handlePendingArgumentClick(argument);
@@ -328,89 +330,66 @@ export default function DashboardPage() {
                       }
                     }}
                   >
-                    <h3>{argument.argument_topic}</h3>
-                    <p className="partner-email">
-                      With: {argument.spouse_accepted || argument.argument_finished ? 
-                        (getUserEmail() === argument.user_email ? 
-                          `${argument.spouse_firstname} ${argument.spouse_lastname}` : 
+                    <h3 className="font-semibold text-lg mb-1">{argument.argument_topic}</h3>
+                    <p className="text-gray-600 text-sm mb-2">
+                      With: {argument.spouse_accepted || argument.argument_finished ?
+                        (getUserEmail() === argument.user_email ?
+                          `${argument.spouse_firstname} ${argument.spouse_lastname}` :
                           `${argument.user_firstname} ${argument.user_lastname}`) :
-                        (getUserEmail() === argument.user_email ? 
-                          argument.spouse_email : 
+                        (getUserEmail() === argument.user_email ?
+                          argument.spouse_email :
                           argument.user_email)}
                     </p>
-                    <div className="argument-status">
-                      <span className={`status-badge ${argument.argument_finished ? 'finished' : argument.spouse_accepted ? 'active' : 'pending'}`}>
+                    <div className="flex flex-col gap-1">
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${argument.argument_finished ? 'bg-gray-300 text-gray-700' : argument.spouse_accepted ? 'bg-blue-200 text-blue-800' : 'bg-yellow-200 text-yellow-800'}`}>
                         {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
                       </span>
                       {getStatusMessage(argument) && (
-                        <span className="status-text">{getStatusMessage(argument)}</span>
+                        <span className="text-xs text-gray-500">{getStatusMessage(argument)}</span>
                       )}
                       {argument.argument_deadline && !argument.argument_finished && (
-                        <span className="deadline">
-                          Deadline: {formatDateWithOrdinal(argument.argument_deadline)}
-                        </span>
+                        <span className="text-xs text-red-500">Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="no-arguments">
+              <div className="text-center text-gray-500 py-8">
                 <p>No {activeFilter} discussions</p>
               </div>
             )}
           </section>
         )}
-        <div className="help-link-container">
-          <a href="/help" className="help-link">
+        <div className="flex justify-center mt-8">
+          <a href="/help" className="text-blue-600 hover:underline font-medium">
             Detailed help
           </a>
         </div>
         {showFinishedDialog && selectedArgument && (
-          <div className="dialog-overlay">
-            <div className="finished-dialog">
-              <h3>{selectedArgument.argument_topic}</h3>
-              <p>Choose which response to view:</p>
-              <div className="dialog-buttons">
-                <button onClick={() => handleReadResponse(true)}>
-                  Read what you said
-                </button>
-                <button onClick={() => handleReadResponse(false)}>
-                  Read what your partner said
-                </button>
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+              <h3 className="font-bold text-lg mb-2">{selectedArgument.argument_topic}</h3>
+              <p className="mb-4">Choose which response to view:</p>
+              <div className="flex gap-4 mb-4">
+                <Button onClick={() => handleReadResponse(true)} className="flex-1">Read what you said</Button>
+                <Button onClick={() => handleReadResponse(false)} className="flex-1">Read what your partner said</Button>
               </div>
-              <button className="close-dialog" onClick={() => setShowFinishedDialog(false)}>
-                Close
-              </button>
+              <Button variant="outline" onClick={() => setShowFinishedDialog(false)} className="w-full">Close</Button>
             </div>
           </div>
         )}
         {showAcceptanceDialog && selectedPendingArgument && (
-          <div className="dialog-overlay">
-            <div className="acceptance-dialog">
-              <h3>Accept Discussion Invitation</h3>
-              <p>Would you like to accept this discussion invitation?</p>
-              <p className="argument-topic">{selectedPendingArgument.argument_topic}</p>
-              <div className="dialog-buttons">
-                <button 
-                  onClick={() => handleAcceptanceResponse(true)}
-                  className="accept-button"
-                >
-                  Accept
-                </button>
-                <button 
-                  onClick={() => handleAcceptanceResponse(false)}
-                  className="reject-button"
-                >
-                  Reject
-                </button>
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+              <h3 className="font-bold text-lg mb-2">Accept Discussion Invitation</h3>
+              <p className="mb-2">Would you like to accept this discussion invitation?</p>
+              <p className="font-semibold mb-4">{selectedPendingArgument.argument_topic}</p>
+              <div className="flex gap-4 mb-4">
+                <Button onClick={() => handleAcceptanceResponse(true)} className="flex-1 bg-green-600 hover:bg-green-700 text-white">Accept</Button>
+                <Button onClick={() => handleAcceptanceResponse(false)} className="flex-1 bg-red-600 hover:bg-red-700 text-white">Reject</Button>
               </div>
-              <button 
-                className="close-dialog" 
-                onClick={() => setShowAcceptanceDialog(false)}
-              >
-                Close
-              </button>
+              <Button variant="outline" onClick={() => setShowAcceptanceDialog(false)} className="w-full">Close</Button>
             </div>
           </div>
         )}
