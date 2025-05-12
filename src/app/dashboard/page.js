@@ -5,7 +5,6 @@ import { useUser, useClerk, SignedIn, SignedOut, UserButton } from "@clerk/nextj
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
 import axios from "axios";
-import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const [spouseEmail, setSpouseEmail] = useState("");
