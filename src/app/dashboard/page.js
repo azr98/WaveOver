@@ -41,14 +41,24 @@ export default function DashboardPage() {
     }
   };
 
+  const isArgumentFinished = (argument) => {
+    if (argument.argument_finished) return true;
+    if (argument.argument_deadline) {
+      const deadline = new Date(argument.argument_deadline);
+      const now = new Date();
+      return now > deadline;
+    }
+    return false;
+  };
+
   const getArgumentCounts = () => {
     if (!Array.isArray(argumentsList.arguments) || argumentsList.arguments.length === 0) {
       return { active: 0, pending: 0, finished: 0, total: 0 };
     }
     return argumentsList.arguments.reduce((counts, argument) => {
-      const isActive = argument.spouse_accepted && !argument.argument_finished;
+      const isActive = argument.spouse_accepted && !isArgumentFinished(argument);
       const isPending = !argument.spouse_accepted;
-      const isFinished = argument.argument_finished;
+      const isFinished = isArgumentFinished(argument);
       if (isActive) counts.active++;
       if (isPending) counts.pending++;
       if (isFinished) counts.finished++;
@@ -62,9 +72,9 @@ export default function DashboardPage() {
       return [];
     }
     return argumentsList.arguments.filter((argument) => {
-      const isActive = argument.spouse_accepted && !argument.argument_finished;
+      const isActive = argument.spouse_accepted && !isArgumentFinished(argument);
       const isPending = !argument.spouse_accepted;
-      const isFinished = argument.argument_finished;
+      const isFinished = isArgumentFinished(argument);
       switch (activeFilter) {
         case "active":
           return isActive;
@@ -312,11 +322,12 @@ export default function DashboardPage() {
               {paginatedArguments.map((argument, index) => (
                 <div
                   key={index}
-                  className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : argument.argument_finished ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'} mb-4`}
+                  className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : isArgumentFinished(argument) ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'} mb-4`}
+                  style={{ cursor: 'pointer' }}
                   onClick={() => {
                     if (!argument.spouse_accepted) {
                       handlePendingArgumentClick(argument);
-                    } else if (argument.argument_finished) {
+                    } else if (isArgumentFinished(argument)) {
                       setSelectedArgument(argument);
                       setShowFinishedDialog(true);
                     } else {
@@ -326,7 +337,7 @@ export default function DashboardPage() {
                 >
                   <h3 className="font-semibold text-lg mb-1">{argument.argument_topic}</h3>
                   <p className="text-gray-600 text-sm mb-2">
-                    With: {argument.spouse_accepted || argument.argument_finished ?
+                    With: {argument.spouse_accepted || isArgumentFinished(argument) ?
                       (getUserEmail() === argument.user_email ?
                         `${argument.spouse_firstname} ${argument.spouse_lastname}` :
                         `${argument.user_firstname} ${argument.user_lastname}`) :
@@ -336,12 +347,12 @@ export default function DashboardPage() {
                   </p>
                   <div className="d-flex align-items-center gap-2">
                     <span
-                      className={`badge ${argument.argument_finished ? 'bg-secondary text-white' : argument.spouse_accepted ? 'bg-success text-white' : 'bg-warning text-dark'}`}
+                      className={`badge ${isArgumentFinished(argument) ? 'bg-secondary text-white' : argument.spouse_accepted ? 'bg-success text-white' : 'bg-warning text-dark'}`}
                       style={{ fontSize: '1em', fontWeight: 600, padding: '0.5em 1em', borderRadius: '0.5em', marginBottom: 4 }}
                     >
-                      {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
+                      {isArgumentFinished(argument) ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
                     </span>
-                    {argument.argument_deadline && !argument.argument_finished && (
+                    {argument.argument_deadline && !isArgumentFinished(argument) && (
                       <span className={`text-xs ms-3 ${argument.spouse_accepted ? 'text-danger' : 'text-muted'}`}>Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
                     )}
                   </div>
@@ -383,10 +394,28 @@ export default function DashboardPage() {
               <h3 className="font-bold text-lg mb-2">{selectedArgument.argument_topic}</h3>
               <p className="mb-4">Choose which response to view:</p>
               <div className="flex gap-4 mb-4">
-                <button onClick={() => handleReadResponse(true)} className="flex-1">Read what you said</button>
-                <button onClick={() => handleReadResponse(false)} className="flex-1">Read what your partner said</button>
+                <button onClick={() => setShowFinishedDialog('user')} className="flex-1 btn btn-outline-primary">What you said</button>
+                <button onClick={() => setShowFinishedDialog('partner')} className="flex-1 btn btn-outline-secondary">What your partner said</button>
               </div>
-              <button onClick={() => setShowFinishedDialog(false)} className="w-full">Close</button>
+              <button className="btn btn-outline-secondary w-full" onClick={() => setShowFinishedDialog(false)}>Close</button>
+            </div>
+          </div>
+        )}
+        {(showFinishedDialog === 'user' || showFinishedDialog === 'partner') && selectedArgument && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+              <h3 className="font-bold text-lg mb-2">{selectedArgument.argument_topic}</h3>
+              <div className="mb-4" style={{ minHeight: 120, maxHeight: 300, overflowY: 'auto', border: '1px solid #eee', borderRadius: 8, padding: 12 }}>
+                {(() => {
+                  const userEmail = getUserEmail();
+                  if (showFinishedDialog === 'user') {
+                    return userEmail === selectedArgument.user_email ? selectedArgument.user_response : selectedArgument.spouse_response;
+                  } else {
+                    return userEmail === selectedArgument.user_email ? selectedArgument.spouse_response : selectedArgument.user_response;
+                  }
+                })()}
+              </div>
+              <button className="btn btn-outline-secondary w-full" onClick={() => setShowFinishedDialog(true)}>Back</button>
             </div>
           </div>
         )}
