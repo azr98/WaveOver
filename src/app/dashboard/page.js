@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [showSelfInviteDialog, setShowSelfInviteDialog] = useState(false);
   const [showInviteConfirmDialog, setShowInviteConfirmDialog] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [showInvalidEmailDialog, setShowInvalidEmailDialog] = useState(false);
   const router = useRouter();
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -105,9 +106,24 @@ export default function DashboardPage() {
     setCurrentPage(1);
   }, [activeFilter, argumentsList]);
 
+  // Email validation helper
+  const isValidEmail = (email) => {
+    // Basic industry standard regex for email validation
+    // - At least one character before @
+    // - At least one character after @ and before .
+    // - At least two characters after .
+    // - Only one @
+    // - No spaces
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  };
+
   const handleInitiate = async () => {
     if (user && spouseEmail.trim().toLowerCase() === getUserEmail().trim().toLowerCase()) {
       setShowSelfInviteDialog(true);
+      return;
+    }
+    if (!isValidEmail(spouseEmail.trim())) {
+      setShowInvalidEmailDialog(true);
       return;
     }
     setShowInviteConfirmDialog(true);
@@ -511,6 +527,23 @@ export default function DashboardPage() {
                 <div className="modal-footer">
                   <button className="btn btn-success" onClick={confirmSubmitArgument}>Confirm</button>
                   <button className="btn btn-danger" onClick={() => { setShowInviteConfirmDialog(false); setPendingSubmit(false); }}>Back</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {showInvalidEmailDialog && (
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Invalid Email</h5>
+                </div>
+                <div className="modal-body">
+                  <p>Please enter a valid partner email.</p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-danger" onClick={() => setShowInvalidEmailDialog(false)}>Close</button>
                 </div>
               </div>
             </div>
