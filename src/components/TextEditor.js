@@ -162,21 +162,32 @@ function TextEditor({ argument, userEmail }) {
 
   return (
     <div>
-      {argument?.argument_deadline && (
-        <CountdownTimer 
-          deadline={argument.argument_deadline}
-          userEmail={argument.user_email}
-          spouseEmail={argument.spouse_email}
-        />
-      )}
+      <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: 8 }}>
+        Argument: {argument.argument_topic}
+      </h1>
+      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16 }}>
+        with: {userEmail === argument.user_email ? argument.spouse_email : argument.user_email}
+      </h2>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ fontWeight: 600, fontSize: '1.25rem', marginRight: 8 }}>Time Remaining:</span>
+        <span style={{ fontSize: '1.25rem' }}>
+          {argument?.argument_deadline && (
+            <CountdownTimer
+              deadline={argument.argument_deadline}
+              userEmail={argument.user_email}
+              spouseEmail={argument.spouse_email}
+            />
+          )}
+        </span>
+      </div>
       {renderContent()}
-      {error && <p style={{color: 'red'}}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <style jsx>{`
         .editor-container {
-          border: 1px solid #ccc;
-          border-radius: 4px;
+          border: 2px solid #1976d2;
+          border-radius: 6px;
           padding: 1rem;
-          background: #fafbfc;
+          background: #f5f8fa;
         }
         .editor-toolbar {
           display: flex;
@@ -191,6 +202,10 @@ function TextEditor({ argument, userEmail }) {
           border-radius: 4px;
           background: white;
           cursor: pointer;
+          margin-right: 0.25rem;
+        }
+        .editor-toolbar button:last-child {
+          margin-right: 0;
         }
         .editor-toolbar button:hover {
           background: #f0f0f0;
@@ -203,8 +218,9 @@ function TextEditor({ argument, userEmail }) {
           padding: 0.5rem;
           background: #fff;
           border-radius: 4px;
-          border: 1px solid #e0e0e0;
+          border: 2px solid #1976d2;
           caret-color: #1976d2;
+          font-size: 1rem;
         }
         .ProseMirror:focus {
           outline: 2px solid #1976d2;

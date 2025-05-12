@@ -70,7 +70,7 @@ export default function ArgumentPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Argument: {argument.argument_topic}</h1>
+      <h1 className="text-2xl font-bold mb-4">Talk about {argument.argument_topic}</h1>
       <TextEditor 
         argument={argument} 
         userEmail={user.primaryEmailAddress?.emailAddress} 
