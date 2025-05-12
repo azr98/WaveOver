@@ -1,52 +1,8 @@
 import { NextResponse } from 'next/server';
+import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 
-const DUMMY_ARGUMENTS = [
-  {
-    argument_topic: 'Active',
-    submission_time: '2025-04-08T16:30:00',
-    user_email: 'azhar981@gmail.com',
-    user_firstname: 'Alice',
-    user_lastname: 'Smith',
-    spouse_email: 'spouse@example.com',
-    spouse_firstname: 'Bob',
-    spouse_lastname: 'Jones',
-    user_response: '<p>This is the <b>user</b> response for the active argument.</p>',
-    spouse_response: '<p>This is the <i>spouse</i> response for the active argument.</p>',
-    argument_deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days in future
-    argument_finished: false,
-    spouse_accepted: true,
-  },
-  {
-    argument_topic: 'Pending',
-    submission_time: '2025-04-08T16:30:00',
-    user_email: 'azhar981@gmail.com',
-    user_firstname: 'Alice',
-    user_lastname: 'Smith',
-    spouse_email: 'spouse@example.com',
-    spouse_firstname: 'Bob',
-    spouse_lastname: 'Jones',
-    user_response: '<p>This is the <b>user</b> response for the pending argument.</p>',
-    spouse_response: '<p>This is the <i>spouse</i> response for the pending argument.</p>',
-    argument_deadline: '',
-    argument_finished: false,
-    spouse_accepted: false,
-  },
-  {
-    argument_topic: 'Finished',
-    submission_time: '2025-04-06T16:30:00',
-    user_email: 'azhar981@gmail.com',
-    user_firstname: 'Alice',
-    user_lastname: 'Smith',
-    spouse_email: 'spouse@example.com',
-    spouse_firstname: 'Bob',
-    spouse_lastname: 'Jones',
-    user_response: '<p>This is the <b>user</b> response for the finished argument.</p>',
-    spouse_response: '<p>This is the <i>spouse</i> response for the finished argument.</p>',
-    argument_deadline: '2025-04-05T16:30:00', // 3 days in the past
-    argument_finished: true,
-    spouse_accepted: true,
-  },
-];
+const dynamo = new DynamoDBClient({ region: 'eu-west-1' });
+const argument_table = 'WaveOver_Dev';
 
 export async function POST(req) {
   try {
@@ -56,24 +12,18 @@ export async function POST(req) {
     const { argument, content, userEmail } = data;
     const { submission_time, user_email, spouse_email } = argument;
 
-    // Find the argument in our dummy data
-    const argumentIndex = DUMMY_ARGUMENTS.findIndex(
-      (arg) => arg.submission_time === submission_time
-    );
-
-    if (argumentIndex === -1) {
-      console.log('[API] Argument not found:', submission_time);
+    if (!submission_time || !user_email || !spouse_email || !content || !userEmail) {
       return NextResponse.json(
-        { error: 'Argument not found' },
-        { status: 404 }
+        { error: 'Missing required fields' },
+        { status: 400 }
       );
     }
 
-    // Determine which field to update based on the user's email
+    let updateField = null;
     if (userEmail === user_email) {
-      DUMMY_ARGUMENTS[argumentIndex].user_response = content;
+      updateField = 'user_response';
     } else if (userEmail === spouse_email) {
-      DUMMY_ARGUMENTS[argumentIndex].spouse_response = content;
+      updateField = 'spouse_response';
     } else {
       console.log('[API] User not authorized:', { userEmail, user_email, spouse_email });
       return NextResponse.json(
@@ -82,6 +32,19 @@ export async function POST(req) {
       );
     }
 
+    const params = {
+      TableName: argument_table,
+      Key: {
+        user_email: { S: user_email },
+        submission_time: { S: submission_time }
+      },
+      UpdateExpression: `SET ${updateField} = :content` ,
+      ExpressionAttributeValues: {
+        ':content': { S: content }
+      }
+    };
+
+    await dynamo.send(new UpdateItemCommand(params));
     console.log('[API] Content saved successfully');
     return NextResponse.json({ message: 'Content saved successfully' });
   } catch (error) {

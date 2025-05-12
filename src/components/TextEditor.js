@@ -148,7 +148,7 @@ function TextEditor({ argument, userEmail }) {
             Numbered List
           </button>
         </div>
-        <EditorContent editor={editor} />
+        <EditorContent editor={editor} key={argument?.submission_time + userEmail} />
         {isSaving && <p>Saving...</p>}
       </div>
     );
