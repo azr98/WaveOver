@@ -1,7 +1,7 @@
 import ClerkProviderWithKey from "../components/ClerkProviderWithKey";
 
 // Import global CSS if you have it (e.g., Tailwind or your own)
-import './app/globals.css';
+import './globals.css';
 
 export const metadata = {
   title: 'WaveOver',
