@@ -312,7 +312,7 @@ export default function DashboardPage() {
               {paginatedArguments.map((argument, index) => (
                 <div
                   key={index}
-                  className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : argument.argument_finished ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'}`}
+                  className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : argument.argument_finished ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'} mb-4`}
                   onClick={() => {
                     if (!argument.spouse_accepted) {
                       handlePendingArgumentClick(argument);
@@ -334,18 +334,15 @@ export default function DashboardPage() {
                         argument.spouse_email :
                         argument.user_email)}
                   </p>
-                  <div className="flex flex-col gap-1">
+                  <div className="d-flex align-items-center gap-2">
                     <span
                       className={`badge ${argument.argument_finished ? 'bg-secondary text-white' : argument.spouse_accepted ? 'bg-success text-white' : 'bg-warning text-dark'}`}
                       style={{ fontSize: '1em', fontWeight: 600, padding: '0.5em 1em', borderRadius: '0.5em', marginBottom: 4 }}
                     >
                       {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
                     </span>
-                    {getStatusMessage(argument) && (
-                      <span className="text-xs text-gray-500">{getStatusMessage(argument)}</span>
-                    )}
                     {argument.argument_deadline && !argument.argument_finished && (
-                      <span className={`text-xs ${argument.spouse_accepted ? 'text-danger' : 'text-muted'}`}>Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
+                      <span className={`text-xs ms-3 ${argument.spouse_accepted ? 'text-danger' : 'text-muted'}`}>Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
                     )}
                   </div>
                 </div>
