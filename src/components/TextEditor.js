@@ -106,6 +106,12 @@ function TextEditor({ argument, userEmail }) {
       <div className="editor-container">
         <div className="editor-toolbar">
           <button
+            onClick={() => editor?.chain().focus().setParagraph().run()}
+            className={editor?.isActive('paragraph') ? 'is-active' : ''}
+          >
+            Normal
+          </button>
+          <button
             onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
             className={editor?.isActive('heading', { level: 1 }) ? 'is-active' : ''}
           >
@@ -170,6 +176,7 @@ function TextEditor({ argument, userEmail }) {
           border: 1px solid #ccc;
           border-radius: 4px;
           padding: 1rem;
+          background: #fafbfc;
         }
         .editor-toolbar {
           display: flex;
@@ -194,12 +201,21 @@ function TextEditor({ argument, userEmail }) {
         .ProseMirror {
           min-height: 200px;
           padding: 0.5rem;
+          background: #fff;
+          border-radius: 4px;
+          border: 1px solid #e0e0e0;
+          caret-color: #1976d2;
         }
         .ProseMirror:focus {
-          outline: none;
+          outline: 2px solid #1976d2;
         }
         .ProseMirror p {
           margin: 0.5rem 0;
+        }
+        .ProseMirror:empty:before {
+          content: 'Type your response here...';
+          color: #bbb;
+          pointer-events: none;
         }
       `}</style>
     </div>
