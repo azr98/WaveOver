@@ -225,18 +225,16 @@ export default function DashboardPage() {
       <Header />
       <div className="max-w-4xl mx-auto p-4">
         <div className="flex gap-4 justify-center mb-6">
-          <Button
-            variant={activeView === 'submit' ? "default" : "outline"}
+          <button className="btn btn-primary"
             onClick={() => setActiveView('submit')}
           >
             Submit New Discussion
-          </Button>
-          <Button
-            variant={activeView === 'display' ? "default" : "outline"}
+          </button>
+          <button className="btn btn-outline-primary"
             onClick={() => setActiveView('display')}
           >
             Display Current Discussions ({getArgumentCounts().total})
-          </Button>
+          </button>
         </div>
         <p className="text-red-600 mt-5 text-sm text-center">
           Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
@@ -273,44 +271,44 @@ export default function DashboardPage() {
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
-                <Button
+                <button
                   onClick={handleInitiate}
                   disabled={!spouseEmail || !argumentTopic}
                   className="w-full"
                 >
                   Start Discussion
-                </Button>
+                </button>
               </div>
             ) : (
               <div className="text-center space-y-4">
                 <p className="text-green-700">Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
-                <Button onClick={handleStartNewArgument} className="w-full">
+                <button onClick={handleStartNewArgument} className="w-full">
                   Start Another Discussion
-                </Button>
+                </button>
               </div>
             )}
           </section>
         ) : (
           <section className="mt-6">
             <div className="flex gap-2 mb-4 justify-center">
-              <Button
-                variant={activeFilter === 'active' ? "default" : "outline"}
+              <button
+                className={`btn btn-primary ${activeFilter === 'active' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('active')}
               >
                 Active ({getArgumentCounts().active})
-              </Button>
-              <Button
-                variant={activeFilter === 'pending' ? "default" : "outline"}
+              </button>
+              <button
+                className={`btn btn-primary ${activeFilter === 'pending' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('pending')}
               >
                 Pending ({getArgumentCounts().pending})
-              </Button>
-              <Button
-                variant={activeFilter === 'finished' ? "default" : "outline"}
+              </button>
+              <button
+                className={`btn btn-primary ${activeFilter === 'finished' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('finished')}
               >
                 Finished ({getArgumentCounts().finished})
-              </Button>
+              </button>
             </div>
             {getFilteredArguments().length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,10 +369,10 @@ export default function DashboardPage() {
               <h3 className="font-bold text-lg mb-2">{selectedArgument.argument_topic}</h3>
               <p className="mb-4">Choose which response to view:</p>
               <div className="flex gap-4 mb-4">
-                <Button onClick={() => handleReadResponse(true)} className="flex-1">Read what you said</Button>
-                <Button onClick={() => handleReadResponse(false)} className="flex-1">Read what your partner said</Button>
+                <button onClick={() => handleReadResponse(true)} className="flex-1">Read what you said</button>
+                <button onClick={() => handleReadResponse(false)} className="flex-1">Read what your partner said</button>
               </div>
-              <Button variant="outline" onClick={() => setShowFinishedDialog(false)} className="w-full">Close</Button>
+              <button onClick={() => setShowFinishedDialog(false)} className="w-full">Close</button>
             </div>
           </div>
         )}
@@ -385,10 +383,10 @@ export default function DashboardPage() {
               <p className="mb-2">Would you like to accept this discussion invitation?</p>
               <p className="font-semibold mb-4">{selectedPendingArgument.argument_topic}</p>
               <div className="flex gap-4 mb-4">
-                <Button onClick={() => handleAcceptanceResponse(true)} className="flex-1 bg-green-600 hover:bg-green-700 text-white">Accept</Button>
-                <Button onClick={() => handleAcceptanceResponse(false)} className="flex-1 bg-red-600 hover:bg-red-700 text-white">Reject</Button>
+                <button onClick={() => handleAcceptanceResponse(true)} className="flex-1 bg-green-600 hover:bg-green-700 text-white">Accept</button>
+                <button onClick={() => handleAcceptanceResponse(false)} className="flex-1 bg-red-600 hover:bg-red-700 text-white">Reject</button>
               </div>
-              <Button variant="outline" onClick={() => setShowAcceptanceDialog(false)} className="w-full">Close</Button>
+              <button onClick={() => setShowAcceptanceDialog(false)} className="w-full">Close</button>
             </div>
           </div>
         )}
