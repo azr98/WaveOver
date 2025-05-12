@@ -235,41 +235,44 @@ export default function DashboardPage() {
       <Header />
       <div className="max-w-4xl mx-auto p-4">
         {/* Always show submit form */}
-        <section className="bg-white rounded shadow p-6 mt-6">
+        <section className="bg-white rounded shadow p-4 mt-4 mb-4" style={{ maxWidth: 700, margin: '0 auto' }}>
           {showSubmitForm ? (
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="spouseEmail" className="block font-medium mb-1">Partner's Email</label>
+            <form className="py-3 px-2">
+              <div className="mb-3">
+                <label htmlFor="spouseEmail" className="form-label ps-2">Partner's Email</label>
                 <input
                   id="spouseEmail"
                   type="email"
                   placeholder="Enter their email address"
                   value={spouseEmail}
                   onChange={(e) => setSpouseEmail(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="form-control w-75 mx-auto"
+                  style={{ minWidth: 300 }}
                 />
               </div>
-              <div>
-                <label htmlFor="argumentTopic" className="block font-medium mb-1">Discussion Topic</label>
+              <div className="mb-3">
+                <label htmlFor="argumentTopic" className="form-label ps-2">Discussion Topic</label>
                 <input
                   id="argumentTopic"
                   type="text"
                   placeholder="What would you like to discuss?"
                   value={argumentTopic}
                   onChange={(e) => setArgumentTopic(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="form-control w-75 mx-auto"
+                  style={{ minWidth: 300 }}
                 />
               </div>
               <button
                 onClick={handleInitiate}
                 disabled={!spouseEmail || !argumentTopic}
-                className="btn btn-primary w-100"
+                className="btn btn-primary w-100 mt-2"
+                type="button"
               >
                 Start Discussion
               </button>
-            </div>
+            </form>
           ) : (
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4 py-3">
               <p className="text-success">Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
               <button onClick={handleStartNewArgument} className="btn btn-outline-primary w-100">
                 Start Another Discussion
@@ -332,14 +335,17 @@ export default function DashboardPage() {
                         argument.user_email)}
                   </p>
                   <div className="flex flex-col gap-1">
-                    <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${argument.argument_finished ? 'bg-gray-300 text-gray-700' : argument.spouse_accepted ? 'bg-blue-200 text-blue-800' : 'bg-yellow-200 text-yellow-800'}`}>
+                    <span
+                      className={`badge ${argument.argument_finished ? 'bg-secondary text-white' : argument.spouse_accepted ? 'bg-success text-white' : 'bg-warning text-dark'}`}
+                      style={{ fontSize: '1em', fontWeight: 600, padding: '0.5em 1em', borderRadius: '0.5em', marginBottom: 4 }}
+                    >
                       {argument.argument_finished ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
                     </span>
                     {getStatusMessage(argument) && (
                       <span className="text-xs text-gray-500">{getStatusMessage(argument)}</span>
                     )}
                     {argument.argument_deadline && !argument.argument_finished && (
-                      <span className="text-xs text-danger">Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
+                      <span className={`text-xs ${argument.spouse_accepted ? 'text-danger' : 'text-muted'}`}>Deadline: {formatDateWithOrdinal(argument.argument_deadline)}</span>
                     )}
                   </div>
                 </div>
