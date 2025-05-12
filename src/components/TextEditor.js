@@ -161,15 +161,15 @@ function TextEditor({ argument, userEmail }) {
   };
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', marginTop: 32 }}>
-      <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: 8, textAlign: 'center' }}>
+    <div style={{ marginTop: 32 }}>
+      <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: 8, textAlign: 'left' }}>
         Argument: {argument.argument_topic}
       </h1>
-      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'center' }}>
+      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'left' }}>
         with: {userEmail === argument.user_email ? argument.spouse_email : argument.user_email}
       </h2>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-        <span style={{ fontWeight: 600, fontSize: '1.25rem', marginRight: 8 }}>Time Remaining:</span>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+        <h2 style={{ fontWeight: 600, fontSize: '1.25rem', marginRight: 8, marginBottom: 0 }}>Time Remaining:</h2>
         <span style={{ fontSize: '1.25rem' }}>
           {argument?.argument_deadline && (
             <CountdownTimer
@@ -181,15 +181,15 @@ function TextEditor({ argument, userEmail }) {
         </span>
       </div>
       {renderContent()}
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+      {error && <p style={{ color: 'red', textAlign: 'left' }}>{error}</p>}
       <style jsx>{`
         .editor-container {
-          border: 2px solid #1976d2;
+          border: 2px solid #e3f2fd;
           border-radius: 6px;
           padding: 1rem;
           background: #f5f8fa;
           margin: 0 auto;
-          max-width: 700px;
+          max-width: 100%;
         }
         .editor-toolbar {
           display: flex;
@@ -221,7 +221,7 @@ function TextEditor({ argument, userEmail }) {
           padding: 0.5rem;
           background: #fff;
           border-radius: 4px;
-          border: 2px solid #1976d2;
+          border: 2px solid #e3f2fd;
           caret-color: #1976d2;
           font-size: 1rem;
         }

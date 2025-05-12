@@ -37,7 +37,6 @@ function CountdownTimer({ deadline, userEmail, spouseEmail }) {
 
   return (
     <div className="countdown-timer">
-      <h3>Time Remaining:</h3>
       <p className={isExpired ? 'expired' : ''}>{timeLeft}</p>
     </div>
   );
