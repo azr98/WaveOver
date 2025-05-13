@@ -288,7 +288,7 @@ export default function DashboardPage() {
         <section className="bg-white rounded shadow p-4 mt-4 mb-4" style={{ maxWidth: 700, margin: '0 auto' }}>
           {showSubmitForm ? (
             <form className="py-3 px-2">
-              <div className="mb-3" style={{ textAlign: 'left', maxWidth: 400, margin: '0 auto' }}>
+              <div className="mb-3" style={{ textAlign: 'left', maxWidth: 500, margin: '0 auto' }}>
                 <label htmlFor="spouseEmail" className="form-label" style={{ paddingLeft: 0, display: 'block', fontWeight: 500 }}>Partner's Email</label>
                 <input
                   id="spouseEmail"
@@ -297,10 +297,10 @@ export default function DashboardPage() {
                   value={spouseEmail}
                   onChange={(e) => setSpouseEmail(e.target.value)}
                   className="form-control"
-                  style={{ minWidth: 300, width: '100%' }}
+                  style={{ width: '100%' }}
                 />
               </div>
-              <div className="mb-3" style={{ textAlign: 'left', maxWidth: 400, margin: '0 auto' }}>
+              <div className="mb-3" style={{ textAlign: 'left', maxWidth: 500, margin: '0 auto' }}>
                 <label htmlFor="argumentTopic" className="form-label" style={{ paddingLeft: 0, display: 'block', fontWeight: 500 }}>Discussion Topic</label>
                 <input
                   id="argumentTopic"
@@ -309,7 +309,7 @@ export default function DashboardPage() {
                   value={argumentTopic}
                   onChange={(e) => setArgumentTopic(e.target.value)}
                   className="form-control"
-                  style={{ minWidth: 300, width: '100%' }}
+                  style={{ width: '100%' }}
                 />
               </div>
               <button
@@ -317,6 +317,7 @@ export default function DashboardPage() {
                 disabled={!spouseEmail || !argumentTopic}
                 className="btn btn-primary w-100 mt-2"
                 type="button"
+                style={{ maxWidth: 500, margin: '0 auto', display: 'block' }}
               >
                 Start Discussion
               </button>
