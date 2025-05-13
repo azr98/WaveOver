@@ -162,24 +162,27 @@ function TextEditor({ argument, userEmail }) {
 
   return (
     <div style={{ marginTop: 32 }}>
-      <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: 8, textAlign: 'left' }}>
-        Argument: {argument.argument_topic}
-      </h1>
-      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'left' }}>
-        with: {userEmail === argument.user_email ? argument.spouse_email : argument.user_email}
-      </h2>
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ fontWeight: 600, fontSize: '1.25rem', marginRight: 8, marginBottom: 0 }}>Time Remaining:</h2>
-        <span style={{ fontSize: '1.25rem' }}>
-          {argument?.argument_deadline && (
-            <CountdownTimer
-              deadline={argument.argument_deadline}
-              userEmail={argument.user_email}
-              spouseEmail={argument.spouse_email}
-            />
-          )}
+      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12 }}>
+        With: {(() => {
+          const isUser = userEmail === argument.user_email;
+          const first = isUser ? argument.spouse_firstname : argument.user_firstname;
+          const last = isUser ? argument.spouse_lastname : argument.user_lastname;
+          const email = isUser ? argument.spouse_email : argument.user_email;
+          return (first && last) ? `${first} ${last}` : email;
+        })()}
+        <span style={{ marginLeft: 16, fontWeight: 600, fontSize: '1.1rem' }}>
+          Time remaining:
+          <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'middle' }}>
+            {argument?.argument_deadline && (
+              <CountdownTimer
+                deadline={argument.argument_deadline}
+                userEmail={argument.user_email}
+                spouseEmail={argument.spouse_email}
+              />
+            )}
+          </span>
         </span>
-      </div>
+      </h2>
       {renderContent()}
       {error && <p style={{ color: 'red', textAlign: 'left' }}>{error}</p>}
       <style jsx>{`
