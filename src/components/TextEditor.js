@@ -162,17 +162,14 @@ function TextEditor({ argument, userEmail }) {
 
   return (
     <div style={{ marginTop: 32 }}>
-      <h2 style={{
-        fontWeight: 500,
-        fontSize: '1.3rem',
-        marginBottom: 16,
-        textAlign: 'left',
+      <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 32,
-        flexWrap: 'wrap',
+        gap: 48,
+        justifyContent: 'flex-start',
+        marginBottom: 16,
       }}>
-        <span>
+        <span style={{ fontWeight: 500, fontSize: '1.3rem' }}>
           With: {(() => {
             const isUser = userEmail === argument.user_email;
             const first = isUser ? argument.spouse_firstname : argument.user_firstname;
@@ -181,7 +178,7 @@ function TextEditor({ argument, userEmail }) {
             return (first && last) ? `${first} ${last}` : email;
           })()}
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '1.1rem' }}>
+        <span style={{ fontWeight: 600, fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>
           Time remaining:
           <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'middle', display: 'inline-block' }}>
             {argument?.argument_deadline && (
@@ -193,7 +190,7 @@ function TextEditor({ argument, userEmail }) {
             )}
           </span>
         </span>
-      </h2>
+      </div>
       {renderContent()}
       {error && <p style={{ color: 'red', textAlign: 'left' }}>{error}</p>}
       <style jsx>{`
