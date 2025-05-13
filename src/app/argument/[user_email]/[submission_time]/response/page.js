@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
+import Header from '../../../../components/Header';
 
 export default function ArgumentResponsePage() {
   const params = useParams();
@@ -64,16 +65,19 @@ export default function ArgumentResponsePage() {
   }
 
   return (
-    <div style={{ maxWidth: 700, margin: '40px auto', padding: 24 }}>
-      <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: 8, textAlign: 'left' }}>
-        Argument: {argument.argument_topic}
-      </h1>
-      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'left' }}>
-        with: {user.primaryEmailAddress?.emailAddress === argument.user_email ? argument.spouse_email : argument.user_email}
-      </h2>
-      <div style={{ border: '2px solid #e3f2fd', borderRadius: 6, background: '#f5f8fa', padding: 24, minHeight: 200 }}>
-        <div dangerouslySetInnerHTML={{ __html: responseHtml }} />
+    <>
+      <Header />
+      <div style={{ maxWidth: 700, margin: '40px auto', padding: 24 }}>
+        <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: 8, textAlign: 'left' }}>
+          Argument: {argument.argument_topic}
+        </h1>
+        <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'left' }}>
+          with: {user.primaryEmailAddress?.emailAddress === argument.user_email ? argument.spouse_email : argument.user_email}
+        </h2>
+        <div style={{ border: '2px solid #e3f2fd', borderRadius: 6, background: '#f5f8fa', padding: 24, minHeight: 200 }}>
+          <div dangerouslySetInnerHTML={{ __html: responseHtml }} />
+        </div>
       </div>
-    </div>
+    </>
   );
 } 

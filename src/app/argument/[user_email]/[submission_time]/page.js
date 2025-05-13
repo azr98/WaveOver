@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import TextEditor from "../../../../components/TextEditor";
+import Header from '../../../../components/Header';
 
 export default function ArgumentPage() {
   const params = useParams();
@@ -69,12 +70,15 @@ export default function ArgumentPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Discussion {argument.argument_topic}</h1>
-      <TextEditor 
-        argument={argument} 
-        userEmail={user.primaryEmailAddress?.emailAddress} 
-      />
-    </div>
+    <>
+      <Header />
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Discussion {argument.argument_topic}</h1>
+        <TextEditor 
+          argument={argument} 
+          userEmail={user.primaryEmailAddress?.emailAddress} 
+        />
+      </div>
+    </>
   );
 } 

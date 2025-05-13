@@ -164,7 +164,7 @@ function TextEditor({ argument, userEmail }) {
     <div style={{ marginTop: 32 }}>
       <div style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'baseline',
         gap: 48,
         justifyContent: 'flex-start',
         marginBottom: 16,
@@ -178,9 +178,9 @@ function TextEditor({ argument, userEmail }) {
             return (first && last) ? `${first} ${last}` : email;
           })()}
         </span>
-        <span style={{ fontWeight: 600, fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontWeight: 600, fontSize: '1.1rem', display: 'flex', alignItems: 'baseline' }}>
           Time remaining:
-          <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'middle', display: 'inline-block' }}>
+          <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'baseline', display: 'inline-block' }}>
             {argument?.argument_deadline && (
               <CountdownTimer
                 deadline={argument.argument_deadline}
