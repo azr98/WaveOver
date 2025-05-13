@@ -162,17 +162,28 @@ function TextEditor({ argument, userEmail }) {
 
   return (
     <div style={{ marginTop: 32 }}>
-      <h2 style={{ fontWeight: 500, fontSize: '1.3rem', marginBottom: 16, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12 }}>
-        With: {(() => {
-          const isUser = userEmail === argument.user_email;
-          const first = isUser ? argument.spouse_firstname : argument.user_firstname;
-          const last = isUser ? argument.spouse_lastname : argument.user_lastname;
-          const email = isUser ? argument.spouse_email : argument.user_email;
-          return (first && last) ? `${first} ${last}` : email;
-        })()}
-        <span style={{ marginLeft: 16, fontWeight: 600, fontSize: '1.1rem' }}>
+      <h2 style={{
+        fontWeight: 500,
+        fontSize: '1.3rem',
+        marginBottom: 16,
+        textAlign: 'left',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 32,
+        flexWrap: 'wrap',
+      }}>
+        <span>
+          With: {(() => {
+            const isUser = userEmail === argument.user_email;
+            const first = isUser ? argument.spouse_firstname : argument.user_firstname;
+            const last = isUser ? argument.spouse_lastname : argument.user_lastname;
+            const email = isUser ? argument.spouse_email : argument.user_email;
+            return (first && last) ? `${first} ${last}` : email;
+          })()}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '1.1rem' }}>
           Time remaining:
-          <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'middle' }}>
+          <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'middle', display: 'inline-block' }}>
             {argument?.argument_deadline && (
               <CountdownTimer
                 deadline={argument.argument_deadline}
