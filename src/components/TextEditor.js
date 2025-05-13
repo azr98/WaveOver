@@ -227,24 +227,24 @@ function TextEditor({ argument, userEmail }) {
         .editor-toolbar button.is-active {
           background: #e0e0e0;
         }
-        .ProseMirror {
+        .editor-container .ProseMirror {
           min-height: 160px;
           padding: 0.5rem;
-          background: #e3f2fd;
+          background: #e3f2fd !important;
           border-radius: 4px;
-          border: 2px solid #e3f2fd;
+          border: 2px solid #e3f2fd !important;
           caret-color: #1976d2;
           font-size: 1rem;
           transition: border-color 0.2s;
         }
-        .ProseMirror:focus {
+        .editor-container .ProseMirror:focus {
           outline: 2px solid #1976d2;
-          border-color: #1976d2;
+          border-color: #1976d2 !important;
         }
-        .ProseMirror p {
+        .editor-container .ProseMirror p {
           margin: 0.5rem 0;
         }
-        .ProseMirror:empty:before {
+        .editor-container .ProseMirror:empty:before {
           content: 'Type your response here...';
           color: #bbb;
           pointer-events: none;
