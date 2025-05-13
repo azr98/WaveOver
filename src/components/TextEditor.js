@@ -178,7 +178,7 @@ function TextEditor({ argument, userEmail }) {
             return (first && last) ? `${first} ${last}` : email;
           })()}
         </span>
-        <span style={{ fontWeight: 600, fontSize: '1.1rem', display: 'flex', alignItems: 'baseline' }}>
+        <span style={{ fontWeight: 500, fontSize: '1.3rem', display: 'flex', alignItems: 'baseline' }}>
           Time remaining:
           <span style={{ marginLeft: 8, fontSize: '1.1rem', verticalAlign: 'baseline', display: 'inline-block' }}>
             {argument?.argument_deadline && (
@@ -191,6 +191,9 @@ function TextEditor({ argument, userEmail }) {
           </span>
         </span>
       </div>
+      <span style={{ fontSize: '1.1rem', color: '#FFD600', display: 'block', marginBottom: 16 }}>
+        This editor auto saves and you can use ctrl/cmd shortcuts for bold and italics
+      </span>
       {renderContent()}
       {error && <p style={{ color: 'red', textAlign: 'left' }}>{error}</p>}
       <style jsx>{`
