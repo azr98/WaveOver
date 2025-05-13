@@ -267,7 +267,7 @@ export default function DashboardPage() {
     const ampm = hours >= 12 ? 'PM' : 'AM';
     const formattedHours = hours % 12 || 12;
     const formattedMinutes = minutes.toString().padStart(2, '0');
-    return `${dayOfWeek} ${getOrdinalSuffix(day)} ${month} ${year} - ${formattedHours}:${formattedMinutes} ${ampm}`;
+    return `${dayOfWeek} ${getOrdinalSuffix(day)} ${month} ${year} ${formattedHours}:${formattedMinutes} ${ampm}`;
   };
 
   if (!user) {
@@ -335,6 +335,11 @@ export default function DashboardPage() {
         <p className="text-danger mt-4 text-center" style={{ fontWeight: 600 }}>
           Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
         </p>
+        <div className="text-center mt-2 mb-2">
+          <a href="/help" className="text-blue-600 hover:underline font-medium">
+            Detailed help
+          </a>
+        </div>
         {/* Filter buttons for active, pending, finished */}
         <div className="d-flex justify-content-center mb-4 mt-5" style={{ gap: '0.75rem' }}>
           <button
@@ -388,8 +393,24 @@ export default function DashboardPage() {
                   </p>
                   <div className="d-flex align-items-center gap-2">
                     <span
-                      className={`badge ${isArgumentFinished(argument) ? 'bg-secondary text-white' : argument.spouse_accepted ? 'bg-success text-white' : 'bg-warning text-dark'}`}
-                      style={{ fontSize: '1em', fontWeight: 600, padding: '0.5em 1em', borderRadius: '0.5em', marginBottom: 4 }}
+                      className={`badge ${isArgumentFinished(argument) ? 'bg-secondary text-white' : argument.spouse_accepted ? '' : 'bg-warning text-dark'}`}
+                      style={{
+                        fontSize: '1em',
+                        fontWeight: 600,
+                        padding: '0.5em 1em',
+                        borderRadius: '0.5em',
+                        marginBottom: 4,
+                        backgroundColor: isArgumentFinished(argument)
+                          ? ''
+                          : argument.spouse_accepted
+                            ? '#7CFC86'
+                            : '',
+                        color: isArgumentFinished(argument)
+                          ? ''
+                          : argument.spouse_accepted
+                            ? '#1b4d1b'
+                            : '',
+                      }}
                     >
                       {isArgumentFinished(argument) ? 'Finished' : argument.spouse_accepted ? 'Active' : 'Pending'}
                     </span>
@@ -424,11 +445,6 @@ export default function DashboardPage() {
             </nav>
           )}
         </section>
-        <div className="flex justify-center mt-8">
-          <a href="/help" className="text-blue-600 hover:underline font-medium">
-            Detailed help
-          </a>
-        </div>
         {/* Finished argument choose dialog */}
         {showFinishedDialog === 'choose' && selectedArgument && (
           <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
