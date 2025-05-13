@@ -288,28 +288,28 @@ export default function DashboardPage() {
         <section className="bg-white rounded shadow p-4 mt-4 mb-4" style={{ maxWidth: 700, margin: '0 auto' }}>
           {showSubmitForm ? (
             <form className="py-3 px-2">
-              <div className="mb-3">
-                <label htmlFor="spouseEmail" className="form-label ps-2">Partner's Email</label>
+              <div className="mb-3" style={{ textAlign: 'left', maxWidth: 400, margin: '0 auto' }}>
+                <label htmlFor="spouseEmail" className="form-label" style={{ paddingLeft: 0, display: 'block', fontWeight: 500 }}>Partner's Email</label>
                 <input
                   id="spouseEmail"
                   type="email"
                   placeholder="Enter their email address"
                   value={spouseEmail}
                   onChange={(e) => setSpouseEmail(e.target.value)}
-                  className="form-control w-75 mx-auto"
-                  style={{ minWidth: 300 }}
+                  className="form-control"
+                  style={{ minWidth: 300, width: '100%' }}
                 />
               </div>
-              <div className="mb-3">
-                <label htmlFor="argumentTopic" className="form-label ps-2">Discussion Topic</label>
+              <div className="mb-3" style={{ textAlign: 'left', maxWidth: 400, margin: '0 auto' }}>
+                <label htmlFor="argumentTopic" className="form-label" style={{ paddingLeft: 0, display: 'block', fontWeight: 500 }}>Discussion Topic</label>
                 <input
                   id="argumentTopic"
                   type="text"
                   placeholder="What would you like to discuss?"
                   value={argumentTopic}
                   onChange={(e) => setArgumentTopic(e.target.value)}
-                  className="form-control w-75 mx-auto"
-                  style={{ minWidth: 300 }}
+                  className="form-control"
+                  style={{ minWidth: 300, width: '100%' }}
                 />
               </div>
               <button

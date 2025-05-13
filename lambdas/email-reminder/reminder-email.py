@@ -129,7 +129,9 @@ def lambda_handler(event, context):
             ':true_value': {'BOOL': True}
         }
         
-        projection_expression = 'user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent, user_response, spouse_response, spouse_accepted'
+        projection_expression = '''user_email, spouse_email, argument_topic, reminder_time_two_days, reminder_time_one_days, 
+        reminder_time_twelve_hours, reminder_time_four_hours, argument_deadline, submission_time, argument_finished, last_email_sent,
+        user_response, spouse_response, spouse_accepted, user_firstname, user_lastname, spouse_firstname, spouse_lastname'''
 
         response = dynamodb.scan(
             TableName=table,
