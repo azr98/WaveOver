@@ -439,39 +439,30 @@ export default function DashboardPage() {
                 <div className="modal-body">
                   <p>Choose which response to view:</p>
                   <div className="d-flex gap-2 mb-3">
-                    <button onClick={() => setShowFinishedDialog('user')} className="btn btn-outline-primary flex-fill">What you said</button>
-                    <button onClick={() => setShowFinishedDialog('partner')} className="btn btn-outline-secondary flex-fill">What your partner said</button>
+                    <button
+                      className="btn btn-primary flex-fill"
+                      onClick={() => {
+                        const userEmail = getUserEmail();
+                        router.push(`/argument/${encodeURIComponent(selectedArgument.user_email)}/${encodeURIComponent(selectedArgument.submission_time)}/response?view=${userEmail === selectedArgument.user_email ? 'user' : 'partner'}`);
+                        setShowFinishedDialog(false);
+                      }}
+                    >
+                      What you said
+                    </button>
+                    <button
+                      className="btn btn-primary flex-fill"
+                      onClick={() => {
+                        const userEmail = getUserEmail();
+                        router.push(`/argument/${encodeURIComponent(selectedArgument.user_email)}/${encodeURIComponent(selectedArgument.submission_time)}/response?view=${userEmail === selectedArgument.user_email ? 'partner' : 'user'}`);
+                        setShowFinishedDialog(false);
+                      }}
+                    >
+                      What your partner said
+                    </button>
                   </div>
                 </div>
                 <div className="modal-footer">
                   <button className="btn btn-outline-secondary w-100" onClick={() => setShowFinishedDialog(false)}>Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Finished argument response view (read-only) */}
-        {(showFinishedDialog === 'user' || showFinishedDialog === 'partner') && selectedArgument && (
-          <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.4)' }}>
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">{selectedArgument.argument_topic}</h5>
-                </div>
-                <div className="modal-body">
-                  <div style={{ minHeight: 120, maxHeight: 300, overflowY: 'auto', border: '1px solid #eee', borderRadius: 8, padding: 12 }}>
-                    {(() => {
-                      const userEmail = getUserEmail();
-                      if (showFinishedDialog === 'user') {
-                        return userEmail === selectedArgument.user_email ? selectedArgument.user_response : selectedArgument.spouse_response;
-                      } else {
-                        return userEmail === selectedArgument.user_email ? selectedArgument.spouse_response : selectedArgument.user_response;
-                      }
-                    })()}
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-outline-secondary w-100" onClick={() => setShowFinishedDialog('choose')}>Back</button>
                 </div>
               </div>
             </div>
