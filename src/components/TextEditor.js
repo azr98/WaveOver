@@ -198,7 +198,7 @@ function TextEditor({ argument, userEmail }) {
           border: 2px solid #e3f2fd;
           border-radius: 6px;
           padding: 1rem;
-          background: #f5f8fa;
+          background: #e3f2fd;
           margin: 0 auto;
           max-width: 100%;
         }
@@ -228,16 +228,18 @@ function TextEditor({ argument, userEmail }) {
           background: #e0e0e0;
         }
         .ProseMirror {
-          min-height: 200px;
+          min-height: 160px;
           padding: 0.5rem;
-          background: #fff;
+          background: #e3f2fd;
           border-radius: 4px;
           border: 2px solid #e3f2fd;
           caret-color: #1976d2;
           font-size: 1rem;
+          transition: border-color 0.2s;
         }
         .ProseMirror:focus {
           outline: 2px solid #1976d2;
+          border-color: #1976d2;
         }
         .ProseMirror p {
           margin: 0.5rem 0;
