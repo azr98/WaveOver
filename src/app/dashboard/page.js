@@ -339,6 +339,7 @@ export default function DashboardPage() {
           <a href="/help" className="text-blue-600 hover:underline font-medium">
             Detailed technical app walkthrough
           </a>
+          <br />
           <a href="/writing" className="text-blue-600 hover:underline font-medium">
             Writing tips for this app
           </a>
