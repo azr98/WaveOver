@@ -337,7 +337,10 @@ export default function DashboardPage() {
         </p>
         <div className="text-center mt-2 mb-2">
           <a href="/help" className="text-blue-600 hover:underline font-medium">
-            Detailed help
+            Detailed technical app walkthrough
+          </a>
+          <a href="/writing" className="text-blue-600 hover:underline font-medium">
+            Writing tips for this app
           </a>
         </div>
         {/* Filter buttons for active, pending, finished */}
