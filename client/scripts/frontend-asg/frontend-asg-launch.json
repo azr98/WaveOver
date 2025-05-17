@@ -29,7 +29,7 @@
           "REGISTRY=\"058264329805.dkr.ecr.${AWS_REGION}.amazonaws.com\"",
           "REPOSITORY='waveover-development'",
           "echo 'Fetching latest image tag from SSM Parameter Store...'",
-          "IMAGE_TAG=$(aws ssm get-parameter --name \"/frontend-waveover-development-ecr-commit-hash-tag\" --query \"Parameter.Value\" --output text || echo '')",
+          "IMAGE_TAG=$(aws ssm get-parameter --name \"waveover-development-ecr-commit-hash-tag\" --query \"Parameter.Value\" --output text || echo '')",
           "# Ensure IMAGE_TAG is not empty",
           "if [[ -z \"$IMAGE_TAG\" ]]; then",
           "  echo 'ERROR: Image tag not found in SSM Parameter Store!'",
@@ -37,9 +37,6 @@
           "fi",
           "echo 'Logging into Amazon ECR...'",
           "aws ecr get-login-password --region \"$AWS_REGION\" | docker login --username AWS --password-stdin \"$REGISTRY\"",
-          "echo 'Stopping and removing old container if it exists...'",
-          "docker stop waveover-container || true",
-          "docker rm waveover-container || true",
           "echo 'Pulling the latest Docker image: $REGISTRY/$REPOSITORY:$IMAGE_TAG'",
           "docker pull \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\" || { echo 'Docker pull failed! Retrying in 5 seconds...'; sleep 5; docker pull \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"; }",
           "echo 'Creating nginx logs directory...'",
@@ -48,7 +45,7 @@
           "mkdir -p /var/log/waveover",
           "touch /var/log/waveover/nextjs.log",
           "echo 'Running new container...'",
-          "docker run -d --name waveover-container -p 80:80 -v /var/log/nginx:/var/log/nginx -v /var/log/waveover/nextjs.log:/app/logs/nextjs.log \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"",
+          "docker run -d --name waveover-dev-container -p 3000:3000 -v /var/log/waveover/nextjs.log:/app/logs/nextjs.log \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"",
           "echo 'Deployment complete.'"
         ]
       }
