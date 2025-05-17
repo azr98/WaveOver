@@ -1,9 +1,12 @@
 "use client";
 
+import Header from "../../components/Header";
+
 export default function WritingTipsPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-12 px-4">
-      <div className="bg-white rounded shadow p-6 max-w-2xl w-full">
+      <Header />
+      <div className="bg-white rounded shadow p-6 max-w-2xl w-full mx-4 sm:mx-8" style={{ marginLeft: 16, marginRight: 16 }}>
         <h1 className="text-2xl font-bold mb-4 text-center">✍️ How to Write for Deeper Conversations and Less Conflict</h1>
         <p className="text-lg mb-4 text-center">Difficult conversations don't have to become arguments.</p>
         <p className="mb-6 text-center">This app gives you a powerful way to communicate with clarity, calm, and connection—through asynchronous writing.<br />Here's how to make the most of it.</p>
