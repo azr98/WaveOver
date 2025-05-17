@@ -132,7 +132,8 @@ jobs:
               "docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest",
               "docker stop waveover-dev-container || true",
               "docker rm waveover-dev-container || true",
-              docker run -d --name waveover-dev-container -p 3000:3000 -v /var/log/waveover/nextjs.log:/app/logs/nextjs.log  058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest"]' \
+              "docker run -d --name waveover-dev-container -p 3000:3000 -v /var/log/waveover/nextjs.log:/app/logs/nextjs.log 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest"
+            ]' \
             --region ${{ env.AWS_DEFAULT_REGION }}
       
       - name: Clean up Docker on EC2
