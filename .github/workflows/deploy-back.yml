@@ -84,11 +84,24 @@ jobs:
         run: |
           docker push --all-tags 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development
       
-      - name: Start EC2 Instance
+      - name: Start EC2 Instance if stopped and wait for status checks
         run: |
-          echo "DEV_INSTANCE_ID: ${{ secrets.DEV_INSTANCE_ID }}"
-          aws ec2 start-instances --instance-ids ${{ secrets.DEV_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.DEV_INSTANCE_ID }} --region ${{ env.AWS_DEFAULT_REGION }}
+          INSTANCE_ID=${{ secrets.DEV_INSTANCE_ID }}
+          REGION=${{ env.AWS_DEFAULT_REGION }}
+          STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --region $REGION --query "Reservations[0].Instances[0].State.Name" --output text)
+          echo "Current instance state: $STATE"
+          if [ "$STATE" = "stopped" ]; then
+            echo "Instance is stopped. Starting..."
+            aws ec2 start-instances --instance-ids $INSTANCE_ID --region $REGION
+            aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region $REGION
+            echo "Waiting for EC2 instance to pass all status checks..."
+            aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID --region $REGION
+            echo "EC2 instance started and passed all status checks."
+          else
+            echo "Instance is already running. Optionally waiting for status checks..."
+            aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID --region $REGION
+            echo "EC2 instance is running and passed all status checks."
+          fi
 
       - name: Configure CloudWatch agent
         run: |
