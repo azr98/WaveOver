@@ -18,9 +18,9 @@
             "log_stream_name": "{instance_id}-secure"
           },
           {
-            "file_path": "/var/log/waveover/flask.log",
+            "file_path": "/var/log/waveover/nextjs.log",
             "log_group_name": "/waveover/dev/docker",
-            "log_stream_name": "flask-app-{instance_id}"
+            "log_stream_name": "nextjs-app-{instance_id}"
           }
         ]
       }

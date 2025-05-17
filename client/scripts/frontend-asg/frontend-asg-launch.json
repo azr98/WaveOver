@@ -11,7 +11,7 @@
           "#!/bin/bash",
           "set -e",
           "echo 'Downloading CloudWatch agent configuration from S3...'",
-          "aws s3 cp s3://waveover-development-config/Frontend/Cloudwatch-agent/cloudwatch-agent-frontend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+          "aws s3 cp s3://waveover-development-config/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
           "echo 'Applying CloudWatch agent configuration...'",
           "/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
           "echo 'CloudWatch agent configured and running.'"
@@ -44,8 +44,11 @@
           "docker pull \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\" || { echo 'Docker pull failed! Retrying in 5 seconds...'; sleep 5; docker pull \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"; }",
           "echo 'Creating nginx logs directory...'",
           "mkdir -p /var/log/nginx",
+          "echo 'Creating waveover logs directory...'",
+          "mkdir -p /var/log/waveover",
+          "touch /var/log/waveover/nextjs.log",
           "echo 'Running new container...'",
-          "docker run -d --name waveover-container -p 80:80 -v /var/log/nginx:/var/log/nginx \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"",
+          "docker run -d --name waveover-container -p 80:80 -v /var/log/nginx:/var/log/nginx -v /var/log/waveover/nextjs.log:/app/logs/nextjs.log \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"",
           "echo 'Deployment complete.'"
         ]
       }
