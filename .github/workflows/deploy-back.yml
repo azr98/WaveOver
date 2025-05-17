@@ -10,6 +10,7 @@ on:
       - '.github/workflows/deploy-back.yml'
       - 'Dockerfile'
       - '!scripts/**'
+      - '!config/**'
     branches:
       - nextjs-aws-dev
 
