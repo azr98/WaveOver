@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import Header from '../../components/Header';
+import Header from '../../../../../components/Header';
 
 export default function ArgumentResponsePage() {
   const params = useParams();
