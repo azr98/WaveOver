@@ -1,5 +1,0 @@
-Flask
-Flask-CORS
-boto3
-pytz
-requests

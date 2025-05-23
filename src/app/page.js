@@ -50,6 +50,9 @@ export default function LandingPage() {
             <Link href="/help" className="help-link">
               Full walkthrough
             </Link>
+            <Link href="/writing" className="help-link">
+            Writing tips for this app
+          </Link>
           </div>
         </section>
 
