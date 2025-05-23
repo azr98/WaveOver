@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
-import TextEditor from "../components/TextEditor";
-import Header from '../components/Header';
+import TextEditor from "../../../../components/TextEditor";
+import Header from "../../../../components/Header";
 
 export default function ArgumentPage() {
   const params = useParams();
