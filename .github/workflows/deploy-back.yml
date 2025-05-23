@@ -1,0 +1,163 @@
+name: Build and Deploy Backend
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'next.config.js'
+      - 'package.json'
+      - '.github/workflows/deploy-back.yml'
+      - 'Dockerfile'
+      - '!scripts/**'
+      - '!config/**'
+    branches:
+      - nextjs-aws-dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: WaveOver-Development
+    env:
+      AWS_DEFAULT_REGION: eu-west-1
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Debug OIDC Token
+        run: |
+          echo "Fetching OIDC Token..."
+          TOKEN=$(curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" $ACTIONS_ID_TOKEN_REQUEST_URL | jq -r '.value')
+          echo "OIDC Token (encoded): $TOKEN"
+          echo "OIDC Token (decoded):"
+          echo "$TOKEN" | base64 -d | jq '.'
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::058264329805:role/GitHubActionsRole-Dev
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Get Clerk Key from SSM
+        id: get-clerk-key
+        run: |
+          CLERK_KEY=$(aws ssm get-parameter --name "clerk-gmail-api-key" --with-decryption --query "Parameter.Value" --output text)
+          echo "CLERK_KEY=$CLERK_KEY" >> $GITHUB_ENV
+
+      - name: Get Clerk Secret Key from SSM
+        id: get-clerk-secret-key
+        run: |
+          CLERK_SECRET_KEY=$(aws ssm get-parameter --name "clerk-secret-api-key" --with-decryption --query "Parameter.Value" --output text)
+          echo "CLERK_SECRET_KEY=$CLERK_SECRET_KEY" >> $GITHUB_ENV
+
+      - name: Update SSM Parameter with commit hash
+        run: |
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          aws ssm put-parameter \
+            --name "waveover-development-ecr-commit-hash-tag" \
+            --value "$COMMIT_HASH" \
+            --type "String" \
+            --overwrite
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          IMAGE_TAG=$(echo $GITHUB_REF_NAME | tr / -)-$(date +%Y%m%d%H%M%S)
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          
+          docker build -f Dockerfile -t 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$IMAGE_TAG \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ env.CLERK_KEY }} \
+            --build-arg CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }} .
+          
+          # Tag with commit hash and latest
+          docker tag 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$IMAGE_TAG 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$COMMIT_HASH
+          docker tag 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:$IMAGE_TAG 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push --all-tags 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development
+      
+      - name: Start EC2 Instance if stopped and wait for status checks
+        run: |
+          INSTANCE_ID=${{ secrets.DEV_INSTANCE_ID }}
+          REGION=${{ env.AWS_DEFAULT_REGION }}
+          STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --region $REGION --query "Reservations[0].Instances[0].State.Name" --output text)
+          echo "Current instance state: $STATE"
+          if [ "$STATE" = "stopped" ]; then
+            echo "Instance is stopped. Starting..."
+            aws ec2 start-instances --instance-ids $INSTANCE_ID --region $REGION
+            aws ec2 wait instance-running --instance-ids $INSTANCE_ID --region $REGION
+            echo "Waiting for EC2 instance to pass all status checks..."
+            aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID --region $REGION
+            echo "EC2 instance started and passed all status checks."
+          else
+            echo "Instance is already running. Optionally waiting for status checks..."
+            aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID --region $REGION
+            echo "EC2 instance is running and passed all status checks."
+          fi
+
+      - name: Configure CloudWatch agent
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.DEV_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Configure CloudWatch agent" \
+            --parameters commands='[
+              "echo \"Downloading CloudWatch agent configuration from S3...\"",
+              "sudo aws s3 cp s3://waveover-development-config/Backend/Cloudwatch-agent/cloudwatch-agent-backend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+              "echo \"Configuring CloudWatch agent...\"",
+              "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+              "echo \"Starting CloudWatch agent...\"",
+              "sudo systemctl start amazon-cloudwatch-agent",
+              "echo \"Verifying CloudWatch agent status...\"",
+              "sudo systemctl status amazon-cloudwatch-agent"
+            ]' \
+            --region ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Deploy via SSM
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.DEV_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Docker container for backend" \
+            --parameters commands='[
+              "aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 058264329805.dkr.ecr.eu-west-1.amazonaws.com",
+              "docker pull 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest",
+              "docker stop waveover-dev-container || true",
+              "docker rm waveover-dev-container || true",
+              "docker run -d --name waveover-dev-container -p 3000:3000 -v /var/log/waveover/nextjs.log:/app/logs/nextjs.log 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development:latest"
+            ]' \
+            --region ${{ env.AWS_DEFAULT_REGION }}
+      
+      - name: Clean up Docker on EC2
+        run: |
+          aws ssm send-command \
+            --instance-ids ${{ secrets.DEV_INSTANCE_ID }} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Clean up Docker containers and images" \
+            --parameters commands='[
+              "REPOSITORY=\"waveover-development\"",
+              "AWS_REGION=\"eu-west-1\"",
+              "REGISTRY=\"058264329805.dkr.ecr.$AWS_REGION.amazonaws.com\"",
+              "echo \"Finding all old images except the latest...\"",
+              "LATEST_IMAGE_ID=$(docker images --format \"{{.ID}}\" $REGISTRY/$REPOSITORY:latest)",
+              "docker images $REGISTRY/$REPOSITORY --format \"{{.ID}} {{.Repository}}:{{.Tag}}\" | grep -v $LATEST_IMAGE_ID | awk \"{print $1}\" | xargs -r docker rmi -f",
+              "echo \"Pruning unused resources...\"",
+              "docker system prune -f"
+            ]' \
+            --region ${{ env.AWS_DEFAULT_REGION }}
+  
+      - name: Output Docker Image Details
+        run: |
+          echo "Docker image built and used:"
+          echo "Repository: 058264329805.dkr.ecr.eu-west-1.amazonaws.com/waveover-development"
+          echo "Tag: $IMAGE_TAG"
+          echo "Latest Tag: latest"
+

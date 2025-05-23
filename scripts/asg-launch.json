@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.2",
+  "description": "Pull latest ECR image and restart container, configure CloudWatch Agent",
+  "parameters": {},
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "ConfigureCloudWatchAgent",
+      "inputs": {
+        "runCommand": [
+          "#!/bin/bash",
+          "set -e",
+          "echo 'Downloading CloudWatch agent configuration from S3...'",
+          "aws s3 cp s3://waveover-development-config/Backend/Cloudwatch-agent/cloudwatch-agent-backend-config.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+          "echo 'Applying CloudWatch agent configuration...'",
+          "/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+          "echo 'CloudWatch agent configured and running.'"
+        ]
+      }
+    },
+    {
+      "action": "aws:runShellScript",
+      "name": "PullAndRunContainer",
+      "inputs": {
+        "runCommand": [
+          "#!/bin/bash",
+          "set -e",
+          "AWS_REGION='eu-west-1'",
+          "REGISTRY=\"058264329805.dkr.ecr.${AWS_REGION}.amazonaws.com\"",
+          "REPOSITORY='waveover-development'",
+          "echo 'Fetching latest image tag from SSM Parameter Store...'",
+          "IMAGE_TAG=$(aws ssm get-parameter --name \"/waveover-development-ecr-commit-hash-tag\" --query \"Parameter.Value\" --output text || echo '')",
+          "# Ensure IMAGE_TAG is not empty",
+          "if [[ -z \"$IMAGE_TAG\" ]]; then",
+          "  echo 'ERROR: Image tag not found in SSM Parameter Store!'",
+          "  exit 1",
+          "fi",
+          "echo 'Logging into Amazon ECR...'",
+          "aws ecr get-login-password --region \"$AWS_REGION\" | docker login --username AWS --password-stdin \"$REGISTRY\"",
+          "echo 'Stopping and removing old container if it exists...'",
+          "docker stop waveover-dev-container || true",
+          "docker rm waveover-dev-container || true",
+          "echo 'Pulling the latest Docker image: $REGISTRY/$REPOSITORY:$IMAGE_TAG'",
+          "docker pull \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\" || { echo 'Docker pull failed! Retrying in 5 seconds...'; sleep 5; docker pull \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"; }",
+          "echo 'Creating nginx logs directory...'",
+          "mkdir -p /var/log/nginx",
+          "echo 'Running new container...'",
+          "docker run -d --name waveover-dev-container -p 80:5000 -v /var/log/waveover:/var/log/waveover \"$REGISTRY/$REPOSITORY:$IMAGE_TAG\"",
+          "echo 'Deployment complete.'"
+        ]
+      }
+    }
+  ]
+}
