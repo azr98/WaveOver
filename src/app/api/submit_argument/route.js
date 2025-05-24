@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Import Supabase client from a utility file (to be created if not present)
 import { supabase } from '../../../utils/supabaseClient';
-
+//Due to free plan limitations we are using the dev project in supabase but 2 different tables
 export async function POST(req) {
   try {
     const data = await req.json();
