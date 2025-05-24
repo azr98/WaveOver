@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
-
-const dynamo = new DynamoDBClient({ region: 'eu-west-1' });
-const argument_table = 'WaveOver_Dev';
+import { supabase } from '../../../utils/supabaseClient';
 
 export async function POST(req) {
   try {
@@ -32,20 +29,18 @@ export async function POST(req) {
       );
     }
 
-    const params = {
-      TableName: argument_table,
-      Key: {
-        user_email: { S: user_email },
-        submission_time: { S: submission_time }
-      },
-      UpdateExpression: `SET ${updateField} = :content` ,
-      ExpressionAttributeValues: {
-        ':content': { S: content }
-      }
-    };
+    const { error } = await supabase
+      .from('arguments')
+      .update({ [updateField]: content })
+      .eq('user_email', user_email)
+      .eq('submission_time', submission_time);
 
-    await dynamo.send(new UpdateItemCommand(params));
-    console.log('[API] Content saved successfully');
+    if (error) {
+      return NextResponse.json(
+        { error: 'Failed to save content', details: error.message },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ message: 'Content saved successfully' });
   } catch (error) {
     console.error('[API] Error saving content:', error);

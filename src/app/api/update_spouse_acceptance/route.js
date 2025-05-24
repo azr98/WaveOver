@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
-
-const dynamo = new DynamoDBClient({ region: 'eu-west-1' });
-const argument_table = 'WaveOver_Dev';
+import { supabase } from '../../../utils/supabaseClient';
 
 export async function POST(request) {
   try {
@@ -18,21 +15,19 @@ export async function POST(request) {
     const spouseFirst = capFirst(spouse_firstname);
     const spouseLast = capFirst(spouse_lastname);
 
-    const params = {
-      TableName: argument_table,
-      Key: {
-        user_email: { S: user_email },
-        submission_time: { S: submission_time }
-      },
-      UpdateExpression: 'SET spouse_accepted = :accepted, spouse_firstname = :spouse_firstname, spouse_lastname = :spouse_lastname',
-      ExpressionAttributeValues: {
-        ':accepted': { BOOL: accepted },
-        ':spouse_firstname': { S: spouseFirst },
-        ':spouse_lastname': { S: spouseLast }
-      }
-    };
+    const { error } = await supabase
+      .from('arguments')
+      .update({
+        spouse_accepted: accepted,
+        spouse_firstname: spouseFirst,
+        spouse_lastname: spouseLast
+      })
+      .eq('user_email', user_email)
+      .eq('submission_time', submission_time);
 
-    await dynamo.send(new UpdateItemCommand(params));
+    if (error) {
+      return NextResponse.json({ error: 'Failed to update spouse acceptance status', details: error.message }, { status: 500 });
+    }
     return NextResponse.json({ message: 'Spouse acceptance status updated successfully' });
   } catch (error) {
     console.error('Error updating spouse acceptance:', error);
