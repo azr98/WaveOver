@@ -1,6 +1,7 @@
 import ClerkProviderWithKey from "../components/ClerkProviderWithKey";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './custom.css';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: 'WaveOver',
@@ -14,6 +15,7 @@ export default function RootLayout({ children }) {
         <ClerkProviderWithKey>
           {children}
         </ClerkProviderWithKey>
+        <SpeedInsights />
       </body>
     </html>
   );
