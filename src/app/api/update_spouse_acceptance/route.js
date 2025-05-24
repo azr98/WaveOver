@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../utils/supabaseClient';
+import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 
 export async function POST(request) {
   try {
@@ -28,7 +29,22 @@ export async function POST(request) {
     if (error) {
       return NextResponse.json({ error: 'Failed to update spouse acceptance status', details: error.message }, { status: 500 });
     }
-    return NextResponse.json({ message: 'Spouse acceptance status updated successfully' });
+
+    // Invoke AWS Lambda after successful update
+    const lambda = new LambdaClient({ region: process.env.AWS_REGION });
+    const payload = { user_email, submission_time };
+    const command = new InvokeCommand({
+      FunctionName: process.env.AWS_LAMBDA_EMAIL_REMINDER_ARN_DEV,
+      Payload: Buffer.from(JSON.stringify(payload)),
+    });
+    let lambdaResult;
+    try {
+      lambdaResult = await lambda.send(command);
+    } catch (lambdaError) {
+      return NextResponse.json({ error: 'Failed to invoke Lambda', details: lambdaError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Spouse acceptance status updated successfully', lambda: lambdaResult });
   } catch (error) {
     console.error('Error updating spouse acceptance:', error);
     return NextResponse.json({ error: 'Failed to update spouse acceptance status' }, { status: 500 });
