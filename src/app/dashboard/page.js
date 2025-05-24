@@ -133,6 +133,10 @@ export default function DashboardPage() {
   const confirmSubmitArgument = async () => {
     try {
       if (user) {
+        // Generate submission_time in the required format
+        const now = new Date();
+        const pad = (n) => n.toString().padStart(2, '0');
+        const submission_time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
         const argumentSubmitData = {
           user_email: getUserEmail(),
           user_firstname: user.firstName,
@@ -141,23 +145,14 @@ export default function DashboardPage() {
           spouse_firstname: '',
           spouse_lastname: '',
           argument_topic: argumentTopic,
+          submission_time
         };
         // Submit the argument first
         const response = await axios.post("/api/submit_argument", argumentSubmitData);
         if (response.status === 201) {
-          // Get submission_time from the response or reconstruct it if needed
-          // If your backend returns submission_time, use that. Otherwise, reconstruct as in submit_argument
-          let submission_time = response.data.submission_time;
-          if (!submission_time) {
-            // Fallback: reconstruct as in submit_argument
-            const now = new Date();
-            const pad = (n) => n.toString().padStart(2, '0');
-            submission_time = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}Z`;
-          }
           // Call invite email route
           await axios.post("/api/invite", {
-            ...argumentSubmitData,
-            submission_time
+            ...argumentSubmitData
           });
         }
         setInitiated(true);
@@ -245,6 +240,11 @@ export default function DashboardPage() {
         setTimeout(() => {
           setNotification(null);
         }, 5000);
+        // POST to AWS Lambda API Gateway endpoint to trigger reminders setup
+        await axios.post(process.env.NEXT_PUBLIC_LAMBDA_INVITE_EMAIL_DEV_API, {
+          user_email: selectedPendingArgument.user_email,
+          submission_time: selectedPendingArgument.submission_time
+        });
         router.push(`/argument/${encodeURIComponent(selectedPendingArgument.user_email)}/${encodeURIComponent(selectedPendingArgument.submission_time)}?readonly=1`);
       }
     } catch (error) {

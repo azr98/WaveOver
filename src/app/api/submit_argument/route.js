@@ -12,10 +12,8 @@ export async function POST(req) {
     const spouse_firstname = data.spouse_firstname?.trim().charAt(0).toUpperCase() + data.spouse_firstname?.trim().slice(1);
     const spouse_lastname = data.spouse_lastname?.trim().charAt(0).toUpperCase() + data.spouse_lastname?.trim().slice(1);
 
-    // Generate submission_time in UTC (Postgres TIMESTAMP WITH TIME ZONE)
-    const now = new Date();
-    const pad = (n) => n.toString().padStart(2, '0');
-    const submission_time = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}Z`;
+    // Use submission_time from the frontend
+    const submission_time = data.submission_time;
 
     const insertData = {
       user_email: data.user_email,
@@ -46,7 +44,7 @@ export async function POST(req) {
       console.error('Supabase insert error:', error);
       return Response.json({ error: 'Failed to submit argument', details: error.message }, { status: 500 });
     }
-    return Response.json({ message: 'Initial argument entry submitted' }, { status: 201 });
+    return Response.json({ message: 'Argument submitted successfully', submission_time });
   } catch (err) {
     console.error('Error in submit_argument:', err);
     return Response.json({ error: 'Failed to submit argument', details: err.message }, { status: 500 });
