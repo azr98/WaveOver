@@ -43,7 +43,7 @@ export async function POST(request) {
     try {
       await s3Client.send(
         new PutObjectCommand({
-          Bucket: 'waveover-development-user-reports',
+          Bucket: 'waveover-production-user-reports',
           Key: file_key,
           Body: JSON.stringify(report_payload),
           StorageClass: 'STANDARD_IA'
@@ -70,7 +70,7 @@ export async function POST(request) {
       try {
         await snsClient.send(
           new PublishCommand({
-            TopicArn: 'arn:aws:sns:eu-west-1:058264329805:waveover-development-bugreports',
+            TopicArn: 'arn:aws:sns:eu-west-1:058264329805:waveover-production-bugreports',
             Subject: subject,
             Message: body
           })
