@@ -142,7 +142,24 @@ export default function DashboardPage() {
           spouse_lastname: '',
           argument_topic: argumentTopic,
         };
+        // Submit the argument first
         const response = await axios.post("/api/submit_argument", argumentSubmitData);
+        if (response.status === 201) {
+          // Get submission_time from the response or reconstruct it if needed
+          // If your backend returns submission_time, use that. Otherwise, reconstruct as in submit_argument
+          let submission_time = response.data.submission_time;
+          if (!submission_time) {
+            // Fallback: reconstruct as in submit_argument
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            submission_time = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}Z`;
+          }
+          // Call invite email route
+          await axios.post("/api/invite", {
+            ...argumentSubmitData,
+            submission_time
+          });
+        }
         setInitiated(true);
         setShowSubmitForm(false);
         setSpouseEmail("");
