@@ -27,3 +27,4 @@ server/requests-layer.zip
 client/config/
 server/config/
 .next
+.vercel
