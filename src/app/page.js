@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { SignedIn, SignedOut, SignInButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import "../components/react-archive/css/landingPage.css";
+import "./custom.css";
 
 export default function LandingPage() {
   const router = useRouter();

@@ -1,6 +1,6 @@
 "use client";
+import "../app/custom.css";
 import { useClerk, UserButton, SignedIn } from '@clerk/nextjs';
-import "./react-archive/css/Header.css";
 
 export default function HeaderNext() {
   return (
