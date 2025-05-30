@@ -123,7 +123,7 @@ def lambda_handler(event, context):
             user_exists = check_clerk_user_exists(user_email)
             spouse_exists = check_clerk_user_exists(spouse_email)
             spouse_accepted = argument['spouse_accepted']
-            submission_time = argument['submission_time'].isoformat() if argument['submission_time'] else ''
+            submission_time = argument['submission_time']
             addresses = [user_email, spouse_email]
             argument_topic = argument['argument_topic']
             current_time = datetime.now()
