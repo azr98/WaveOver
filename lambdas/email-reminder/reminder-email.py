@@ -41,7 +41,7 @@ def check_clerk_user_exists(email):
 def send_email(addresses, subject, body):
     ses = boto3.client('ses', region_name='eu-west-1')
     ses.send_email(
-        Source='dev-reminder@waveover.info',
+        Source='reminder@waveover.info',
         Destination={'ToAddresses': addresses},
         Message={
             'Subject': {'Data': subject},
@@ -79,11 +79,11 @@ def lambda_handler(event, context):
             if user_exists and spouse_exists and not last_email_sent:
                 current_time = datetime.now()
                 deadlines = {
-                    "reminder_48_hours": (current_time + timedelta(hours=1)).isoformat(),
-                    "reminder_24_hours": (current_time + timedelta(hours=2)).isoformat(),
-                    "reminder_12_hours": (current_time + timedelta(hours=3)).isoformat(),
-                    "reminder_4_hours": (current_time + timedelta(hours=4)).isoformat(),
-                    "final_deadline": (current_time + timedelta(hours=5)).isoformat()
+                    "reminder_48_hours": (current_time + timedelta(hours=24)).isoformat(),
+                    "reminder_24_hours": (current_time + timedelta(hours=48)).isoformat(),
+                    "reminder_12_hours": (current_time + timedelta(hours=60)).isoformat(),
+                    "reminder_4_hours": (current_time + timedelta(hours=38)).isoformat(),
+                    "final_deadline": (current_time + timedelta(hours=72)).isoformat()
                 }
                 # UPDATE in Supabase
                 update_data = {
@@ -99,10 +99,17 @@ def lambda_handler(event, context):
                     .eq("submission_time", submission_time) \
                     .execute()
                 print(f"Reminder times updated and set with {update_response.data} for {argument_topic} between {user_email} and {spouse_email}")
+
+                # Send SES email to just the user
+                spouse_firstname = argument.get('spouse_firstname', 'Your spouse')
+                email_subject = f"{spouse_firstname} has accepted to discuss {argument_topic}"
+                email_body = f"<html><body><p>Hi,</p><p>{spouse_firstname} has accepted to discuss <b>{argument_topic}</b>.</p><p>Head on over to <a href='https://dev.waveover.info'>Waveover</a> to start your discussion! The timer has started you both have 3 days !</p></body></html>"
+                send_email([user_email], email_subject, email_body)
+
                 return
     elif 'Event bridge rule' in event and event['Event bridge rule'] == 'Email reminder scheduler':
         print(f"{event['Schedule']} triggered")
-        # Query for active arguments
+        # Query for active arguments. They already have reminder times set.
         sql = '''SELECT * FROM arguments WHERE argument_finished = FALSE AND spouse_accepted = TRUE'''
         with supabase.table("arguments").select("*") \
             .eq("argument_finished", False) \

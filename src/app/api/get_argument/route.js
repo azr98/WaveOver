@@ -16,7 +16,7 @@ export async function GET(req) {
     }
 
     const { data, error } = await supabase
-      .from('arguments')
+      .from('arguments_production')
       .select('*')
       .eq('user_email', user_email)
       .eq('submission_time', submission_time)

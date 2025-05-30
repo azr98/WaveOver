@@ -5,7 +5,7 @@ const ses = new SESClient({ region: process.env.AWS_REGION });
 
 async function sendEmail(addresses, subject, body) {
   const params = {
-    Source: 'dev-invitation@waveover.info',
+    Source: 'invitation@waveover.info',
     Destination: { ToAddresses: addresses },
     Message: {
       Subject: { Data: subject },
@@ -47,7 +47,7 @@ export async function POST(req) {
 
     // Update last_email_sent in Supabase
     const { error } = await supabase
-      .from('arguments')
+      .from('arguments_production')
       .update({ last_email_sent: 'invite email' })
       .eq('user_email', data.user_email)
       .eq('submission_time', data.submission_time);

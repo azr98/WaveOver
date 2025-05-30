@@ -37,7 +37,7 @@ export async function POST(req) {
     };
 
     const { error } = await supabase
-      .from('arguments')
+      .from('arguments_production')
       .insert([insertData]);
 
     if (error) {

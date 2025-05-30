@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../utils/supabaseClient';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 
 export async function POST(request) {
   try {
@@ -17,7 +18,7 @@ export async function POST(request) {
     const spouseLast = capFirst(spouse_lastname);
 
     const { error } = await supabase
-      .from('arguments')
+      .from('arguments_production')
       .update({
         spouse_accepted: accepted,
         spouse_firstname: spouseFirst,
@@ -30,11 +31,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to update spouse acceptance status', details: error.message }, { status: 500 });
     }
 
-    // Invoke AWS Lambda after successful update
+    // Fetch Lambda ARN from SSM Parameter Store
+    const ssm = new SSMClient({ region: process.env.AWS_REGION });
+    let lambdaArn;
+    try {
+      const ssmResult = await ssm.send(new GetParameterCommand({
+        Name: '/waveover/production/reminder-email-lambda/version',
+        WithDecryption: true,
+      }));
+      lambdaArn = ssmResult.Parameter.Value;
+    } catch (ssmError) {
+      return NextResponse.json({ error: 'Failed to fetch Lambda ARN from SSM', details: ssmError.message }, { status: 500 });
+    }
+
     const lambda = new LambdaClient({ region: process.env.AWS_REGION });
     const payload = { user_email, submission_time, spouse_accepted: accepted };
     const command = new InvokeCommand({
-      FunctionName: process.env.AWS_LAMBDA_EMAIL_REMINDER_ARN_DEV,
+      FunctionName: lambdaArn,
       Payload: Buffer.from(JSON.stringify(payload)),
     });
     let lambdaResult;
