@@ -111,11 +111,11 @@ def lambda_handler(event, context):
         print(f"{event['Schedule']} triggered")
         # Query for active arguments. They already have reminder times set.
         sql = '''SELECT * FROM arguments WHERE argument_finished = FALSE AND spouse_accepted = TRUE'''
-        with supabase.table("arguments").select("*") \
+        response = supabase.table("arguments").select("*") \
             .eq("argument_finished", False) \
             .eq("spouse_accepted", True) \
-            .execute() as response:
-            arguments = response.data
+            .execute()
+        arguments = response.data
         if len(arguments) > 0:
             print(f"The first 3 active arguments are : {arguments[:3]}")
         else:
