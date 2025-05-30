@@ -128,11 +128,9 @@ def lambda_handler(event, context):
             argument_topic = argument['argument_topic']
             current_time = datetime.now()
             last_email_sent = argument['last_email_sent'] if argument['last_email_sent'] else 'invite email'
-            final_deadline_str = argument['argument_deadline'].isoformat() if argument['argument_deadline'] else ''
-            if final_deadline_str != '':
-                final_deadline = time_to_datetime(final_deadline_str)
-                print(f"current_time is {current_time} and final_deadline is {final_deadline}")
-            if current_time > final_deadline:
+            final_deadline_str = argument['argument_deadline']
+            final_deadline = time_to_datetime(final_deadline_str) if final_deadline_str else None
+            if spouse_accepted and current_time > final_deadline:
                 user_response = argument['user_response']
                 spouse_response = argument['spouse_response']
                 exchange_email_body = f'Here is what {addresses[0]} had to say on {argument_topic}:\n {user_response}'
