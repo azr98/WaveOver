@@ -4,18 +4,20 @@ from datetime import datetime, timedelta
 import re
 import os
 import requests
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from supabase import create_client, Client
 
-# Get Supabase transaction pooler string from Parameter Store
+# Get Supabase URL and Service Role Key from environment/SSM
 ssm = boto3.client('ssm', region_name='eu-west-1')
-supabase_conn_str = ssm.get_parameter(
-    Name='/waveover/development/supabase/transactionpooler',
+SUPABASE_URL = ssm.get_parameter(
+    Name='/waveover/development/supabase/project_url',
+    WithDecryption=False
+)['Parameter']['Value']
+SUPABASE_SERVICE_KEY = ssm.get_parameter(
+    Name='/waveover/development/supabase/service_role',
     WithDecryption=True
 )['Parameter']['Value']
 
-def get_db_connection():
-    return psycopg2.connect(supabase_conn_str, cursor_factory=RealDictCursor)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 def check_clerk_user_exists(email):
     try:
@@ -47,74 +49,66 @@ def send_email(addresses, subject, body):
         }
     )
 
-def update_argument(key, update_expression, expression_attribute_values, expression_attribute_names=None):
-    # key: {'user_email': ..., 'submission_time': ...}
-    # update_expression: SQL SET clause string
-    # expression_attribute_values: dict of values for SET
-    set_clause = update_expression.replace('SET ', '')
-    set_fields = [f.strip() for f in set_clause.split(',')]
-    set_columns = [f.split('=')[0].strip() for f in set_fields]
-    set_values = [expression_attribute_values[k] for k in expression_attribute_values]
-    sql = f"UPDATE arguments SET {', '.join([col + ' = %s' for col in set_columns])} WHERE user_email = %s AND submission_time = %s RETURNING *;"
-    values = set_values + [key['user_email']['S'], key['submission_time']['S']]
-    with get_db_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, values)
-            result = cur.fetchone()
-            conn.commit()
-            return result
-
 def time_to_datetime(time_str):
     return datetime.fromisoformat(time_str)
 
 def lambda_handler(event, context):
-    if isinstance(event, list) and len(event) > 0 and 'eventName' in event[0]:
-        print(f"DynamoDB stream event triggered", event)
-        record = event[0]
-        if record['eventName'] == 'MODIFY':
-            new_image = record['dynamodb']['NewImage']
-            user_email = new_image['user_email']['S']
-            spouse_email = new_image['spouse_email']['S']
-            argument_topic = new_image['argument_topic']['S']
-            submission_time = new_image['submission_time']['S']
-            last_email_sent = new_image['last_email_sent']['S']
-            spouse_accepted = new_image['spouse_accepted']['BOOL']
-            argument_finished = new_image['argument_finished']['BOOL']
+    # Check if it's a direct Lambda invocation with spouse acceptance
+    if isinstance(event, dict) and event.get('spouse_accepted') is True:
+        print(f"Spouse acceptance event triggered:", event)
+        user_email = event['user_email']
+        submission_time = event['submission_time']
+
+        # SELECT from Supabase
+        response = supabase.table("arguments").select("*") \
+            .eq("user_email", user_email) \
+            .eq("submission_time", submission_time) \
+            .single().execute()
+        argument = response.data
+
+        if argument:
+            spouse_email = argument['spouse_email']
+            argument_topic = argument['argument_topic']
+            last_email_sent = argument['last_email_sent']
+            spouse_accepted = argument['spouse_accepted']
+            argument_finished = argument['argument_finished']
             user_exists = check_clerk_user_exists(user_email)
             spouse_exists = check_clerk_user_exists(spouse_email)
-            print(f"check_clerk_user_exists(): User : {user_exists}, spouse: {spouse_exists}")
-            if user_exists and spouse_exists and last_email_sent == 'invite email' and spouse_accepted:
+            print(f"check_clerk_user_exists(): User: {user_exists}, spouse: {spouse_exists}")
+
+            if user_exists and spouse_exists and not last_email_sent:
                 current_time = datetime.now()
                 deadlines = {
-                    "reminder_48_hours": (current_time + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_24_hours": (current_time + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_12_hours": (current_time + timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "reminder_4_hours": (current_time + timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%S"),
-                    "final_deadline": (current_time + timedelta(hours=5)).strftime("%Y-%m-%dT%H:%M:%S")
+                    "reminder_48_hours": (current_time + timedelta(hours=1)).isoformat(),
+                    "reminder_24_hours": (current_time + timedelta(hours=2)).isoformat(),
+                    "reminder_12_hours": (current_time + timedelta(hours=3)).isoformat(),
+                    "reminder_4_hours": (current_time + timedelta(hours=4)).isoformat(),
+                    "final_deadline": (current_time + timedelta(hours=5)).isoformat()
                 }
-                argument_key = {
-                    'user_email': {'S': user_email},
-                    'submission_time': {'S': submission_time}
+                # UPDATE in Supabase
+                update_data = {
+                    "reminder_time_four_hours": deadlines['reminder_4_hours'],
+                    "reminder_time_twelve_hours": deadlines['reminder_12_hours'],
+                    "reminder_time_one_days": deadlines['reminder_24_hours'],
+                    "reminder_time_two_days": deadlines['reminder_48_hours'],
+                    "argument_deadline": deadlines['final_deadline'],
+                    "last_email_sent": current_time.isoformat()
                 }
-                reminder_time_update_expression = f"SET reminder_time_four_hours = :four_hours, reminder_time_twelve_hours = :twelve_hours, reminder_time_one_days = :one_days, reminder_time_two_days = :two_days, argument_deadline = :final_deadline"
-                reminder_expression_attribute_values = {
-                    ':four_hours': deadlines['reminder_4_hours'],
-                    ':twelve_hours': deadlines['reminder_12_hours'],
-                    ':one_days': deadlines['reminder_24_hours'],
-                    ':two_days': deadlines['reminder_48_hours'],
-                    ':final_deadline': deadlines['final_deadline']
-                }
-                reminder_time_updates = update_argument(argument_key, reminder_time_update_expression, reminder_expression_attribute_values)
-                print(f"Reminder times updated and set with {reminder_time_updates} for {argument_topic} between {user_email} and {spouse_email}")
+                update_response = supabase.table("arguments").update(update_data) \
+                    .eq("user_email", user_email) \
+                    .eq("submission_time", submission_time) \
+                    .execute()
+                print(f"Reminder times updated and set with {update_response.data} for {argument_topic} between {user_email} and {spouse_email}")
                 return
     elif 'Event bridge rule' in event and event['Event bridge rule'] == 'Email reminder scheduler':
         print(f"{event['Schedule']} triggered")
         # Query for active arguments
         sql = '''SELECT * FROM arguments WHERE argument_finished = FALSE AND spouse_accepted = TRUE'''
-        with get_db_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(sql)
-                arguments = cur.fetchall()
+        with supabase.table("arguments").select("*") \
+            .eq("argument_finished", False) \
+            .eq("spouse_accepted", True) \
+            .execute() as response:
+            arguments = response.data
         if len(arguments) > 0:
             print(f"The first 3 active arguments are : {arguments[:3]}")
         else:
@@ -156,8 +150,12 @@ def lambda_handler(event, context):
                 final_deadline_expression_attribute_values = {
                     ':val': True
                 }
-                argument_finished = update_argument(key, final_deadline_update_expression, final_deadline_expression_attribute_values)
-                print(f"argument_finished ? updated with {argument_finished} for {argument_topic} between {user_email} and {spouse_email}")
+                argument_finished = supabase.table("arguments").update({"argument_finished": final_deadline_update_expression}) \
+                    .eq("user_email", user_email) \
+                    .eq("submission_time", submission_time) \
+                    .set({"argument_finished": final_deadline_expression_attribute_values}) \
+                    .execute()
+                print(f"argument_finished ? updated with {argument_finished.data} for {argument_topic} between {user_email} and {spouse_email}")
             else:
                 current_time = datetime.now()
                 final_deadline = time_to_datetime(argument['argument_deadline'].isoformat()) if argument['argument_deadline'] else None
@@ -210,8 +208,12 @@ def lambda_handler(event, context):
                                 </html>
                                 '''
                     send_email(addresses, email_subject, email_body_html)
-                    last_email_update = update_argument(key, update_expression, expression_attribute_values)
-                    print(f"last_email_update happened response is: {last_email_update}")
+                    last_email_update = supabase.table("arguments").update({"last_email_sent": update_expression}) \
+                        .eq("user_email", user_email) \
+                        .eq("submission_time", submission_time) \
+                        .set({"last_email_sent": expression_attribute_values}) \
+                        .execute()
+                    print(f"last_email_update happened response is: {last_email_update.data}")
     else:
         print(f"Unknown event type: {event}")
         return "Unknown event type"

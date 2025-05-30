@@ -28,3 +28,6 @@ client/config/
 server/config/
 .next
 .vercel
+python
+requirements.txt
+supabase-layer.zip

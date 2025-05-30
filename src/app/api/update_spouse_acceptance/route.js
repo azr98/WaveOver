@@ -32,7 +32,7 @@ export async function POST(request) {
 
     // Invoke AWS Lambda after successful update
     const lambda = new LambdaClient({ region: process.env.AWS_REGION });
-    const payload = { user_email, submission_time };
+    const payload = { user_email, submission_time, spouse_accepted: accepted };
     const command = new InvokeCommand({
       FunctionName: process.env.AWS_LAMBDA_EMAIL_REMINDER_ARN_DEV,
       Payload: Buffer.from(JSON.stringify(payload)),
