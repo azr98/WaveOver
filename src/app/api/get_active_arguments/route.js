@@ -10,7 +10,7 @@ export async function GET(req) {
     }
 
     const { data, error } = await supabase
-      .from('arguments')
+      .from('arguments_development')
       .select('*')
       .or(`user_email.eq.${user_email},spouse_email.eq.${user_email}`);
 

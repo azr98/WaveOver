@@ -17,7 +17,7 @@ export async function POST(request) {
     const spouseLast = capFirst(spouse_lastname);
 
     const { error } = await supabase
-      .from('arguments')
+      .from('arguments_development')
       .update({
         spouse_accepted: accepted,
         spouse_firstname: spouseFirst,

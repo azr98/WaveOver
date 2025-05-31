@@ -47,7 +47,7 @@ export async function POST(req) {
 
     // Update last_email_sent in Supabase
     const { error } = await supabase
-      .from('arguments')
+      .from('arguments_development')
       .update({ last_email_sent: 'invite email' })
       .eq('user_email', data.user_email)
       .eq('submission_time', data.submission_time);

@@ -30,7 +30,7 @@ export async function POST(req) {
     }
 
     const { error } = await supabase
-      .from('arguments')
+      .from('arguments_development')
       .update({ [updateField]: content })
       .eq('user_email', user_email)
       .eq('submission_time', submission_time);
