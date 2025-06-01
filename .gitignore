@@ -31,3 +31,4 @@ server/config/
 python
 requirements.txt
 supabase-layer.zip
+.env*.local

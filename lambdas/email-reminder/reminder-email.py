@@ -1,6 +1,6 @@
 import json
 import boto3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import re
 import os
 import requests
@@ -41,7 +41,7 @@ def check_clerk_user_exists(email):
 def send_email(addresses, subject, body):
     ses = boto3.client('ses', region_name='eu-west-1')
     ses.send_email(
-        Source='dev-reminder@waveover.info',
+        Source='dev@waveover.info',
         Destination={'ToAddresses': addresses},
         Message={
             'Subject': {'Data': subject},
@@ -50,7 +50,11 @@ def send_email(addresses, subject, body):
     )
 
 def time_to_datetime(time_str):
-    return datetime.fromisoformat(time_str)
+    # Parse ISO string as UTC
+    dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
 
 def lambda_handler(event, context):
     # Check if it's a direct Lambda invocation with spouse acceptance
@@ -60,7 +64,7 @@ def lambda_handler(event, context):
         submission_time = event['submission_time']
 
         # SELECT from Supabase
-        response = supabase.table("arguments").select("*") \
+        response = supabase.table("arguments_development").select("*") \
             .eq("user_email", user_email) \
             .eq("submission_time", submission_time) \
             .single().execute()
@@ -77,7 +81,7 @@ def lambda_handler(event, context):
             print(f"check_clerk_user_exists(): User: {user_exists}, spouse: {spouse_exists}")
 
             if user_exists and spouse_exists and not last_email_sent:
-                current_time = datetime.now()
+                current_time = datetime.now(timezone.utc)
                 deadlines = {
                     "reminder_48_hours": (current_time + timedelta(hours=1)).isoformat(),
                     "reminder_24_hours": (current_time + timedelta(hours=2)).isoformat(),
@@ -94,16 +98,33 @@ def lambda_handler(event, context):
                     "argument_deadline": deadlines['final_deadline'],
                     "last_email_sent": current_time.isoformat()
                 }
-                update_response = supabase.table("arguments").update(update_data) \
+                update_response = supabase.table("arguments_development").update(update_data) \
                     .eq("user_email", user_email) \
                     .eq("submission_time", submission_time) \
                     .execute()
                 print(f"Reminder times updated and set with {update_response.data} for {argument_topic} between {user_email} and {spouse_email}")
+                
+                # Send acceptance email to user_email
+                user_firstname = argument.get('user_firstname', '')
+                spouse_firstname = argument.get('spouse_firstname', '')
+                email_subject = f"{spouse_firstname} accepted discucssion on '{argument_topic}'!"
+                email_body = f"""
+                <html>
+                <body>
+                <p>Hi {user_firstname},</p>
+                <p>Your partner <b>{spouse_firstname}</b> has accepted your invitation to discuss <b>{argument_topic}</b> on WaveOver.</p>
+                <p>The 3-day timer has now begun. You both have until the deadline to write your responses.</p>
+                <p>Visit <a href='https://waveover.me'>WaveOver</a> to start writing!</p>
+                </body>
+                </html>
+                """
+                send_email([user_email], email_subject, email_body)
+                print(f"[ACCEPTANCE EMAIL] Email sent successfully to {user_email}")
+ 
                 return
     elif 'Event bridge rule' in event and event['Event bridge rule'] == 'Email reminder scheduler':
         print(f"{event['Schedule']} triggered")
         # Query for active arguments. They already have reminder times set.
-        sql = '''SELECT * FROM arguments WHERE argument_finished = FALSE AND spouse_accepted = TRUE'''
         response = supabase.table("arguments_development").select("*") \
             .eq("argument_finished", False) \
             .eq("spouse_accepted", True) \
@@ -126,10 +147,13 @@ def lambda_handler(event, context):
             submission_time = argument['submission_time']
             addresses = [user_email, spouse_email]
             argument_topic = argument['argument_topic']
-            current_time = datetime.now()
+            current_time = datetime.now(timezone.utc)
             last_email_sent = argument['last_email_sent'] if argument['last_email_sent'] else 'invite email'
             final_deadline_str = argument['argument_deadline']
             final_deadline = time_to_datetime(final_deadline_str) if final_deadline_str else None
+            if final_deadline and final_deadline.tzinfo is None:
+                final_deadline = final_deadline.replace(tzinfo=timezone.utc)
+            print("argument is", argument)
             if spouse_accepted and current_time > final_deadline:
                 user_response = argument['user_response']
                 spouse_response = argument['spouse_response']
@@ -140,23 +164,17 @@ def lambda_handler(event, context):
                 exchange_email_subject = f'Dev end to end test - Response from {addresses[1]} for {argument_topic}'
                 send_email([addresses[0]], exchange_email_subject, exchange_email_body)
                 print('final email deadline sent')
-                key = {
-                    'user_email': {'S': user_email},
-                    'submission_time': {'S': submission_time}
-                }
-                final_deadline_update_expression = "SET argument_finished = :val"
-                final_deadline_expression_attribute_values = {
-                    ':val': True
-                }
-                argument_finished = supabase.table("arguments").update({"argument_finished": final_deadline_update_expression}) \
+                # Set argument_finished to True in Supabase
+                argument_finished_update = supabase.table("arguments_development").update({"argument_finished": True}) \
                     .eq("user_email", user_email) \
                     .eq("submission_time", submission_time) \
-                    .set({"argument_finished": final_deadline_expression_attribute_values}) \
                     .execute()
-                print(f"argument_finished ? updated with {argument_finished.data} for {argument_topic} between {user_email} and {spouse_email}")
+                print(f"argument_finished updated with {argument_finished_update.data} for {argument_topic} between {user_email} and {spouse_email}")
             else:
-                current_time = datetime.now()
+                current_time = datetime.now(timezone.utc)
                 final_deadline = time_to_datetime(argument['argument_deadline'].isoformat()) if argument['argument_deadline'] else None
+                if final_deadline and final_deadline.tzinfo is None:
+                    final_deadline = final_deadline.replace(tzinfo=timezone.utc)
                 print(f"inside reminder email block")
                 hours_left = int((final_deadline - current_time).total_seconds() / 3600) if final_deadline else 0
                 print(f"Checking for reminders to send, last_email_sent is {last_email_sent} with currently {hours_left} hours left")
@@ -206,7 +224,7 @@ def lambda_handler(event, context):
                                 </html>
                                 '''
                     send_email(addresses, email_subject, email_body_html)
-                    last_email_update = supabase.table("arguments").update({"last_email_sent": update_expression}) \
+                    last_email_update = supabase.table("arguments_development").update({"last_email_sent": update_expression}) \
                         .eq("user_email", user_email) \
                         .eq("submission_time", submission_time) \
                         .set({"last_email_sent": expression_attribute_values}) \
