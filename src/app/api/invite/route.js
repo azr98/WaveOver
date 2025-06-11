@@ -5,7 +5,7 @@ const ses = new SESClient({ region: process.env.AWS_REGION });
 
 async function sendEmail(addresses, subject, body) {
   const params = {
-    Source: 'invitation@waveover.info',
+    Source: 'invitationnoreply@waveover.info.info',
     Destination: { ToAddresses: addresses },
     Message: {
       Subject: { Data: subject },

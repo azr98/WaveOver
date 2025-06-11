@@ -41,7 +41,7 @@ def check_clerk_user_exists(email):
 def send_email(addresses, subject, body):
     ses = boto3.client('ses', region_name='eu-west-1')
     ses.send_email(
-        Source='dev@waveover.info',
+        Source='prodnoreply@waveover.info.info',
         Destination={'ToAddresses': addresses},
         Message={
             'Subject': {'Data': subject},
@@ -64,7 +64,7 @@ def lambda_handler(event, context):
         submission_time = event['submission_time']
 
         # SELECT from Supabase
-        response = supabase.table("arguments_development").select("*") \
+        response = supabase.table("arguments_production").select("*") \
             .eq("user_email", user_email) \
             .eq("submission_time", submission_time) \
             .single().execute()
@@ -97,7 +97,7 @@ def lambda_handler(event, context):
                     "reminder_time_two_days": deadlines['reminder_48_hours'],
                     "argument_deadline": deadlines['final_deadline'],
                 }
-                update_response = supabase.table("arguments_development").update(update_data) \
+                update_response = supabase.table("arguments_production").update(update_data) \
                     .eq("user_email", user_email) \
                     .eq("submission_time", submission_time) \
                     .execute()
@@ -124,7 +124,7 @@ def lambda_handler(event, context):
     elif 'Event bridge rule' in event and event['Event bridge rule'] == 'Email reminder scheduler':
         print(f"{event['Schedule']} triggered")
         # Query for active arguments. They already have reminder times set.
-        response = supabase.table("arguments_development").select("*") \
+        response = supabase.table("arguments_production").select("*") \
             .eq("argument_finished", False) \
             .eq("spouse_accepted", True) \
             .execute()
@@ -163,7 +163,7 @@ def lambda_handler(event, context):
                 send_email([addresses[0]], exchange_email_subject, exchange_email_body)
                 print('final email deadline sent')
                 # Set argument_finished to True in Supabase
-                argument_finished_update = supabase.table("arguments_development").update({"argument_finished": True}) \
+                argument_finished_update = supabase.table("arguments_production").update({"argument_finished": True}) \
                     .eq("user_email", user_email) \
                     .eq("submission_time", submission_time) \
                     .execute()
@@ -201,7 +201,7 @@ def lambda_handler(event, context):
                     print('No reminder to send')
                     continue
                 if new_last_email_sent:
-                    last_email_update = supabase.table("arguments_development").update({"last_email_sent": new_last_email_sent}) \
+                    last_email_update = supabase.table("arguments_production").update({"last_email_sent": new_last_email_sent}) \
                         .eq("user_email", user_email) \
                         .eq("submission_time", submission_time) \
                         .execute()
@@ -219,7 +219,7 @@ def lambda_handler(event, context):
                                 </html>
                                 '''
                     send_email(addresses, email_subject, email_body_html)
-                    last_email_update = supabase.table("arguments_development").update({"last_email_sent": update_expression}) \
+                    last_email_update = supabase.table("arguments_production").update({"last_email_sent": update_expression}) \
                         .eq("user_email", user_email) \
                         .eq("submission_time", submission_time) \
                         .set({"last_email_sent": expression_attribute_values}) \
