@@ -80,7 +80,7 @@ def lambda_handler(event, context):
             spouse_exists = check_clerk_user_exists(spouse_email)
             print(f"check_clerk_user_exists(): User: {user_exists}, spouse: {spouse_exists}")
 
-            if user_exists and spouse_exists and not last_email_sent:
+            if user_exists and spouse_exists and last_email_sent == 'invite email':
                 current_time = datetime.now(timezone.utc)
                 deadlines = {
                     "reminder_48_hours": (current_time + timedelta(hours=1)).isoformat(),
@@ -96,7 +96,6 @@ def lambda_handler(event, context):
                     "reminder_time_one_days": deadlines['reminder_24_hours'],
                     "reminder_time_two_days": deadlines['reminder_48_hours'],
                     "argument_deadline": deadlines['final_deadline'],
-                    "last_email_sent": current_time.isoformat()
                 }
                 update_response = supabase.table("arguments_development").update(update_data) \
                     .eq("user_email", user_email) \
@@ -118,7 +117,7 @@ def lambda_handler(event, context):
                 </body>
                 </html>
                 """
-                send_email([user_email], email_subject, email_body)
+                send_email([user_email,spouse_email], email_subject, email_body)
                 print(f"[ACCEPTANCE EMAIL] Email sent successfully to {user_email}")
  
                 return
@@ -149,8 +148,7 @@ def lambda_handler(event, context):
             argument_topic = argument['argument_topic']
             current_time = datetime.now(timezone.utc)
             last_email_sent = argument['last_email_sent'] if argument['last_email_sent'] else 'invite email'
-            final_deadline_str = argument['argument_deadline']
-            final_deadline = time_to_datetime(final_deadline_str) if final_deadline_str else None
+            final_deadline = time_to_datetime(argument['argument_deadline']) if argument['argument_deadline'] else None
             if final_deadline and final_deadline.tzinfo is None:
                 final_deadline = final_deadline.replace(tzinfo=timezone.utc)
             print("argument is", argument)
@@ -172,17 +170,17 @@ def lambda_handler(event, context):
                 print(f"argument_finished updated with {argument_finished_update.data} for {argument_topic} between {user_email} and {spouse_email}")
             else:
                 current_time = datetime.now(timezone.utc)
-                final_deadline = time_to_datetime(argument['argument_deadline'].isoformat()) if argument['argument_deadline'] else None
+                final_deadline = time_to_datetime(argument['argument_deadline']) if argument['argument_deadline'] else None
                 if final_deadline and final_deadline.tzinfo is None:
                     final_deadline = final_deadline.replace(tzinfo=timezone.utc)
                 print(f"inside reminder email block")
                 hours_left = int((final_deadline - current_time).total_seconds() / 3600) if final_deadline else 0
                 print(f"Checking for reminders to send, last_email_sent is {last_email_sent} with currently {hours_left} hours left")
                 reminder_times = {
-                    'two_days': argument['reminder_time_two_days'],
-                    'one_days': argument['reminder_time_one_days'],
-                    'twelve_hours': argument['reminder_time_twelve_hours'],
-                    'four_hours': argument['reminder_time_four_hours']
+                    'two_days': time_to_datetime(argument['reminder_time_two_days']) if argument['reminder_time_two_days'] else None,
+                    'one_days': time_to_datetime(argument['reminder_time_one_days']) if argument['reminder_time_one_days'] else None,
+                    'twelve_hours': time_to_datetime(argument['reminder_time_twelve_hours']) if argument['reminder_time_twelve_hours'] else None,
+                    'four_hours': time_to_datetime(argument['reminder_time_four_hours']) if argument['reminder_time_four_hours'] else None
                 }
                 new_last_email_sent = None
                 print(f"current time is {current_time}")
@@ -203,14 +201,11 @@ def lambda_handler(event, context):
                     print('No reminder to send')
                     continue
                 if new_last_email_sent:
-                    key = {
-                        'user_email': {'S': user_email},
-                        'submission_time': {'S': submission_time}
-                    }
-                    update_expression = "SET last_email_sent = :val"
-                    expression_attribute_values = {
-                        ':val': new_last_email_sent
-                    }
+                    last_email_update = supabase.table("arguments_development").update({"last_email_sent": new_last_email_sent}) \
+                        .eq("user_email", user_email) \
+                        .eq("submission_time", submission_time) \
+                        .execute()
+                    print(f"last_email_update happened response is: {last_email_update.data}")
                     subject_reminder = re.sub(r'\\sreminder$', '', new_last_email_sent)
                     subject_reminder = subject_reminder[0].upper() + subject_reminder[1:]
                     email_subject = f'Dev - Discussion reminder for {argument_topic} : {subject_reminder} left'
