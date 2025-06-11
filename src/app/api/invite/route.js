@@ -5,7 +5,7 @@ const ses = new SESClient({ region: process.env.AWS_REGION });
 
 async function sendEmail(addresses, subject, body) {
   const params = {
-    Source: 'invitationnoreply@waveover.info.info',
+    Source: 'noreply@waveover.info',
     Destination: { ToAddresses: addresses },
     Message: {
       Subject: { Data: subject },
@@ -35,7 +35,7 @@ export async function POST(req) {
       <p>Open the text editor by clicking 'Display Current Discussions' -> 'Active' -> and click the discussion.</p>
       <p>After 3 days what each of you wrote is sent to the other by email automatically.</p>
       <p>Both of ${data.user_firstname} and ${data.spouse_firstname} will receive a reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day deadline.</p>
-      <p>For a more detailed guide read here: <a href="https://waveover.info/help">https://waveover.info/help</a></p>
+      <p>For a more detailed guide read here: <a href="https://waveover.me/help">https://waveover.me/help</a></p>
       <p>Thanks for using my app!,</p>
       <p>Azhar, creator of WaveOver</p>
       </body>

@@ -235,14 +235,6 @@ export default function DashboardPage() {
           message: 'Discussion now active. Write away!',
           topic: selectedPendingArgument.argument_topic
         });
-        setTimeout(() => {
-          setNotification(null);
-        }, 5000);
-        // POST to AWS Lambda API Gateway endpoint to trigger reminders setup
-        await axios.post(process.env.NEXT_PUBLIC_LAMBDA_INVITE_EMAIL_DEV_API, {
-          user_email: selectedPendingArgument.user_email,
-          submission_time: selectedPendingArgument.submission_time
-        });
         router.push(`/argument/${encodeURIComponent(selectedPendingArgument.user_email)}/${encodeURIComponent(selectedPendingArgument.submission_time)}?readonly=1`);
       }
     } catch (error) {

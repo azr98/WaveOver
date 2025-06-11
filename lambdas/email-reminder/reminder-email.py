@@ -41,7 +41,7 @@ def check_clerk_user_exists(email):
 def send_email(addresses, subject, body):
     ses = boto3.client('ses', region_name='eu-west-1')
     ses.send_email(
-        Source='prodnoreply@waveover.info.info',
+        Source='noreply@waveover.info',
         Destination={'ToAddresses': addresses},
         Message={
             'Subject': {'Data': subject},
@@ -228,8 +228,4 @@ def lambda_handler(event, context):
     else:
         print(f"Unknown event type: {event}")
         return "Unknown event type"
-
-
-{'Records': [{'eventID': '92c7b36dabc72b1994ccd48dd087e539', 'eventName': 'INSERT', 'eventVersion': '1.1', 'eventSource': 'aws:dynamodb', 
-            'awsRegion': 'eu-west-1', 'dynamodb': {'ApproximateCreationDateTime': 1721756260.0, 'Keys': {'user_id': {'S': 'azhar981@gmail.com'}, 'deadline': {'S': '2024-07-23T18:38:38.234681'}}, 'NewImage': {'argument_topic': {'S': 'yer mamy'}, 'user_submission_time': {'S': '2024-07-23T18:38:13.234681'}, 'user_id': {'S': 'azhar981@gmail.com'}, 'spouse_email': {'S': 'azhar981@outlook.com'}, 'deadline': {'S': '2024-07-23T18:38:38.234681'}, 'user_response': {'S': ''}}, 'SequenceNumber': '385212900000000102007886361', 'SizeBytes': 231, 'StreamViewType': 'NEW_AND_OLD_IMAGES'}, 'eventSourceARN': 'arn:aws:dynamodb:eu-west-1:058264329805:table/waveover-dev/stream/2024-07-22T18:51:05.549'}]}
 

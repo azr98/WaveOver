@@ -10,22 +10,21 @@ export default function HelpPage() {
       <div className="help-content">
         <h2>1. Enter your partner's email and the discussion topic</h2>
         <p>
-          Both of you will receive an invitation email. Only your partner needs to accept the argument from here.<br/>
-          Ensure both of you check spam folders. Mark the sender email as not spam, as a new web app our email domain's digital reputation is low.
+          Both of you will receive an invitation email. Only your partner needs to accept the disucssion from here.<br/>
+          Ensure both of you check spam folders.<br/> Mark the sender email as not spam, as a new web app our email domain's digital reputation is low.
         </p>
         <img src="/help/1.png" alt="Enter partner email and topic" style={{maxWidth: '100%', margin: '24px 0'}} />
 
         <p>
-          Your partner just needs to sign up/log in and accept the discussion in their dashboard by clicking on it in pending. It will look like this until then:
+          Your partner signs up/logs in and accepts the discussion by clicking it in pending. It will look like this until then:
         </p>
         <img src="/help/2.png" alt="Pending discussion in dashboard" style={{maxWidth: '100%', margin: '24px 0'}} />
 
-        <h2>2. Once your partner accepts the discussion it becomes active.</h2>
-        <p>You will be notified by email when they accept it.</p>
+        <h2>2. Once they accept you are notified by email and the discussion becomes active.</h2>
 
-        <h2>3. Now both of you have the exact same 3 days to write down what you want to say.</h2>
+        <h2>3. Both of you have the same 3 days to write down what you want to say.</h2>
         <p>
-          <b>Click on the discussion in 'Active' to open the editor</b>. The editor auto saves; has some formatting features and the timer displayed.
+          <b>To open the editor click on the discussion in 'Active'</b>. The editor auto saves; has some formatting features and the timer displayed.
         </p>
         <img src="/help/3.png" alt="Active discussion editor" style={{maxWidth: '100%', margin: '24px 0'}} />
 
