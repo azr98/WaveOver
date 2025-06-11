@@ -12,8 +12,13 @@ export async function POST(req) {
     const spouse_firstname = data.spouse_firstname?.trim().charAt(0).toUpperCase() + data.spouse_firstname?.trim().slice(1);
     const spouse_lastname = data.spouse_lastname?.trim().charAt(0).toUpperCase() + data.spouse_lastname?.trim().slice(1);
 
-    // Use submission_time from the frontend
-    const submission_time = data.submission_time;
+    // Use submission_time from the frontend, but ensure it is UTC ISO string
+    let submission_time = data.submission_time;
+    if (submission_time) {
+      submission_time = new Date(submission_time).toISOString();
+    } else {
+      submission_time = new Date().toISOString();
+    }
 
     const insertData = {
       user_email: data.user_email,

@@ -48,8 +48,8 @@ export default function DashboardPage() {
   const isArgumentFinished = (argument) => {
     if (argument.argument_finished) return true;
     if (argument.argument_deadline) {
-      const deadline = new Date(argument.argument_deadline);
-      const now = new Date();
+      const deadline = new Date(argument.argument_deadline); // ISO, so UTC
+      const now = new Date(new Date().toISOString()); // force UTC
       return now > deadline;
     }
     return false;
@@ -133,10 +133,8 @@ export default function DashboardPage() {
   const confirmSubmitArgument = async () => {
     try {
       if (user) {
-        // Generate submission_time in the required format
-        const now = new Date();
-        const pad = (n) => n.toString().padStart(2, '0');
-        const submission_time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        // Generate submission_time in UTC ISO format
+        const submission_time = new Date().toISOString();
         const argumentSubmitData = {
           user_email: getUserEmail(),
           user_firstname: user.firstName,
@@ -149,7 +147,7 @@ export default function DashboardPage() {
         };
         // Submit the argument first
         const response = await axios.post("/api/submit_argument", argumentSubmitData);
-        if (response.status === 201) {
+        if (response.status === 201 || response.status === 200) {
           // Call invite email route
           await axios.post("/api/invite", {
             ...argumentSubmitData
@@ -354,11 +352,11 @@ export default function DashboardPage() {
         </p>
         <div className="text-center mt-2 mb-2">
           <a href="/help" className="text-blue-600 hover:underline font-medium">
-            Detailed technical app walkthrough
+            Simple app walkthrough
           </a>
           <br />
           <a href="/writing" className="text-blue-600 hover:underline font-medium">
-            Writing tips for this app
+            Writing tips for using this app
           </a>
         </div>
         {/* Filter buttons for active, pending, finished */}

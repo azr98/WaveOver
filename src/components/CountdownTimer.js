@@ -8,7 +8,7 @@ function CountdownTimer({ deadline, userEmail, spouseEmail }) {
   useEffect(() => {
     const calculateTimeLeft = () => {
       const deadlineDate = new Date(deadline);
-      const now = new Date();
+      const now = new Date(new Date().toISOString());
       const difference = deadlineDate - now;
 
       if (difference <= 0) {
