@@ -291,12 +291,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* User profile button in top right */}
-      <SignedIn>
-        <div className="fixed top-4 right-4 z-50">
-          <UserButton afterSignOutUrl="/" />
-        </div>
-      </SignedIn>
       <Header />
       <div className="max-w-4xl mx-auto p-4">
         {/* Always show submit form */}

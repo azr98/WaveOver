@@ -7,8 +7,8 @@ export default function HeaderNext() {
     <header className="app-header position-relative">
       {/* Profile button fixed to top right */}
       <SignedIn>
-        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1050 }}>
-          <UserButton afterSignOutUrl="/" />
+        <div style={{ position: 'fixed', top: 0, right: 0, zIndex: 1050, padding: '24px' }}>
+          <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: { transform: 'scale(1.3)' } } }} />
         </div>
       </SignedIn>
       <div className="header-content justify-content-center">
