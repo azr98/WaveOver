@@ -32,7 +32,7 @@ export default function HeaderNext() {
           <img
             src="/logos/main.svg"
             alt="WaveOver Logo"
-            style={{ height: '48px', objectFit: 'contain', padding: '8px 0' }}
+            style={{ height: '100px', objectFit: 'contain', padding: '8px 0' }}
           />
         </div>
         {/* Right: Empty for spacing (profile button is fixed) */}
