@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase } from '../../../utils/supabaseClient';
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
+import { awsCredentialsProvider } from '@vercel/functions/oidc';
 
 export async function POST(request) {
   try {
@@ -32,7 +33,7 @@ export async function POST(request) {
     }
 
     // Fetch Lambda ARN from SSM Parameter Store
-    const ssm = new SSMClient({ region: process.env.AWS_REGION });
+    const ssm = new SSMClient({ region: process.env.AWS_REGION, credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
     let lambdaArn;
     try {
       const ssmResult = await ssm.send(new GetParameterCommand({
@@ -44,7 +45,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to fetch Lambda ARN from SSM', details: ssmError.message }, { status: 500 });
     }
 
-    const lambda = new LambdaClient({ region: process.env.AWS_REGION });
+    const lambda = new LambdaClient({ region: process.env.AWS_REGION, credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
     const payload = { user_email, submission_time, spouse_accepted: accepted };
     const command = new InvokeCommand({
       FunctionName: lambdaArn,

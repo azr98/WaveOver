@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
+import { awsCredentialsProvider } from '@vercel/functions/oidc';
 
 // Initialize AWS clients
-const s3Client = new S3Client({ region: 'eu-west-1' });
-const snsClient = new SNSClient({ region: 'eu-west-1' });
+const s3Client = new S3Client({ region: 'eu-west-1', credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
+const snsClient = new SNSClient({ region: 'eu-west-1', credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
 
 export async function POST(request) {
   try {

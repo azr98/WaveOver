@@ -1,7 +1,8 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { supabase } from '../../../utils/supabaseClient';
+import { awsCredentialsProvider } from '@vercel/functions/oidc';
 
-const ses = new SESClient({ region: process.env.AWS_REGION });
+const ses = new SESClient({ region: process.env.AWS_REGION, credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
 
 async function sendEmail(addresses, subject, body) {
   const params = {
