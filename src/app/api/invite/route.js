@@ -2,7 +2,19 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { supabase } from '../../../utils/supabaseClient';
 import { awsCredentialsProvider } from '@vercel/functions/oidc';
 
-const ses = new SESClient({ region: process.env.AWS_REGION, credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
+console.log('[Invite API] AWS_REGION:', process.env.AWS_REGION);
+console.log('[Invite API] AWS_ROLE_ARN:', process.env.AWS_ROLE_ARN);
+
+let ses;
+try {
+  ses = new SESClient({
+    region: process.env.AWS_REGION,
+    credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN })
+  });
+  console.log('[Invite API] SESClient instantiated successfully');
+} catch (err) {
+  console.error('[Invite API] Error instantiating SESClient:', err);
+}
 
 async function sendEmail(addresses, subject, body) {
   const params = {
@@ -13,12 +25,15 @@ async function sendEmail(addresses, subject, body) {
       Body: { Html: { Data: body } }
     }
   };
+  console.log('[Invite API] Sending email with params:', JSON.stringify(params));
   await ses.send(new SendEmailCommand(params));
+  console.log('[Invite API] Email sent via SES');
 }
 
 export async function POST(req) {
   try {
     const data = await req.json();
+    console.log('[Invite API] POST data received:', data);
     // Expecting: user_email, user_firstname, user_lastname, spouse_email, spouse_firstname, spouse_lastname, argument_topic, submission_time
 
     // Compose email
@@ -44,7 +59,9 @@ export async function POST(req) {
     `;
 
     const addresses = [data.user_email, data.spouse_email];
+    console.log('[Invite API] About to send email to:', addresses);
     await sendEmail(addresses, email_subject, email_body_html);
+    console.log('[Invite API] Email send complete, updating Supabase...');
 
     // Update last_email_sent in Supabase
     const { error } = await supabase
@@ -54,13 +71,14 @@ export async function POST(req) {
       .eq('submission_time', data.submission_time);
 
     if (error) {
-      console.error('Supabase update error:', error);
+      console.error('[Invite API] Supabase update error:', error);
       return Response.json({ error: 'Failed to update argument', details: error.message }, { status: 500 });
     }
+    console.log('[Invite API] Supabase update successful');
 
     return Response.json({ message: 'Invite email sent successfully' }, { status: 200 });
   } catch (err) {
-    console.error('Error in invite email:', err);
-    return Response.json({ error: 'Failed to send invite email', details: err.message }, { status: 500 });
+    console.error('[Invite API] Error in invite email:', err, err?.stack);
+    return Response.json({ error: 'Failed to send invite email', details: err.message, stack: err.stack }, { status: 500 });
   }
 } 
