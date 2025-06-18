@@ -45,15 +45,18 @@ export async function POST(req) {
       <title>${email_subject}</title>
       </head>
       <body>
-      <p>${data.user_firstname} ${data.user_lastname} wants to discuss '${data.argument_topic}' with ${data.spouse_firstname} ${data.spouse_lastname}.</p>
-      <p>Once ${data.spouse_firstname} signs up or logs in at <a href="dev.waveover.info">dev.waveover.info</a> and accepts the discussion, a 3 day timer will start.</p>
-      <p>Both of you have all that time to write your say in the text editor. No more, no less.</p>
-      <p>Open the text editor by clicking 'Display Current Discussions' -> 'Active' -> and click the discussion.</p>
-      <p>After 3 days what each of you wrote is sent to the other by email automatically.</p>
-      <p>Both of ${data.user_firstname} and ${data.spouse_firstname} will receive a reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day deadline.</p>
-      <p>For a more detailed guide read here: <a href="https://waveover.me/help">https://waveover.me/help</a></p>
-      <p>Thanks for using my app!,</p>
-      <p>Azhar, creator of WaveOver</p>
+      <p>${data.user_firstname} ${data.user_lastname} wants to discuss'${data.argument_topic}' with you</p>
+      <p>Once you sign up or log in at <a href="waveover.me">WaveOver</a> and accept the discussion, a 3 day timer will start.
+      Both of you have all that time to write your say in the text editor. No more, no less. The text editor autosaves so you can just focus on writing.
+      </p>
+      
+      <p>Accept the disucssion by clicking it in the 'Pending'section</p>
+      <p>When the 3 day timer is up what each of you wrote is sent to the other by email automatically.</p>
+      <p>Both of you will receive a reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day timer is up.</p>
+      <p>For a more detailed guide read here: <a href="https://waveover.me/help">https://waveover.me/help</a> and remembder to check spam and allow from 'noreply@waveover.info' </p>
+      <p>Thanks for using my app !</p>
+      <p>Azhar,</p>
+      <p>creator of WaveOver</p>
       </body>
       </html>
     `;

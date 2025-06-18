@@ -325,7 +325,8 @@ export default function DashboardPage() {
             </form>
           ) : (
             <div className="text-center space-y-4 py-3">
-              <p className="text-success">Discussion submitted! Please ensure you and your partner check your spam folders for the invitation email.</p>
+              <p className="text-success">Discussion submitted!</p>
+              <p className="text-danger fw-bold" style={{ marginTop: '0.5em' }}><input type="checkbox" style={{ marginRight: '0.5em' }} />Please ensure you and your partner check your spam folders for Waveover emails from 'noreply@waveover.info'.</p>
               <button onClick={handleStartNewArgument} className="btn btn-outline-primary w-100">
                 Start Another Discussion
               </button>
@@ -334,7 +335,7 @@ export default function DashboardPage() {
         </section>
         {/* Spam warning message in red */}
         <p className="text-danger mt-4 text-center" style={{ fontWeight: 600 }}>
-          Always check your spam/junk folder for WaveOver app emails and mark as not spam. WaveOver will only send you the emails for the web app. No spam, no marketing.
+          Always check your spam/junk folder for WaveOver emails from 'noreply@waveover.info' <p>WaveOver will only send you the emails for the web app. No spam, no marketing.</p>
         </p>
         <div className="text-center mt-2 mb-2">
           <a href="/help" className="text-blue-600 hover:underline font-medium">
