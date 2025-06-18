@@ -31,7 +31,7 @@ export default function LandingPage() {
             </p>
             <div className="cta-buttons">
               <SignInButton mode="modal">
-                <button className="primary-button">Always free</button>
+                <button className="primary-button">Start, it's always Free!</button>
               </SignInButton>
               <a
                 href="https://buymeacoffee.com/azharsharif"
