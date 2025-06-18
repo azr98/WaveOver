@@ -51,10 +51,10 @@ export async function POST(req) {
       Both of you have all that time to write your say in the text editor. No more, no less. The text editor autosaves so you can just focus on writing.
       </p>
       
-      <p>You can accept the disucssion by clicking it in the 'Pending'section and thenyou can begin writing. <a href="https://waveover.me/writing">Here</a> are some tips</p>
+      <p>You can accept the disucssion by clicking it in the 'Pending'section and then you can begin writing. <a href="https://waveover.me/writing">Here</a> are some tips</p>
       <p>When the 3 day timer is up what each of you wrote is sent to the other by email automatically.</p>
       <p>Both of you will receive a reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day timer is up.</p>
-      <p>For a more detailed guide read <a href="https://waveover.me/help_spouse">here</a>. Remembder to check spam and allow from 'noreply@waveover.info' </p>
+      <p>For a more detailed guide read <a href="https://waveover.me/help_partner">here</a>. Remember to check spam and allow from 'noreply@waveover.info' </p>
       <p>Thanks for using my app !</p>
       <p>Azhar,</p>
       <p>creator of WaveOver</p>
