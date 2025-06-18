@@ -1,58 +1,19 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { supabase } from '../../../utils/supabaseClient';
-import { awsCredentialsProvider, getVercelOidcToken } from '@vercel/functions/oidc';
+import { awsCredentialsProvider } from '@vercel/functions/oidc';
 
 console.log('[Invite API] AWS_REGION:', process.env.AWS_REGION);
 console.log('[Invite API] AWS_ROLE_ARN:', process.env.AWS_ROLE_ARN);
 
-// Debug OIDC token
-try {
-  const token = getVercelOidcToken();
-  if (token) {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-    console.log('[Invite API] OIDC Token Info:', {
-      iss: payload.iss,
-      aud: payload.aud,
-      sub: payload.sub,
-      environment: payload.environment
-    });
-  } else {
-    console.log('[Invite API] No OIDC token found');
-  }
-} catch (err) {
-  console.error('[Invite API] Error reading OIDC token:', err);
-}
-
 let ses;
 try {
-  // Get credentials object first to debug
-  const credentials = awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN });
-  console.log('[Invite API] Got AWS credentials provider');
-  
-  // Try to get actual credentials
-  const credentialsObj = await credentials();
-  console.log('[Invite API] Successfully retrieved temporary credentials:', {
-    accessKeyId: credentialsObj.accessKeyId ? '***' + credentialsObj.accessKeyId.slice(-4) : 'none',
-    expiration: credentialsObj.expiration,
-    hasSecretKey: !!credentialsObj.secretAccessKey,
-    hasSessionToken: !!credentialsObj.sessionToken
-  });
-
   ses = new SESClient({
     region: process.env.AWS_REGION,
-    credentials
+    credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN })
   });
   console.log('[Invite API] SESClient instantiated successfully');
 } catch (err) {
   console.error('[Invite API] Error instantiating SESClient:', err);
-  if (err.Code === 'AccessDenied') {
-    console.error('[Invite API] Access Denied Details:', {
-      message: err.message,
-      code: err.Code,
-      requestId: err.RequestId,
-      time: err.Time
-    });
-  }
 }
 
 async function sendEmail(addresses, subject, body) {
