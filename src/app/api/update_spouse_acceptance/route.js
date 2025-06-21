@@ -44,6 +44,7 @@ export async function POST(request) {
     } catch (ssmError) {
       return NextResponse.json({ error: 'Failed to fetch Lambda ARN from SSM', details: ssmError.message }, { status: 500 });
     }
+    console.log('[Update Spouse Acceptance] Lambda ARN:', lambdaArn);
 
     const lambda = new LambdaClient({ region: process.env.AWS_REGION, credentials: awsCredentialsProvider({ roleArn: process.env.AWS_ROLE_ARN }) });
     const payload = { user_email, submission_time, spouse_accepted: accepted };

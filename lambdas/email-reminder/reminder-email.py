@@ -111,8 +111,8 @@ def lambda_handler(event, context):
                 <html>
                 <body>
                 <p>Hi {user_firstname},</p>
-                <p>Your partner <b>{spouse_firstname}</b> has accepted your invitation to discuss <b>{argument_topic}</b> on WaveOver.</p>
-                <p>The 3-day timer has now begun. You both have until the deadline to write your responses.</p>
+                <p>Your partner <b>{spouse_firstname}</b> has accepted your invitation to discuss "{argument_topic}" on WaveOver.</p>
+                <p>The 3-day timer has now begun. Don't worry WaveOver will send you email reminders 2 days, 1 days, 12 and 4 hour before this deadline.</p>
                 <p>Visit <a href='https://waveover.me'>WaveOver</a> to start writing!</p>
                 </body>
                 </html>

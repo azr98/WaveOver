@@ -2,9 +2,6 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { supabase } from '../../../utils/supabaseClient';
 import { awsCredentialsProvider } from '@vercel/functions/oidc';
 
-console.log('[Invite API] AWS_REGION:', process.env.AWS_REGION);
-console.log('[Invite API] AWS_ROLE_ARN:', process.env.AWS_ROLE_ARN);
-
 let ses;
 try {
   ses = new SESClient({

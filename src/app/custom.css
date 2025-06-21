@@ -170,6 +170,10 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.argument-card-border {
+  border: 2px solid #4a90e2;
+}
+
 .argument-card h3 {
   font-size: 1.25rem;
   color: #2d3748;

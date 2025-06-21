@@ -374,7 +374,7 @@ export default function DashboardPage() {
               {paginatedArguments.map((argument, index) => (
                 <div
                   key={index}
-                  className={`rounded shadow p-4 bg-white cursor-pointer border-2 transition-all ${!argument.spouse_accepted ? 'border-yellow-400' : isArgumentFinished(argument) ? 'border-gray-400' : 'border-blue-400 hover:shadow-lg'} mb-4`}
+                  className={`rounded shadow p-4 bg-white cursor-pointer transition-all hover:shadow-lg mb-4 argument-card-border`}
                   style={{ cursor: 'pointer' }}
                   onClick={() => {
                     if (!argument.spouse_accepted) {
