@@ -12,6 +12,12 @@ try {
 } catch (err) {
   console.error('[Invite API] Error instantiating SESClient:', err);
 }
+function capitalizeFirstLetter(str) {
+  if (str.length === 0) {
+    return ""; // Handle empty string
+  }
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 async function sendEmail(addresses, subject, body) {
   const params = {
@@ -32,9 +38,9 @@ export async function POST(req) {
     const data = await req.json();
     console.log('[Invite API] POST data received:', data);
     // Expecting: user_email, user_firstname, user_lastname, spouse_email, spouse_firstname, spouse_lastname, argument_topic, submission_time
-    const user_firstname = data.user_firstname.capitalize();
-    const user_lastname = data.user_lastname.capitalize();
-    const spouse_firstname = data.spouse_firstname.capitalize();
+    const user_firstname = capitalizeFirstLetter(data.user_firstname);
+    const user_lastname = capitalizeFirstLetter(data.user_lastname);
+    const spouse_firstname = capitalizeFirstLetter(data.spouse_firstname);
     // Compose email
     const email_subject = `${user_firstname} ${user_lastname} wants to discuss '${data.argument_topic}' with you`;
     const email_body_html = `
@@ -65,7 +71,7 @@ export async function POST(req) {
       </html>
     `;
 
-    const addresses = [data.user_email, data.spouse_email];
+    const addresses = [data.spouse_email];
     console.log('[Invite API] About to send email to:', addresses);
     await sendEmail(addresses, email_subject, email_body_html);
     console.log('[Invite API] Email send complete, updating Supabase...');
