@@ -25,13 +25,13 @@ export default function HelpPage() {
 
         <h2>2. Wait for them to accept</h2>
         <p>
-          Once they accept you are notified by email and the discussion becomes active.
+          Once your partners accepts the discussion you are notified by email and the discussion becomes active.
         </p>
         <img src="/help/spouse_acceptance.png" alt="spouse acceptance email" style={{maxWidth: '100%', margin: '24px 0'}} />
 
         <h2>3. Write down what you want to say</h2>
         <p>
-          To open the editor click on the discussion in 'Active'. 
+          Now both of you start writing. To open the editor click on the discussion in 'Active'. 
         </p>
         <p>The editor auto saves; has some formatting features and the timer displayed.
         Both of you have 3 days to write your response. You can edit and save as much as you like until the deadline.</p>
