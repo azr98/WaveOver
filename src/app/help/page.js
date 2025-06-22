@@ -23,13 +23,13 @@ export default function HelpPage() {
         </p>
         <img src="/help/2.png" alt="Pending discussion in dashboard" style={{maxWidth: '100%', margin: '24px 0'}} />
 
-        <h2>2. Wait for them to accept</h2>
+        <h2>2. Wait for your partner</h2>
         <p>
-          Once your partners accepts the discussion you are notified by email and the discussion becomes active.
+          Once your partner accepts the discussion you are notified by email and the discussion becomes active.
         </p>
         <img src="/help/spouse_acceptance.png" alt="spouse acceptance email" style={{maxWidth: '100%', margin: '24px 0'}} />
 
-        <h2>3. Write down what you want to say</h2>
+        <h2>3. Write</h2>
         <p>
           Now both of you start writing. To open the editor click on the discussion in 'Active'. 
         </p>
@@ -39,7 +39,7 @@ export default function HelpPage() {
 
         <p>
           You both receive reminder emails 2 days, 1 day, 12 hours and 4 hours before the 3 daydeadline.</p>
-          <p>All you need to focus on is your writing and WaveOver takes care of the rest!</p>
+          <p>All you need to focus on is your writing and WaveOver takes care of the rest! Here are some <a href="/writing">writing tips</a> for this stage</p>
         <h2>4. Time is up!</h2>
         <p>
           Each of your response is emailed to the other automatically. You can also view what both of you wrote for discussion in the 'Finished' tab.

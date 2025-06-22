@@ -4,19 +4,20 @@ import Header from "../../components/Header";
 
 export default function WritingTipsPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start py-12 px-4">
+    <div className="help-container">
       <Header />
-      <div className="bg-white rounded shadow p-6 max-w-2xl w-full mx-4 sm:mx-8" style={{ marginLeft: 16, marginRight: 16 }}>
+      <div className="help-content">
         <h1 className="text-2xl font-bold mb-4 text-center">✍️ How to Write for Deeper Conversations and Less Conflict</h1>
         <p className="text-lg mb-4 text-center">Difficult conversations don't have to become arguments.</p>
         <p className="mb-6 text-center">This app gives you a powerful way to communicate with clarity, calm, and connection—through asynchronous writing.<br />Here's how to make the most of it.</p>
         <hr className="my-6" />
-        <h2 className="text-xl font-semibold mb-2">🧠 Why This App Works: The Power of the Pause</h2>
+        <h2 className="text-xl font-semibold mb-2"> Why This App Works: The Power of the Pause</h2>
         <ul className="list-disc pl-6 mb-6 space-y-2">
           <li>A 3-day timer to reflect, edit, and cool emotions</li>
-          <li>No back-and-forth replies = no "chain reactions"</li>
-          <li>Simultaneous message delivery = no power plays</li>
-          <li>Structured time = deeper, more thoughtful messages</li>
+          <li>No back-and-forth replies = no "chain reactions" no 'fastest thinker' competition</li>
+          <li>Simultaneous message delivery = No power plays</li>
+          <li>Structured time = Deeper, more thoughtful messages</li>
+          <li>Long time to write with reminders = Leave and forget so you can comeback and reread and reflect with a clear mind and fresh eyes</li>
         </ul>
         <hr className="my-6" />
         <h2 className="text-xl font-semibold mb-2">✍️ Writing Tips: Say What You Mean, Without the Drama</h2>
@@ -31,19 +32,20 @@ export default function WritingTipsPage() {
         <p className="mb-2">Don't say "I felt bad." Say "I felt dismissed when..."<br />Precision builds clarity, which builds trust.</p>
         <h3 className="font-semibold mt-4 mb-1">3. Use active voice</h3>
         <ul className="list-disc pl-6 mb-3 space-y-1">
-          <li><span className="text-green-700">✔️ "I felt hurt when you ignored my call."</span></li>
-          <li><span className="text-red-700">❌ "I was hurt by the ignoring of my call."</span></li>
+          <li><span className="text-green-700">✔️ "I felt ___ when you that happened."</span></li>
+          <li><span className="text-red-700">❌ "I was ___ when that happened."</span></li>
         </ul>
         <h3 className="font-semibold mt-4 mb-1">4. Read it out loud before you send</h3>
         <p className="mb-6">It helps catch tone issues and emotional spikes.</p>
         <hr className="my-6" />
-        <h2 className="text-xl font-semibold mb-2">🧘 Before You Write: Think First</h2>
+        <h2 className="text-xl font-semibold mb-2">Before You Write: Think First</h2>
         <h3 className="font-semibold mt-4 mb-1">1. Know your goal</h3>
-        <p className="mb-2">Are you aiming to share feelings, ask a question, or solve a problem? Start with that intention.</p>
+        <p className="mb-2">Are you aiming to share feelings, ask a question, or solve a problem, raise a problem, or just vent? Start with that intention.</p>
         <h3 className="font-semibold mt-4 mb-1">2. Consider your partner's lens</h3>
-        <p className="mb-2">Think: What do they already know? How do they prefer to communicate?</p>
-        <h3 className="font-semibold mt-4 mb-1">3. Pause when you're emotional</h3>
-        <p className="mb-6">Strong emotions = strong reactions. Walk, breathe, reflect—then write.</p>
+        <p className="mb-2">Think: What do they already know? How do they prefer to communicate? What do they need to know?</p>
+        <h3 className="font-semibold mt-4 mb-1">3. Write it out when you're emotional but leave and revisit it later</h3>
+        <h3 className="font-semibold mt-4 mb-1">4. Read it out loud before you send</h3>
+        <p className="mb-6">It helps catch tone issues and emotional spikes. Try writing close to how you speak</p>
         <hr className="my-6" />
         <h2 className="text-xl font-semibold mb-2">💬 How to Handle Tough Topics</h2>
         <h3 className="font-semibold mt-4 mb-1">1. Use "I" statements</h3>
