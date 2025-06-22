@@ -389,13 +389,13 @@ export default function DashboardPage() {
                 >
                   <h3 className="font-semibold text-lg mb-1">{argument.argument_topic}</h3>
                   <p className="text-gray-600 text-sm mb-2">
-                    With: {argument.spouse_accepted || isArgumentFinished(argument) ?
-                      (getUserEmail() === argument.user_email ?
-                        `${argument.spouse_firstname} ${argument.spouse_lastname}` :
-                        `${argument.user_firstname} ${argument.user_lastname}`) :
-                      (getUserEmail() === argument.user_email ?
-                        argument.spouse_email :
-                        argument.user_email)}
+                    {
+                      getUserEmail() === argument.user_email
+                        ? (!argument.spouse_accepted
+                          ? `Waiting for ${argument.spouse_email} to accept`
+                          : `With: ${argument.spouse_email}`)
+                        : `With: ${argument.user_email}`
+                    }
                   </p>
                   <div className="d-flex align-items-center gap-2">
                     <span
