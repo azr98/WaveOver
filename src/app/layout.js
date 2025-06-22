@@ -6,6 +6,9 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 export const metadata = {
   title: 'WaveOver',
   description: 'Talk It Out — Without Talking Over Each Other',
+  icons: {
+    icon: '/logos/fav.svg',
+  },
 };
 
 export default function RootLayout({ children }) {
