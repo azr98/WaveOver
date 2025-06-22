@@ -32,9 +32,11 @@ export async function POST(req) {
     const data = await req.json();
     console.log('[Invite API] POST data received:', data);
     // Expecting: user_email, user_firstname, user_lastname, spouse_email, spouse_firstname, spouse_lastname, argument_topic, submission_time
-
+    const user_firstname = data.user_firstname.capitalize();
+    const user_lastname = data.user_lastname.capitalize();
+    const spouse_firstname = data.spouse_firstname.capitalize();
     // Compose email
-    const email_subject = `${data.user_firstname} ${data.user_lastname} wants to discuss '${data.argument_topic}' with ${data.spouse_firstname} ${data.spouse_lastname}`;
+    const email_subject = `${user_firstname} ${user_lastname} wants to discuss '${data.argument_topic}' with you`;
     const email_body_html = `
       <!DOCTYPE html>
       <html>
@@ -42,19 +44,23 @@ export async function POST(req) {
       <title>${email_subject}</title>
       </head>
       <body>
-      <p>${data.user_firstname} wants to discuss'${data.argument_topic}' with you</p>
-      <p>${data.user_firstname} ${data.user_lastname} has sent you an invitation to discuss '${data.argument_topic}'. 
-      To accept and begin you just need to sign up or log in at <a href="waveover.me">WaveOver</a> and a 3 day timer will start.
-      Both of you have all that time to write your say in the text editor. No more, no less. The text editor autosaves so you can just focus on writing.
+      <p>Hi ${spouse_firstname}!</p>
+      <p>${user_firstname} ${user_lastname} wants to discuss'${data.argument_topic}' with you in writing. ${user_firstname} has used the WaveOver web app to facilitate this.</p>
+      <p>It is very simple. The only actions you take start is just to sign up/log in at <a href="waveover.me">WaveOver</a> and a 3 day timer starts after you accept the discussion.
+      Then both of you have all that time to write your say in the text editor. No more, no less. The text editor autosaves so you can just focus on writing.
       </p>
+
+      <p>Both of you will receive an email reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day timer is up. When it is up you are both sent what the other said by email. It is also viewable in the dashboard 'Finished' tab so don't worry if you delete that email.</p>
       
-      <p>You can accept the disucssion by clicking it in the 'Pending'section and then you can begin writing. <a href="https://waveover.me/writing">Here</a> are some tips</p>
-      <p>When the 3 day timer is up what each of you wrote is sent to the other by email automatically.</p>
-      <p>Both of you will receive a reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day timer is up.</p>
-      <p>For a more detailed guide read <a href="https://waveover.me/help_partner">here</a>. Remember to check spam and allow from 'noreply@waveover.info' </p>
-      <p>Thanks for using my app !</p>
+      <p>You accept the disucssion by clicking it in the 'Pending' section. Then click it again in 'Active' to open the editor start writing. <a href="https://waveover.me/writing">Here</a> are some writing tips.</p>
+
+      <p>For a more visual guide on how WaveOver works see <a href="https://waveover.me/help_partner">this</a>. Remember to check spam and allow from 'noreply@waveover.info' for the reminders and final email.</p>  
+
+      <p>If you have any questions or feedback please email me at <a href="mailto:azhar@waveover.info">azhar@waveover.info</a> or there is a product feedback form in the WaveOver dashboard.</p>
+
+      <p>Thanks for using my app! I really hope you find it valuable</p>
       <p>Azhar,</p>
-      <p>creator of WaveOver</p>
+      <p>Creator of WaveOver</p>
       </body>
       </html>
     `;
