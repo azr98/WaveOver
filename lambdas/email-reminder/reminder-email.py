@@ -101,7 +101,7 @@ def lambda_handler(event, context):
                     .eq("user_email", user_email) \
                     .eq("submission_time", submission_time) \
                     .execute()
-                print(f"Reminder times updated and set with {update_response.data} for {argument_topic} between {user_email} and {spouse_email}")
+                print(f"Reminder times updated and set with {update_data} for {argument_topic} between {user_email} and {spouse_email}")
                 
                 # Send acceptance email to user_email
                 user_firstname = argument.get('user_firstname', '')
@@ -136,10 +136,10 @@ def lambda_handler(event, context):
         for argument in arguments:
             user_email = argument['user_email']
             spouse_email = argument['spouse_email']
-            user_firstname = argument['user_firstname']
-            user_lastname = argument['user_lastname']
-            spouse_firstname = argument['spouse_firstname']
-            spouse_lastname = argument['spouse_lastname']
+            user_firstname = argument['user_firstname'].capitalize()
+            user_lastname = argument['user_lastname'].capitalize()
+            spouse_firstname = argument['spouse_firstname'].capitalize()
+            spouse_lastname = argument['spouse_lastname'].capitalize()
             user_exists = check_clerk_user_exists(user_email)
             spouse_exists = check_clerk_user_exists(spouse_email)
             spouse_accepted = argument['spouse_accepted']
@@ -151,15 +151,33 @@ def lambda_handler(event, context):
             final_deadline = time_to_datetime(argument['argument_deadline']) if argument['argument_deadline'] else None
             if final_deadline and final_deadline.tzinfo is None:
                 final_deadline = final_deadline.replace(tzinfo=timezone.utc)
-            print("argument is", argument)
+            # Send final email if the deadline has passed
             if spouse_accepted and current_time > final_deadline:
                 user_response = argument['user_response']
                 spouse_response = argument['spouse_response']
-                exchange_email_body = f'Here is what {addresses[0]} had to say on {argument_topic}:\n {user_response}'
-                exchange_email_subject = f'Dev end to end test - Response from {addresses[0]} for {argument_topic}'
+                exchange_email_body = f'''
+                <!DOCTYPE html>
+                    <html>
+                    <body>
+                    <p>Hi {spouse_firstname}!,</p>
+                    <p>I hope this process has helped you. Here is what {user_firstname} had to say on {argument_topic}. Don't worry you can always view this and what you wrote in the WaveOver dashboard 'Finished' tab: </p>
+                    <p>{user_response}</p>
+                    </body>
+                    </html>
+                '''
+                exchange_email_subject = f'WaveOver - \'{argument_topic}\' with {user_firstname} is finished!'
                 send_email([addresses[1]], exchange_email_subject, exchange_email_body)
-                exchange_email_body = f'Here is what {addresses[1]} had to say on {argument_topic}:\n {spouse_response}'
-                exchange_email_subject = f'Dev end to end test - Response from {addresses[1]} for {argument_topic}'
+                exchange_email_body = f'''
+                <!DOCTYPE html>
+                    <html>
+                    <body>
+                    <p>Hi {user_firstname}!,</p>
+                    <p>I hope this process has helped you. Here is what {spouse_firstname} had to say on {argument_topic}. Don't worry you can always view this and what you wrote in the WaveOver dashboard 'Finished' tab: </p>
+                    <p>{spouse_response}</p>
+                    </body>
+                    </html>
+                '''
+                exchange_email_subject = f'WaveOver -\'{argument_topic}\' with {spouse_firstname} is finished!'
                 send_email([addresses[0]], exchange_email_subject, exchange_email_body)
                 print('final email deadline sent')
                 # Set argument_finished to True in Supabase
@@ -169,11 +187,11 @@ def lambda_handler(event, context):
                     .execute()
                 print(f"argument_finished updated with {argument_finished_update.data} for {argument_topic} between {user_email} and {spouse_email}")
             else:
+                # Send reminder emails if the deadline has not passed
                 current_time = datetime.now(timezone.utc)
                 final_deadline = time_to_datetime(argument['argument_deadline']) if argument['argument_deadline'] else None
                 if final_deadline and final_deadline.tzinfo is None:
                     final_deadline = final_deadline.replace(tzinfo=timezone.utc)
-                print(f"inside reminder email block")
                 hours_left = int((final_deadline - current_time).total_seconds() / 3600) if final_deadline else 0
                 print(f"Checking for reminders to send, last_email_sent is {last_email_sent} with currently {hours_left} hours left")
                 reminder_times = {
@@ -185,17 +203,17 @@ def lambda_handler(event, context):
                 new_last_email_sent = None
                 print(f"current time is {current_time}")
                 print(f"reminder times: two_days={reminder_times['two_days']}, one_days={reminder_times['one_days']}, twelve_hours={reminder_times['twelve_hours']}, four_hours={reminder_times['four_hours']}")
-                if reminder_times['four_hours'] and current_time > reminder_times['four_hours'] and last_email_sent in ['invite email', 'two days reminder', 'one day reminder', 'twelve hours reminder']:
-                    new_last_email_sent = 'four hours reminder'
+                if reminder_times['four_hours'] and current_time > reminder_times['four_hours'] and last_email_sent in ['invite email', '2 days reminder', '1 day reminder', '12 hours reminder']:
+                    new_last_email_sent = '4 hours reminder'
                     print(f"Sending four hours reminder email. Current time: {current_time}, Reminder time: {reminder_times['four_hours']}")
-                elif reminder_times['twelve_hours'] and current_time > reminder_times['twelve_hours'] and last_email_sent in ['invite email', 'two days reminder', 'one day reminder']:
-                    new_last_email_sent = 'twelve hours reminder'
+                elif reminder_times['twelve_hours'] and current_time > reminder_times['twelve_hours'] and last_email_sent in ['invite email', '2 days reminder', '1 day reminder']:
+                    new_last_email_sent = '12 hours reminder'
                     print(f"Sending twelve hours reminder email. Current time: {current_time}, Reminder time: {reminder_times['twelve_hours']}")
-                elif reminder_times['one_days'] and current_time > reminder_times['one_days'] and last_email_sent in ['invite email', 'two days reminder']:
-                    new_last_email_sent = 'one day reminder'
+                elif reminder_times['one_days'] and current_time > reminder_times['one_days'] and last_email_sent in ['invite email', '2 days reminder']:
+                    new_last_email_sent = '1 day reminder'
                     print(f"Sending one day reminder email. Current time: {current_time}, Reminder time: {reminder_times['one_days']}")
                 elif reminder_times['two_days'] and current_time > reminder_times['two_days'] and last_email_sent == 'invite email':
-                    new_last_email_sent = 'two days reminder'
+                    new_last_email_sent = '2 days reminder'
                     print(f"Sending two days reminder email. Current time: {current_time}, Reminder time: {reminder_times['two_days']}")
                 else:
                     print('No reminder to send')
@@ -206,23 +224,23 @@ def lambda_handler(event, context):
                         .eq("submission_time", submission_time) \
                         .execute()
                     print(f"last_email_update happened response is: {last_email_update.data}")
-                    subject_reminder = re.sub(r'\\sreminder$', '', new_last_email_sent)
-                    subject_reminder = subject_reminder[0].upper() + subject_reminder[1:]
-                    email_subject = f'Dev - Discussion reminder for {argument_topic} : {subject_reminder} left'
+                    subject_reminder = new_last_email_sent.removesuffix(' reminder')
+                    email_subject = f'WaveOver {subject_reminder} left for {argument_topic}'
                     email_body_html = f'''<!DOCTYPE html>
                                 <html>
                                 <body>
-                                <p>Hi {user_firstname} and {spouse_firstname} !</p>
-                                <p>There are {hours_left} hours left until responses are exchanged in your discussion about {argument_topic}</p>
-                                <p>Get back into by going to dev.waveover.info and click 'Display Current Discussions' -> 'Active' -> and click the discussion.</p>
+                                <p>Hi!,</p>
+                                <p>There are {hours_left} hours left until responses are exchanged in your discussion about {argument_topic}.</p>
+                                <p>You can get back to your discussion by going to waveover.me and and click the discussion in the 'Active' tab.</p>
+                                <p>Thanks for using WaveOver!</p>
+                                <p>Azhar Sharif, creator of WaveOver</p>
                                 </body>
                                 </html>
                                 '''
                     send_email(addresses, email_subject, email_body_html)
-                    last_email_update = supabase.table("arguments_production").update({"last_email_sent": update_expression}) \
+                    last_email_update = supabase.table("arguments_production").update({"last_email_sent": new_last_email_sent}) \
                         .eq("user_email", user_email) \
                         .eq("submission_time", submission_time) \
-                        .set({"last_email_sent": expression_attribute_values}) \
                         .execute()
                     print(f"last_email_update happened response is: {last_email_update.data}")
     else:
