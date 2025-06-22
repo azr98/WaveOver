@@ -28,11 +28,11 @@ export default function HeaderNext() {
           </a>
         </div>
         {/* Center: Logo */}
-        <div className="header-logo-wrapper" style={{ flex: '1 1 0%', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '12px 0', height: '100%' }}>
+        <div className="header-logo-wrapper" style={{ flex: '1 1 0%', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70px' }}>
           <img
             src="/logos/main.svg"
             alt="WaveOver Logo"
-            style={{ height: '90%', objectFit: 'contain', padding: '8px 0' }}
+            style={{ height: '90%', objectFit: 'contain', padding: 0 }}
           />
         </div>
         {/* Right: Empty for spacing (profile button is fixed) */}
