@@ -193,7 +193,7 @@ function TextEditor({ argument, userEmail }) {
       </div>
       <span style={{ fontSize: '1.1rem', color: '#ECA306', display: 'block', marginBottom: 16 }}>
         This editor auto saves and you can use ctrl/cmd shortcuts for bold and italics. You will both receive email reminders 2 days, 1 day, 12 hours and 4 hours before the deadline.
-        <br />Here are some<a href="/writing">writing tips</a> and a simple <a href="/help">walkthrough</a>
+        <br />Here are some <a href="/writing">writing tips</a> and a simple <a href="/help">walkthrough</a>
       </span>
       {renderContent()}
       {error && <p style={{ color: 'red', textAlign: 'left' }}>{error}</p>}
