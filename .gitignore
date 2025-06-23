@@ -32,3 +32,4 @@ python
 requirements.txt
 supabase-layer.zip
 .env*.local
+node_modules/
