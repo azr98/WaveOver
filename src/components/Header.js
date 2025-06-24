@@ -30,7 +30,7 @@ export default function HeaderNext() {
         {/* Center: Logo */}
         <div className="header-logo-wrapper" style={{ flex: '1 1 0%', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70px' }}>
           <img
-            src="/logos/main.svg"
+            src="/logos/header.svg"
             alt="WaveOver Logo"
             style={{ height: '90%', objectFit: 'contain', padding: 0 }}
           />

@@ -24,7 +24,7 @@ export default function LandingPage() {
         <section className="hero-section">
           <div className="hero-content">
             <img
-              src="/logos/transparent.svg"
+              src="/logos/hero.svg"
               alt="WaveOver main logo"
               className="hero-logo"
             />
