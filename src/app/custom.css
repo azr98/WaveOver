@@ -584,25 +584,33 @@
 
 /* Hero Section */
 .hero-section {
-  min-height: 80vh;
+  min-height: 60vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   text-align: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
   border-radius: 1rem;
   margin-bottom: 4rem;
-  padding: 4rem 2rem;
+  padding: 2.5rem 2rem 2rem 2rem;
 }
 
 .hero-content {
   max-width: 800px;
 }
 
+.hero-logo {
+  display: block;
+  margin: 0 auto 2.5rem auto;
+  max-width: 240px;
+  width: 100%;
+  height: auto;
+}
+
 .hero-title {
-  font-size: 3.5rem;
+  font-size: 2.8rem;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   margin-bottom: 1.5rem;
   color: #2d3748;
   background: linear-gradient(135deg, #4a90e2 0%, #5c6ac4 100%);
@@ -781,6 +789,15 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .hero-section {
+    min-height: 40vh;
+    padding: 1.5rem 1rem 1rem 1rem;
+  }
+  .hero-logo {
+    max-width: 160px;
+    margin-bottom: 1.2rem;
+  }
+  
   .hero-title {
     font-size: 2.5rem;
   }
@@ -848,14 +865,6 @@
   content: 'Type your response here...';
   color: #bbb;
   pointer-events: none;
-}
-
-.hero-logo {
-  display: block;
-  margin: 0 auto 2rem auto;
-  max-width: 180px;
-  width: 100%;
-  height: auto;
 }
 
 @media (max-width: 768px) {
