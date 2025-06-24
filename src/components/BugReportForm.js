@@ -48,7 +48,12 @@ const BugReportForm = () => {
       zIndex: 1000
     }}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen && message === "") {
+            setMessage("Describe the bug in as much detail as possible and include your email address and discussion topic if possible");
+          }
+        }}
         style={{
           padding: "10px 20px",
           backgroundColor: "#007bff",
