@@ -23,11 +23,16 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-content">
+            <img
+              src="/logos/main.svg"
+              alt="WaveOver main logo"
+              className="hero-logo"
+            />
             <h1 className="hero-title">
               Talk It Out — Without Talking Over Each Other
             </h1>
             <p className="hero-subtitle">
-              Resolve conflicts, debates and ideate with a spouse, friend, colleague more effectively with writing
+            Have hard conversations with a spouse, friend or colleague the easy way with writing
             </p>
             <div className="cta-buttons">
               <SignInButton mode="modal">

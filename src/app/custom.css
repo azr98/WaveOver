@@ -848,4 +848,19 @@
   content: 'Type your response here...';
   color: #bbb;
   pointer-events: none;
+}
+
+.hero-logo {
+  display: block;
+  margin: 0 auto 2rem auto;
+  max-width: 180px;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .hero-logo {
+    max-width: 120px;
+    margin-bottom: 1.2rem;
+  }
 } 
