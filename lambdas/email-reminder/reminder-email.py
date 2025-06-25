@@ -86,7 +86,7 @@ def lambda_handler(event, context):
                     "reminder_48_hours": (current_time + timedelta(hours=24)).isoformat(),
                     "reminder_24_hours": (current_time + timedelta(hours=48)).isoformat(),
                     "reminder_12_hours": (current_time + timedelta(hours=60)).isoformat(),
-                    "reminder_4_hours": (current_time + timedelta(hours=38)).isoformat(),
+                    "reminder_4_hours": (current_time + timedelta(hours=68)).isoformat(),
                     "final_deadline": (current_time + timedelta(hours=72)).isoformat()
                 }
                 # UPDATE in Supabase

@@ -45,31 +45,26 @@ export async function POST(req) {
     const email_subject = `${user_firstname} ${user_lastname} wants to discuss '${data.argument_topic}' with you`;
     const email_body_html = `
       <!DOCTYPE html>
-      <html>
-      <head>
-      <title>${email_subject}</title>
-      </head>
-      <body>
-      <p>Hi ${spouse_firstname}!</p>
-      <p>${user_firstname} ${user_lastname} wants to discuss'${data.argument_topic}' with you in writing. ${user_firstname} has used the WaveOver web app to facilitate this.</p>
-      <p>It is very simple. The only actions you take start is just to sign up/log in at <a href="waveover.me">WaveOver</a> and a 3 day timer starts after you accept the discussion.
-      Then both of you have all that time to write your say in the text editor. No more, no less. The text editor autosaves so you can just focus on writing.
-      </p>
+        <html>
+        <body>
+          <p>Hi,</p>
 
-      <p>Both of you will receive an email reminder 2 days, 1 day, 12 hours and 4 hours before the 3 day timer is up. When it is up you are both sent what the other said by email. It is also viewable in the dashboard 'Finished' tab so don't worry if you delete that email.</p>
-      
-      <p>You accept the disucssion by clicking it in the 'Pending' section. Then click it again in 'Active' to open the editor start writing. <a href="https://waveover.me/writing">Here</a> are some writing tips.</p>
+          <p>${user_firstname} ${user_lastname} has invited you to thoughtfully discuss "${data.argument_topic}" using a unique tool called <a href="waveover.me">WaveOver</a>.</p>
 
-      <p>For a more visual guide on how WaveOver works see <a href="https://waveover.me/help_partner">this</a>. Remember to check spam and allow from 'noreply@waveover.info' for the reminders and final email.</p>  
+          <p>WaveOver helps two people communicate clearly and calmly—especially when the topic matters. Once you accept the invite, a 3-day timer begins. During that time, you’ll both privately write your thoughts in a distraction-free editor. No instant replies. No interruptions. Just space to think and express yourself fully.</p>
 
-      <p>If you have any questions or feedback please email me at <a href="mailto:azhar@waveover.info">azhar@waveover.info</a> or there is a product feedback form in the WaveOver dashboard.</p>
+          <p>The editor autosaves everything. You'll get helpful reminders at 2 days, 1 day, 12 hours, and 4 hours about the discussion before time's up. When the 3 days end, both of you receive what the other wrote , simultaneously by email. You can also find it in the ‘Finished’ tab on your dashboard so don't worry if you delete that email.</p>
 
-      <p>Thanks for using my app! I really hope you find it valuable</p>
-      <p>Azhar,</p>
-      <p>Creator of WaveOver</p>
-      </body>
-      </html>
-    `;
+          <p>To begin, sign up or log in at <a href="waveover.me">WaveOver</a>. Go to the ‘Pending’ section to accept the discussion. Then, head to the ‘Active’ tab to start writing. Need help? Check out these <a href="https://waveover.me/writing">writing tips</a>.</p>
+
+          <p>Want a simple visual walkthrough of the app? Here’s a quick <a href="https://waveover.me/help_partner">how-to guide</a>. Be sure to check your spam folder and whitelist 'noreply@waveover.info' so you don't miss the reminders and the final exchange.</p>
+
+          <p>Have questions? Feel free to reach out to me <a href="https://x.com/TheAzharSharif">on twitter</a>, or use the feedback form inside the app.</p>
+
+          <p>Wishing you a meaningful and productive conversation,</p>
+          <p>Azhar<br>Creator of WaveOver</p>
+        </body>
+        </html>`;
 
     const addresses = [data.spouse_email];
     console.log('[Invite API] About to send email to:', addresses);
