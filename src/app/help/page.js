@@ -2,6 +2,7 @@
 // Next.js help page, refactored from src/components/helpPage.js
 import "../custom.css";
 import Header from "../../components/Header";
+import { SignInButton } from "@clerk/nextjs";
 
 export default function HelpPage() {
   return (
@@ -18,6 +19,9 @@ export default function HelpPage() {
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           ></iframe>
+            <SignInButton mode="modal">
+                <button className="primary-button">Start, it's always Free!</button>
+            </SignInButton>
         </div>
         <h1>Written version</h1>
         <h2>1. Start a Discussion</h2>

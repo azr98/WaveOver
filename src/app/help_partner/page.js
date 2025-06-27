@@ -2,11 +2,27 @@
 // Next.js help page for spouse/partner, styled like help/page.js
 import "../custom.css";
 import Header from "../../components/Header";
+import { SignInButton } from "@clerk/nextjs";
 
 export default function HelpSpousePage() {
   return (
     <div className="help-container">
       <Header />
+      <h1>Video walkthrough</h1>
+        <div style={{position: 'relative', paddingBottom: '56.25%', height: 0, marginBottom: '32px'}}>
+          <iframe
+            src="https://www.youtube.com/embed/iN50dlJjIXc"
+            title="YouTube video walkthrough"
+            style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+            <SignInButton mode="modal">
+                <button className="primary-button">Start, it's always Free!</button>
+            </SignInButton>
+        </div>
+        <h1>Written version</h1>
       <div className="help-content">
         <h2>1. Accept the Discussion</h2>
         <p>
