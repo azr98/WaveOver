@@ -100,6 +100,18 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <h1 style={{textAlign: 'center', margin: '40px 0 16px'}}>Video walkthrough</h1>
+        <div style={{position: 'relative', paddingBottom: '56.25%', height: 0, marginBottom: '48px'}}>
+          <iframe
+            src="https://www.youtube.com/embed/iN50dlJjIXc"
+            title="YouTube video walkthrough"
+            style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+
         {/* Benefits Section */}
         <section className="benefits">
           <h2>✅ Why People Love It</h2>

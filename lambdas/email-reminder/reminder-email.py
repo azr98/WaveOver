@@ -117,7 +117,7 @@ def lambda_handler(event, context):
                 </body>
                 </html>
                 """
-                send_email([user_email,spouse_email], email_subject, email_body)
+                send_email([user_email], email_subject, email_body)
                 print(f"[ACCEPTANCE EMAIL] Email sent successfully to {user_email}")
  
                 return
